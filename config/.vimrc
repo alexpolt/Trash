@@ -8,7 +8,7 @@ set shiftwidth=2
 set t_Co=256
 color zoria
 set textwidth=120
-set colorcolumn=121
+set colorcolumn=101
 highlight ColorColumn ctermbg=darkgray
 set switchbuf=usetab,split
 set hidden
@@ -19,6 +19,7 @@ set backspace=indent,eol,start
 set showcmd
 set autoindent
 set smartindent
+set ignorecase
 
 set sidescroll=5
 set listchars=eol:¬,tab:»·,trail:·,extends:>,precedes:<
