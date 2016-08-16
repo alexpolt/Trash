@@ -5,7 +5,7 @@
 
   ---
 
-  * Code in this repo is Public-domain. *
+  *Code in this repo is Public-domain.*
 
   ![](http://alexpolt.github.io/images/public_domain_mark.png "Public-domain software")
 
