@@ -1,0 +1,4 @@
+struct test {
+  virtual ~test() = default;
+};
+struct test1 : test {};

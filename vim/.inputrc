@@ -1,0 +1,11 @@
+set meta-flag on
+set input-meta on
+set convert-meta off
+set output-meta on
+"\eOH": beginning-of-line     # Home key
+"\eOF": end-of-line           # End key
+"\e[3~": delete-char           # Delete key
+"\e[2~": quoted-insert         # Insert key
+"\e[1;5D": backward-word          # Ctrl + Left Arrow key
+"\e[1;5C": forward-word           # Ctrl + Right Arrow key
+

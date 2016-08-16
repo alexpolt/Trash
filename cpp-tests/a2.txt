@@ -1,0 +1,129 @@
+Microsoft (R) COFF Binary File Dumper Version 6.00.8447
+Copyright (C) Microsoft Corp 1992-1998. All rights reserved.
+
+
+Dump of file a.exe
+
+File Type: EXECUTABLE IMAGE
+
+  Section contains the following imports:
+
+    libgcc_s_sjlj-1.dll
+                4121A8 Import Address Table
+                412064 Import Name Table
+                     0 time date stamp
+                     0 Index of first forwarder reference
+
+                  10  _Unwind_SjLj_Register
+                  11  _Unwind_SjLj_Resume
+                  13  _Unwind_SjLj_Unregister
+                  29  __divdi3
+                  77  __udivdi3
+                  79  __umoddi3
+
+    KERNEL32.dll
+                4121C4 Import Address Table
+                412080 Import Name Table
+                     0 time date stamp
+                     0 Index of first forwarder reference
+
+                  D4  DeleteCriticalSection
+                  EF  EnterCriticalSection
+                 1C4  GetCurrentProcess
+                 1C5  GetCurrentProcessId
+                 1C9  GetCurrentThreadId
+                 203  GetLastError
+                 215  GetModuleHandleA
+                 245  GetProcAddress
+                 264  GetStartupInfoA
+                 27B  GetSystemTimeAsFileTime
+                 297  GetTickCount
+                 2EB  InitializeCriticalSection
+                 307  IsDBCSLeadByteEx
+                 326  LeaveCriticalSection
+                 32C  LoadLibraryW
+                 355  MultiByteToWideChar
+                 393  QueryPerformanceCounter
+                 467  SetUnhandledExceptionFilter
+                 474  Sleep
+                 482  TerminateProcess
+                 489  TlsGetValue
+                 496  UnhandledExceptionFilter
+                 4B6  VirtualProtect
+                 4B9  VirtualQuery
+                 4DA  WideCharToMultiByte
+
+    msvcrt.dll
+                41222C Import Address Table
+                4120E8 Import Name Table
+                     0 time date stamp
+                     0 Index of first forwarder reference
+
+                  38  __dllonexit
+                  3B  __getmainargs
+                  3C  __initenv
+                  46  __lconv_init
+                  47  __mb_cur_max
+                  6A  __set_app_type
+                  6D  __setusermatherr
+                  7D  _acmdln
+                  92  _amsg_exit
+                  A3  _cexit
+                  E0  _errno
+                 114  _fmode
+                 162  _initterm
+                 166  _iob
+                 1D0  _lock
+                 274  _onexit
+                 34D  _unlock
+                 421  abort
+                 42C  atoi
+                 430  calloc
+                 43B  exit
+                 44D  fputc
+                 452  free
+                 460  getc
+                 462  getenv
+                 470  islower
+                 473  isspace
+                 474  isupper
+                 483  isxdigit
+                 487  localeconv
+                 48C  malloc
+                 495  memcpy
+                 4A8  realloc
+                 4AF  setlocale
+                 4B1  signal
+                 4BC  strchr
+                 4C2  strerror
+                 4C5  strlen
+                 4C8  strncmp
+                 4D2  strtoul
+                 4D6  strtol
+                 4E4  tolower
+                 4E8  ungetc
+                 501  wcslen
+
+    libstdc++-6.dll
+                4122E0 Import Address Table
+                41219C Import Name Table
+                     0 time date stamp
+                     0 Index of first forwarder reference
+
+                   0  InterlockedCompareExchange@12
+                 FD6  __gxx_personality_sj0
+
+  Summary
+
+        1000 .CRT
+        1000 .bss
+        1000 .data
+        1000 .debug_abbrev
+        1000 .debug_aranges
+        1000 .debug_frame
+        1000 .debug_info
+        1000 .debug_line
+        1000 .idata
+        1000 .rdata
+        E000 .text
+        1000 .tls

@@ -1,11 +1,11 @@
 
 ##Trash can
 
-  Code is under Trash license.
-  If you dare to use it in your code, gods will unleash their wrath upon you. 
+  This repo contains examples of how **NOT** to write software!
+
   ---
 
-  *For legal department: that was irony, any code in this repo is Public-domain.*
+  * Code in this repo is Public-domain. *
 
   ![](http://alexpolt.github.io/images/public_domain_mark.png "Public-domain software")
 

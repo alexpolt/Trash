@@ -1,0 +1,4 @@
+LIBRARY dll1
+EXPORTS
+test @4 
+test2=test @7

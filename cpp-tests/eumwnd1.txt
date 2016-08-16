@@ -1,0 +1,397 @@
+0,
+0,GetParent
+0,
+40064,
+0,Open a new tab (Ctrl+T)
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,Close Tab
+0,
+0,
+0,
+0,Understanding G80 behavior
+0,
+0,
+0,
+40064,
+20098,
+40064,√лавное меню
+40064,
+40064,
+40064,CiceroUIWndFrame
+40064,
+40064,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,SysFader
+0,
+0,
+205dc,
+0,
+0,
+0,SysFader
+0,
+0,
+0,S/PDIF IN/OUT Settings
+0,Set Device Type
+0,Mixer ToolBox
+0,Connector Settings
+20526,CiceroUIWndFrame
+20520,TF_FloatingLangBar_WndTitle
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,SysFader
+0,NetDDE Agent
+0,ярлык дл€ mingw.bat - enumwnd1.exe 
+114108c6,P:\MyProgTests\VisualC\Tests\glut\win\tests\enumwnd1.cpp
+0,enumwnd1.cpp - AkelPad
+0,Total Commander 7.0 public beta 3 - St A Wartono
+0,GetParent function (Windows) - Mozilla Firefox
+0,
+0,
+0,Total Commander
+10014,
+10014,
+10014,
+27c084e,
+27c084e,
+100ca,
+100ca,
+100ca,
+0,P:\MyDocs\GPU\NVIDIA\Cg_Effects_Explained
+0,Msg
+0,???????s????????????Х??????????????????
+27c084e,
+27c084e,
+27c084e,
+27c084e,
+524085a,
+524085a,
+1a07083c,
+1a07083c,
+0,MCI command handling window
+0,Mozilla Firefox
+0,OpenGL Extension - OpenGL.org - Mozilla Firefox
+0,Mozilla Firefox
+0,Msg
+0,???????s????????????Х??????????????????
+0,
+0,nsAppShell:EventWindow
+0,
+0,
+0,
+0,MCI command handling window
+0,
+0,
+0,NetscapeDispatchWnd
+0,DDE Server Window
+0,XPCOM:EventReceiver
+0,
+0,
+0,
+210720,
+210720,
+0,3D_AMD_nvidia_more.tpu - Teleport Ultra
+0,
+10014,
+10014,
+10014,
+10014,
+0,
+0,
+0,
+100b8,
+100b8,
+0,P:\MyDocs\GPU\Shadows
+100b6,
+100b6,
+0,P:\MyDocs\Games\PS4
+100b2,
+100b2,
+0,P:\MyDocs\GPU\PAPERS
+100ae,
+100ae,
+0,P:\MyDocs\GPU\SIGGRAPH
+0,
+3054e,
+10014,
+30118,Kaspersky Anti-Virus 2013
+0,Kaspersky Anti-Virus 2013
+0,
+0,Connections Tray
+0,»ндикатор батарей
+0,
+0,Ditto Clipboard Viewer
+0,
+0,
+0,DTS Connect
+0,Dolby Home Threater
+0,Advance Setting
+0,TOOLBOX
+0,Load EQ Preset
+0,DeleteEQ
+0,Save EQ
+20552,Realtek HD Audio Manager
+0,BackMain_Form
+0,Realtek HD Audio Manager
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,Setpoint Gaming Notification Window
+0,
+0,
+0,
+0,
+0,
+0,
+0,KHALHIDC_MainWindow
+0,KHALHIDC_MainWindow
+0,KHALHIDC_MainWindow
+0,KHALMOU_MainWindow
+0,KHALHIDN_MainWindow
+0,KHALHIDC_MainWindow
+0,KHALHIDM_MainWindow
+0,KHALUSB_MainWindow
+0,KHALHPP_MainWindow
+0,KHALITouch_MainWindow
+0,KHALMouseware_MainWindow
+0,KHALMainProcessWindow
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,
+0,CameraMonitor(VX3000)
+0,
+10014,
+0,
+10014,
+0,
+10014,
+0,
+100b4,
+10014,
+0,
+100b0,
+10014,
+0,
+1013a,
+10014,
+0,
+10014,
+0,
+10014,
+0,
+10014,
+0,
+100ba,
+10014,
+0,
+10014,
+0,
+100be,
+10014,
+0,
+1015e,
+10014,
+0,
+0,
+0,
+0,
+0,
+0,GDI+ Window
+100ac,
+100ac,
+0,P:\MyDocs\Games\PS2-3
+100bc,
+100bc,
+0,P:\MyDocs\Games\books
+3054e,
+3054e,
+0,P:\MyDocs
+100b4,
+100b4,
+100b4,
+0,P:\MyDocs\GPU\Books
+100b0,
+100b0,
+100b0,
+0,P:\MyDocs\Electro\Books\History
+1013a,
+1013a,
+1013a,
+0,P:\MyDocs\Progr\C++\stl
+100ba,
+100ba,
+0,P:\MyDocs\GPU\OpenGL\Books
+100be,
+100be,
+100be,
+0,P:\SoftDevelop\Console
+1015e,
+1015e,
+1015e,
+0,P:\MyDocs\Progr\Compiling
+206d4,
+206d4,
+0,3D_AMD_developer_more.tpu - Teleport Ultra
+1507dc,
+1507dc,
+0,EditPlus [Default] - [Noname2.cpp *]
+a0076,
+a0076,
+a0076,
+a0076,
+0,—етевые подключени€
+0,¬ход€щие дл€ myrussia2001@gmail.com - Thunderbird
+10096,
+0,Program Manager
+40062,M
+40064,Default IME
+74f080c,M
+114108c6,Default IME
+475091e,M
+6c0872,Default IME
+13460892,M
+97208be,Default IME
+1a7e08e6,M
+97208be,Default IME
+100e2,M
+100ca,Default IME
+5ba08ee,Default IME
+250826,Default IME
+1f0726,M
+210720,Default IME
+205bc,M
+305c4,Default IME
+100dc,M
+100b8,Default IME
+100e4,M
+100b6,Default IME
+100da,M
+100b2,Default IME
+100d4,M
+100ae,Default IME
+30032,Default IME
+106ae,Default IME
+206a8,Default IME
+60666,M
+2068c,Default IME
+20552,Default IME
+205d4,Default IME
+10570,Default IME
+30548,Default IME
+2051e,Default IME
+20540,Default IME
+20542,M
+20520,Default IME
+10576,Default IME
+100d6,M
+100ac,Default IME
+100e0,M
+100bc,Default IME
+20504,M
+3054e,Default IME
+100de,M
+100b4,Default IME
+100d8,M
+100b0,Default IME
+10158,M
+1013a,Default IME
+100d2,M
+100ba,Default IME
+100e6,M
+100be,Default IME
+10160,M
+1015e,Default IME
+206d0,M
+206d4,Default IME
+120764,M
+1507dc,Default IME
+750696,M
+a0076,Default IME
+1507c8,M
+1607ba,Default IME
+40052,M
+10096,Default IME
