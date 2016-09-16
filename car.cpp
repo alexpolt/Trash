@@ -6,6 +6,7 @@
 namespace vehicle {
 
   using input_char = char;
+
   enum class car_state {           
     north, east, west, south
   };
