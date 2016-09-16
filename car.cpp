@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
-#include <cassert>
 #include <exception>
+
 
 namespace vehicle {
 
