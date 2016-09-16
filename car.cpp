@@ -11,7 +11,6 @@ namespace vehicle {
     north, east, west, south
   };
 
-
   //car interface
   struct car {
     virtual void command( input_char ) = 0;
@@ -28,13 +27,11 @@ namespace vehicle {
     virtual ~control() {}
   };
 
-
   struct bad_input : std::exception {
     char const* what() const noexcept override {
       return "bad input";
     }
   };
-
 
   //basic control implementation
   struct control_common : control {
@@ -74,7 +71,6 @@ namespace vehicle {
     }
     
   };
-  
 
   //a car implementation, parameterized by a control
   template< typename control_type >
@@ -106,7 +102,6 @@ namespace vehicle {
     bool beep = false;
     control_type ctrl;
   };
-
 
   //car factory
   template< typename control_type >
@@ -166,9 +161,7 @@ int main() {
     print_state( car );
 
    } catch ( vehicle::bad_input& e ) {
-
      std::cout << "use only L, R or B" << std::endl;
-
    }
 
  }
