@@ -11,6 +11,8 @@ namespace vehicle {
     north, east, west, south
   };
 
+
+  //car interface
   struct car {
     virtual void command( input_char ) = 0;
     virtual car_state get_state() = 0;
@@ -19,11 +21,13 @@ namespace vehicle {
     virtual void set_beep() = 0;
     virtual ~car() {}
   };
- 
+
+  //car control interface
   struct control {
     virtual void process_input( car*, input_char ) = 0;
     virtual ~control() {}
   };
+
 
   struct bad_input : std::exception {
     char const* what() const noexcept override {
@@ -31,6 +35,8 @@ namespace vehicle {
     }
   };
 
+
+  //basic control implementation
   struct control_common : control {
     
     void process_input( car* obj, input_char cmd ) override {
@@ -69,6 +75,8 @@ namespace vehicle {
     
   };
   
+
+  //a car implementation, parametrized by a control
   template< typename control_type >
   struct bmw : car {
       
@@ -98,16 +106,22 @@ namespace vehicle {
     bool beep = false;
     control_type ctrl;
   };
-  
+
+
+  //car factory
   template< typename control_type >
   car* make_bmw() {
     return new bmw<control_type>{};
   }
+
 }
 
+//print out car state
 void print_state( std::unique_ptr<vehicle::car> const& car ) {
-	using vehicle::car_state;
-	switch( car->get_state() ) {
+
+  using vehicle::car_state;
+
+  switch( car->get_state() ) {
     case car_state::north:
       std::cout << "^";
       break;
@@ -125,10 +139,11 @@ void print_state( std::unique_ptr<vehicle::car> const& car ) {
   }
 
   if( car->do_beep() )
-	  std::cout << " beep";
+    std::cout << " beep";
 
   std::cout << std::endl;
 }
+
 
 int main() {
 
