@@ -74,12 +74,16 @@ namespace vehicle {
 
   //a car implementation, parameterized by a control
   template< typename control_type >
-  struct bmw : car {
+  class bmw : public car {
+
+    public:
       
     void command( input_char cmd ) override {
       ctrl.process_input( this, cmd );
     }
     
+    private:
+
     car_state get_state() override {
       return state;
     }
