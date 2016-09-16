@@ -21,22 +21,16 @@ namespace vehicle {
     virtual ~car() {}
   };
 
-  //car control interface
-  struct control {
-    virtual void process_input( car*, input_char ) = 0;
-    virtual ~control() {}
-  };
-
   struct bad_input : std::exception {
     char const* what() const noexcept override {
       return "bad input";
     }
   };
 
-  //basic control implementation
-  struct control_common : control {
+  //car control class
+  struct control_common {
     
-    void process_input( car* obj, input_char cmd ) override {
+    void process_input( car* obj, input_char cmd ) {
       
       auto state = obj->get_state();
       
