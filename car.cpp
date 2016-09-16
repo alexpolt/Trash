@@ -76,7 +76,7 @@ namespace vehicle {
   };
   
 
-  //a car implementation, parametrized by a control
+  //a car implementation, parameterized by a control
   template< typename control_type >
   struct bmw : car {
       
