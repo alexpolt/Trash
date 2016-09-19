@@ -22,6 +22,7 @@ namespace vehicle {
     virtual void command( input_t ) = 0;
     virtual car_state get_state() const = 0;
     virtual void set_state( car_state ) = 0;
+    virtual void print_state() = 0;
     virtual bool do_action( car_action ) = 0;
     virtual void set_action( car_action ) = 0;
     virtual ~car() {}
@@ -83,7 +84,32 @@ namespace vehicle {
     void command( input_t cmd ) override {
       control_t::process_input( this, cmd );
     }
-    
+ 
+    void print_state() override {
+
+      switch( state ) {
+        case car_state::north:
+          std::cout << "^";
+          break;
+        case car_state::west:
+          std::cout << "<";
+          break;
+        case car_state::east:
+          std::cout << ">";
+          break;
+        case car_state::south:
+          std::cout << "v";
+          break;
+        default:
+          std::cout << "error: no such state";
+      }
+
+      if( do_action( car_action::beep ) ) std::cout << " beep";
+
+      std::cout << std::endl;
+
+    }
+
     private:
 
     car_state get_state() const override {
@@ -125,34 +151,6 @@ namespace vehicle {
 }
 
 
-//print out car state
-void print_state( vehicle::car_uptr const& car ) {
-
-  using vehicle::car_state;
-
-  switch( car->get_state() ) {
-    case car_state::north:
-      std::cout << "^";
-      break;
-    case car_state::west:
-      std::cout << "<";
-      break;
-    case car_state::east:
-      std::cout << ">";
-      break;
-    case car_state::south:
-      std::cout << "v";
-      break;
-    default:
-      std::cout << "error: no such state";
-  }
-
-  if( car->do_action( vehicle::car_action::beep ) )
-    std::cout << " beep";
-
-  std::cout << std::endl;
-}
-
 
 int main() {
 
@@ -160,11 +158,12 @@ int main() {
 
  std::cout << "enter car command ( L - left, R - right, B - beep, E - exit )" << std::endl;
 
- print_state( car );
+ car->print_state();
 
  while( true ) {
 
    char cmd;
+
    std::cin >> cmd;
 
    if( cmd == 'E' ) break;
@@ -173,7 +172,7 @@ int main() {
 
     car->command( cmd );
 
-    print_state( car );
+    car->print_state();
 
    } catch ( vehicle::bad_input& e ) {
      std::cout << "use only L, R or B" << std::endl;
