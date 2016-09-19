@@ -1,25 +1,33 @@
 #include <iostream>
 #include <memory>
 #include <exception>
+#include <vector>
+#include <algorithm>
 
 
 namespace vehicle {
 
-  using input_char = char;
+  using input_t = char;
 
   enum class car_state {           
     north, east, west, south
   };
 
+  enum class car_action {
+    beep
+  };
+
   //car interface
   struct car {
-    virtual void command( input_char ) = 0;
-    virtual car_state get_state() = 0;
+    virtual void command( input_t ) = 0;
+    virtual car_state get_state() const = 0;
     virtual void set_state( car_state ) = 0;
-    virtual bool do_beep() = 0;
-    virtual void set_beep() = 0;
+    virtual bool do_action( car_action ) = 0;
+    virtual void set_action( car_action ) = 0;
     virtual ~car() {}
   };
+
+  using car_uptr = std::unique_ptr<car>;
 
   struct bad_input : std::exception {
     char const* what() const noexcept override {
@@ -30,7 +38,7 @@ namespace vehicle {
   //car control class
   struct control_common {
     
-    void process_input( car* obj, input_char cmd ) {
+    static void process_input( car* obj, input_t cmd ) {
       
       auto state = obj->get_state();
       
@@ -55,7 +63,7 @@ namespace vehicle {
           break;
         
         case 'B' :
-          obj->set_beep();
+          obj->set_action( car_action::beep );
           break;
         
         default:
@@ -67,18 +75,18 @@ namespace vehicle {
   };
 
   //a car implementation, parameterized by a control
-  template< typename control_type >
+  template< typename control_t >
   class bmw : public car {
 
     public:
       
-    void command( input_char cmd ) override {
-      ctrl.process_input( this, cmd );
+    void command( input_t cmd ) override {
+      control_t::process_input( this, cmd );
     }
     
     private:
 
-    car_state get_state() override {
+    car_state get_state() const override {
       return state;
     }
     
@@ -86,31 +94,39 @@ namespace vehicle {
         state = state_new;
     }
 
-    void set_beep() override {
-      beep = true;
+    void set_action( car_action action ) override {
+      actions.push_back( action );
     }
 
-    bool do_beep() override {
-      bool b = beep;
-      beep = false;
-      return b;
+    bool do_action( car_action action ) override {
+
+      auto it_end = end( actions );
+      auto it = std::find( begin( actions ), it_end, action );
+
+      if( it != it_end ) {
+        actions.erase( std::remove( begin(actions), it_end, action ), it_end );
+        return true;
+      }
+
+      return false;
     }
     
     car_state state = car_state::north;
-    bool beep = false;
-    control_type ctrl;
+    using actions_t = std::vector< car_action >;
+    actions_t actions;
   };
 
   //car factory
   template< typename control_type >
-  car* make_bmw() {
-    return new bmw<control_type>{};
+  car_uptr make_unique_bmw() {
+    return car_uptr{ new bmw<control_type>{} };
   }
 
 }
 
+
 //print out car state
-void print_state( std::unique_ptr<vehicle::car> const& car ) {
+void print_state( vehicle::car_uptr const& car ) {
 
   using vehicle::car_state;
 
@@ -131,7 +147,7 @@ void print_state( std::unique_ptr<vehicle::car> const& car ) {
       std::cout << "error: no such state";
   }
 
-  if( car->do_beep() )
+  if( car->do_action( vehicle::car_action::beep ) )
     std::cout << " beep";
 
   std::cout << std::endl;
@@ -140,7 +156,7 @@ void print_state( std::unique_ptr<vehicle::car> const& car ) {
 
 int main() {
 
- std::unique_ptr<vehicle::car> car{ vehicle::make_bmw< vehicle::control_common >() };
+ auto car = vehicle::make_unique_bmw< vehicle::control_common >();
 
  std::cout << "enter car command ( L - left, R - right, B - beep, E - exit )" << std::endl;
 
@@ -156,6 +172,7 @@ int main() {
    try {
 
     car->command( cmd );
+
     print_state( car );
 
    } catch ( vehicle::bad_input& e ) {
