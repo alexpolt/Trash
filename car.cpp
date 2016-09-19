@@ -18,14 +18,21 @@ namespace vehicle {
   };
 
   //car interface
-  struct car {
+  class car {
+
+    public:
+
+    virtual ~car() {}
     virtual void command( input_t ) = 0;
+    virtual void print_state() = 0;
+
+    private:
+
     virtual car_state get_state() const = 0;
     virtual void set_state( car_state ) = 0;
-    virtual void print_state() = 0;
     virtual bool do_action( car_action ) = 0;
     virtual void set_action( car_action ) = 0;
-    virtual ~car() {}
+
   };
 
   using car_uptr = std::unique_ptr<car>;
@@ -38,8 +45,9 @@ namespace vehicle {
 
   //car control class
   struct control_common {
-    
-    static void process_input( car* obj, input_t cmd ) {
+   
+    template<typename car_t>
+    static void process_input( car_t obj, input_t cmd ) {
       
       auto state = obj->get_state();
       
@@ -78,6 +86,8 @@ namespace vehicle {
   //a car implementation, parameterized by a control
   template< typename control_t >
   class bmw : public car {
+
+    friend control_t;
 
     public:
       
