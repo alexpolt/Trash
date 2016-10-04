@@ -15,7 +15,10 @@ namespace lib {
   struct type_false {
     static const bool value = false;
   };
-  
+
+  $t<$n T0>
+  T0 declval();
+
   $t<$n...>
   using void_t = void;
 

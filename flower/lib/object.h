@@ -105,7 +105,8 @@ namespace lib {
                             lib::string to_string() const override { return #$0; }
 
 
-  #define $object( $0 ) using object_factory = typename lib::bind_object_factory< $0 >::type; \
+  #define $object( $0, ... ) \
+                        using object_factory = lib::object_factory< $0, __VA_ARGS__ >; \
                         value<object> get_object( oid_t id ) override { \
                           return object_factory::get_object( id, $ ); \
                         } \
@@ -127,7 +128,11 @@ namespace lib {
                           return value< lib::object >::create< $0 >( args... ); \
                         }
 
-  #define $component( $0 ) \
+  #define $component_args_0( ) T0
+  #define $component_args_1( $0 ) $0
+  #define $component_object_type( ... ) $apply( $paste( $component_args_, $args_size( __VA_ARGS__ ) ), __VA_ARGS__ )
+
+  #define $component( $0, ... ) \
                         value< lib::object > get_object() override { \
                           return object.get_object(); \
                         } \
@@ -140,7 +145,7 @@ namespace lib {
                         $t<$n... ZZ> static auto create( ZZ&&... args ) { \
                           return value< lib::object >::create< $0 >( args... ); \
                         } \
-                        $0( T0& object0 ) : object{ object0 } { } \
+                        $0( $component_object_type( __VA_ARGS__ ) & object0 ) : object{ object0 } { } 
 
 }
 

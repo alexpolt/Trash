@@ -12,7 +12,7 @@ namespace lib {
     static auto create( TT&&... args ) {
 
       $static_assert( sizeof( U0 ) <= sizeof( data ) );
-      $static_assert( alignof( U0 ) <= 2 or alignof( void* ) == alignof( U0 ) );
+      $static_assert( alignof( T0 ) == alignof( U0 ) );
 
       auto v = value< T0 >{};
 
@@ -24,20 +24,20 @@ namespace lib {
 
     $t<$n... TT>
     auto operator()( TT... args ) {
-      return (* (T0*) data)( args... );
+
+      return ( (T0&) data )( args... );
+
     }
 
     T0* operator->() {
-      
-      return (T0*) data;
 
+      return (T0*) data;
+      
     }
 
-    $t<$n U0> static char (& get_size_sfinae( int ) )[ U0::type_size ];
-    $t<$n U0> static void* (& get_size_sfinae( ... ) )[2];
+    using byte = unsigned char;
 
-
-    alignas( alignof( void* ) ) unsigned char data[ sizeof( get_size_sfinae<T0>( 0 ) ) ];
+    alignas( alignof( T0 ) ) byte data[ sizeof( void*[2] ) ];
 
   };
 

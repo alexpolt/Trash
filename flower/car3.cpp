@@ -9,47 +9,101 @@ struct car : object {
 
   $interface( car );
 
-  void virtual operator()() = 0;
+  void virtual update() = 0; 
 
   uint virtual get_counter() = 0;
 
-  //static const uint type_size = 256;
+  //static const uint type_size = 8;
 
 };
 
+struct car_ai : object {
+
+  $interface( car_ai );
+
+  enum dir_t { left, right };
+
+  virtual void steer( dir_t ) = 0;
+  virtual uint get_steer( ) const = 0;
+
+};
+
+$t<$n T0> struct car_ai_basic;
 
 struct lada : car {
 
-  $object( lada );
+  $object( lada, car_ai_basic );
 
-  void operator()() override {
-    counter++;
+  void update() override {
+    $clobber();
+    angle++;
   }
 
   uint get_counter() override {
-    return counter;
+    return angle;
   }
   
-  uint counter{};
+  int angle{};
 };
+
+struct mazda : lada {
+   void update() override {
+     $clobber();
+    angle+=2;
+  }
+};
+
+
+$t<$n T0> struct car_ai_basic : car_ai {
+
+  $component( car_ai_basic, lada );
+
+  void steer( dir_t dir ) override {
+    if( dir == left ) 
+      object.angle--;
+    else
+      object.angle++;
+  }
+
+  uint get_steer() const override {
+    return object.angle;
+  }
+
+  lada& object;
+};
+
 
 $t<$n T0>
 void measure( T0& v );
 
 int main() {
 
+  const int car_size = 512;
+
   value< car > car0 = value<car>::create< lada >();
+  auto car_ai0 = car0->get_object( car_ai::tag );
+
+  printf("car steer %s\n", car0->get_counter() == car_ai::left ? "left":"right");
+
+  car_ai0->steer( car_ai::right );
+
+  printf("car steer %s\n", car0->get_counter() == car_ai::left ? "left":"right");
 
   printf("value<car> size = %d\n", sizeof( car0 ) );
 
-  std::vector< value<car> > v0{ 256, car0 };
+  std::vector< value<car> > v0{ car_size, car0 };
+  std::vector<car*> v1( car_size );
+
+  $escape( &v0 );
+  $escape( &v1 );
+
+  v0[ 0 ] = value<car>::create< mazda >();
+
+  for( uint i{}; i < car_size; i++ ) v1[ i ] = new lada{};
+
+  v1[ 0 ] = new mazda{};
 
   measure( v0 );
-
-  std::vector<car*> v1;
-
-  for( uint i{}; i < 256; i++ ) v1.push_back( new lada{} );
-
   measure( v1 );
 
 }
@@ -60,16 +114,16 @@ void measure( T0& v0 ) {
   auto begin = std::chrono::high_resolution_clock::now();
 
 
-  for( uint i{}; i < 1000000; i++ )
-
-    for( auto& v : v0 ) v->operator()();
+  for( uint i{}; i < 100000; i++ )
+    for( auto& v : v0 ) 
+      v->update();
 
 
   auto end = std::chrono::high_resolution_clock::now();
 
   auto dt = std::chrono::duration_cast< std::chrono::milliseconds >( end - begin ).count();
 
-  printf( "car = %d, dt = %ld\n", v0[0]->get_counter(), (long)dt );
+  printf( "car1 = %d, dt = %ld\n", v0[0]->get_counter(), (long)dt );
 }
 
 
