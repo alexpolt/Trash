@@ -13,7 +13,10 @@ struct car : object {
 
   uint virtual get_counter() = 0;
 
+  //static const uint type_size = 256;
+
 };
+
 
 struct lada : car {
 
@@ -36,6 +39,8 @@ void measure( T0& v );
 int main() {
 
   value< car > car0 = value<car>::create< lada >();
+
+  printf("value<car> size = %d\n", sizeof( car0 ) );
 
   std::vector< value<car> > v0{ 256, car0 };
 
