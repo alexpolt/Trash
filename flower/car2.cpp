@@ -81,22 +81,22 @@ int main() {
     auto car0 = bmw< bmw_info >::create( 1u );
     value<object> lada0 = lada<>{ 2u };
 
-    printf("bmw = %d\n", car0->get_object_id());
+    printf("bmw = %d, size = %d\n", car0->get_object_id(), sizeof( car0 ) );
 
     auto car0_info = car0->get_object( car_info::tag );
 
     car0_info->print();
 
-    printf( "lada0 to_string: %s\n", lada0->to_string().data() );
+    printf( "car_info0 size = %d, lada0 to_string: %s\n", sizeof( car0_info ), lada0->to_string().data() );
 
     value<car> car1 = car0_info->get_object( car::tag );
 
-    printf( "to_string: %s\n", car1->to_string().data() );
+    printf( "value<car> size = %d, to_string: %s\n", sizeof(car1), car1->to_string().data() );
 
     lib::dispatch< print, car > dispatch0;
     dispatch0( car0, lada0 );
 
-  } catch( error const& e ) {
+  } catch( lib::error const& e ) {
 
     printf( "%s\n", e.what() );
 

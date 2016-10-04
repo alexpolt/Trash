@@ -10,8 +10,6 @@
 
 //#include ""
 
-using lib::error;
-using lib::error_input;
 using lib::object;
 using lib::value;
 

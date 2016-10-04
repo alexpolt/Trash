@@ -44,7 +44,7 @@ namespace lib {
   };
 
 
-  $t<$n T0, $t< $n > class... TT> struct object_factory {
+  $t<$n T0, $t1< $n > class... TT> struct object_factory {
 
     using create_f = value< object >(*)( T0& object );
 
@@ -79,22 +79,33 @@ namespace lib {
 
   };
 
-  $t<$n T0, $t< $n > class... TT>
+  $t<$n T0, $t1< $n > class... TT>
     oid_t object_factory< T0, TT... >::oid_list[] = { T0::object_id, TT< T0 >::object_id... };
     
-  $t<$n T0, $t< $n > class... TT>
+  $t<$n T0, $t1< $n > class... TT>
     typename object_factory< T0, TT... >::create_f 
       object_factory< T0, TT... >::create_list[] = { T0::create, TT< T0 >::create... };
+
+  $t<$n T0>
+  struct bind_object_factory { 
+    using type = lib::object_factory< T0 >;
+  };
+
+  $t< $t1< $t2<$n> class... > class T0, $t2<$n> class ... TT>
+  struct bind_object_factory< T0< TT... > > { 
+    using type = lib::object_factory< T0< TT... >, TT... >;
+  };
 
 
 
   #define $interface( $0 )  static oid_t object_id = __COUNTER__; \
                             using object_type = $0; \
                             constexpr static lib::type_tag< $0 > tag{}; \
-                            oid_t get_object_id() const override { return object_id; } 
+                            oid_t get_object_id() const override { return object_id; } \
+                            lib::string to_string() const override { return #$0; }
 
 
-  #define $object( $0 ) using object_factory = lib::object_factory< $0, TT... >; \
+  #define $object( $0 ) using object_factory = typename lib::bind_object_factory< $0 >::type; \
                         value<object> get_object( oid_t id ) override { \
                           return object_factory::get_object( id, $ ); \
                         } \
