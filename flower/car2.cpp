@@ -81,7 +81,7 @@ int main() {
     auto car0 = bmw< bmw_info >::create( 1u );
     value<object> lada0 = lada<>{ 2u };
 
-    printf("bmw = %d, size = %d\n", car0->get_object_id(), sizeof( car0 ) );
+    printf("bmw = %d, size = %d\n", car0->get_interface_id(), sizeof( car0 ) );
 
     auto car0_info = car0->get_object( car_info::tag );
 
