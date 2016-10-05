@@ -9,13 +9,12 @@ namespace lib {
 
     virtual ~object() {}
 
-    virtual value<object> get_object() = 0;
 
     virtual iid_t get_interface_id() const = 0;
 
-    virtual bool has_object( iid_t ) const = 0;
-
-    virtual value< object > get_object( iid_t ) = 0;
+    virtual oid_t get_object_id() const {
+      return get_interface_id();
+    }
 
     virtual lib::string to_string() const {
       char buf[64];
@@ -23,6 +22,14 @@ namespace lib {
       return lib::string{ buf };
     }
 
+
+    // working with components
+
+    virtual value<object> get_object() = 0;
+
+    virtual bool has_object( iid_t ) const = 0;
+
+    virtual value< object > get_object( iid_t ) = 0;
 
     $t<$n T0> 
     bool has_object( type_tag<T0> ) const {

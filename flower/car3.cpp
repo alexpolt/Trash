@@ -100,11 +100,11 @@ int main() {
     $escape( &v0 );
     $escape( &v1 );
 
-    v0[ 0 ] = value<car>::create< lada >();
+    v0[ 0 ] = value<car>::create< mazda >();
     v1[ 0 ] = new mazda{};
 
-    for( uint i = 1; i < car_size; i++ ) v0[ i ] = value<car>::create< mazda >();
-    for( uint i = 1; i < car_size; i++ ) v1[ i ] = new lada{};
+    for( uint i = 0; i < car_size; i++ ) v0[ i ] = value<car>::create< lada >();
+    for( uint i = 0; i < car_size; i++ ) v1[ i ] = new lada{};
 
     measure( v0 );
     measure( v1 );
@@ -123,7 +123,7 @@ void measure( T0& v0 ) {
   auto begin = std::chrono::high_resolution_clock::now();
 
 
-  for( uint i{}; i < 100000; i++ )
+  for( uint i{}; i < 1000000; i++ )
     for( auto& v : v0 ) 
       v->update();
 

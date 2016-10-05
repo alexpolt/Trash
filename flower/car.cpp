@@ -80,7 +80,7 @@ struct car : lib::object {
 
 struct print {
 
-  void operator()( value<bmw_i> a, value<mazda_i> b ) {
+  void operator()( value<bmw_i> a, value<info_i> b ) {
     printf("dispatch!\n");
   }
 
@@ -98,14 +98,14 @@ int main() {
   try {
 
     auto car0 = car::create( 1u );
-    printf("bmw = %d\n", car0->get_interface_id());
+    printf("bmw = %d\n", car0->get_object( bmw_i::tag )->get_interface_id());
 
     auto car1 = car::create( 2u );
-    printf("mazda = %d\n", car1->get_interface_id());
+    printf("mazda = %d\n", car1->get_object( mazda_i::tag )->get_interface_id());
 
-    lib::dispatch< print, bmw_i, bmw_i > dispatch0;
+    lib::dispatch< print, bmw_i, info_i, mazda_i > dispatch0;
 
-    dispatch0( car0, car1 );
+    dispatch0( car0->get_object( bmw_i::interface_id ), car0->get_object( info_i::interface_id ) );
 
   } catch( lib::error const& e ) {
 
