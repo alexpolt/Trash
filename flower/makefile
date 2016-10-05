@@ -7,6 +7,6 @@ targets := $(files:%.cpp=%)
 all : $(targets)
 
 $(targets) : % : %.cpp
-	g++ -g -O2 -fno-omit-frame-pointer -std=c++14 -Wall -o$@ $<
+	g++ -g -O2 -fno-omit-frame-pointer -std=c++14 -Wall -lstdc++ -o$@ $<
 
 

@@ -98,10 +98,10 @@ int main() {
   try {
 
     auto car0 = car::create( 1u );
-    printf("bmw = %d\n", car0->get_object_id());
+    printf("bmw = %d\n", car0->get_interface_id());
 
     auto car1 = car::create( 2u );
-    printf("mazda = %d\n", car1->get_object_id());
+    printf("mazda = %d\n", car1->get_interface_id());
 
     lib::dispatch< print, bmw_i, bmw_i > dispatch0;
 
