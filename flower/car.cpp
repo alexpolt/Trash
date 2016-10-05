@@ -5,7 +5,7 @@
 #include "lib/common.h"
 #include "lib/dispatch.h"
 
-struct mazda_i : lib::component {
+struct mazda_i : lib::object {
   $interface( mazda_i );
   virtual void set_model( unsigned ) = 0;
 };
@@ -23,7 +23,7 @@ struct mazda : mazda_i {
 
 };
 
-struct bmw_i : lib::component {
+struct bmw_i : lib::object {
   $interface( bmw_i );
   virtual void set_model( unsigned ) = 0;
 };
@@ -41,7 +41,7 @@ struct bmw : bmw_i {
 
 };
 
-struct info_i : lib::component {
+struct info_i : lib::object {
   $interface( info_i );
   virtual void print() const = 0;
 };
@@ -60,14 +60,14 @@ struct info : info_i {
 
 };
 
-$t<$t<$n> class ... TT> 
 struct car : lib::object {
 
   car() { }
 
   car( unsigned m ) : model{ m } { }
 
-  $object( car );
+  $interface( car );
+  $object( car, bmw, mazda, info  );
 
   lib::string to_string() const override {
     return lib::string{"I am car#"} + std::to_string( model );
@@ -97,17 +97,17 @@ int main() {
 
   try {
 
-    auto car0 = car< bmw, info >::create( 1u );
+    auto car0 = car::create( 1u );
     printf("bmw = %d\n", car0->get_object_id());
 
-    auto car1 = car< mazda >::create( 2u );
+    auto car1 = car::create( 2u );
     printf("mazda = %d\n", car1->get_object_id());
 
     lib::dispatch< print, bmw_i, bmw_i > dispatch0;
 
     dispatch0( car0, car1 );
 
-  } catch( error const& e ) {
+  } catch( lib::error const& e ) {
 
     printf( "%s\n", e.what() );
 
