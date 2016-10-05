@@ -38,7 +38,7 @@ struct bmw_info : car_info {
 $t<$t<$n> class ... TT> 
 struct bmw : car {
 
-  $object( bmw );
+  $object( bmw, bmw_info );
 
   bmw( model_t m ) : model{ m } { printf( "create %d\n", m ); }
 
