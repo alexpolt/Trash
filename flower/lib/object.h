@@ -98,8 +98,8 @@ namespace lib {
                             iid_t get_interface_id() const override { return interface_id; } \
 
 
-  #define $object( $0, ... ) \
-                        using object_factory = lib::object_factory< $0, __VA_ARGS__ >; \
+  #define $object( ... ) \
+                        using object_factory = lib::object_factory< __VA_ARGS__ >; \
                         value<object> get_object( iid_t id ) override { \
                           return object_factory::get_object( id, $ ); \
                         } \
@@ -109,7 +109,7 @@ namespace lib {
                         using object::has_object; \
                         using object::get_object; \
                         value< lib::object > get_object() override { \
-                          return value< lib::object >::create< $0 >( $ ); \
+                          return value< lib::object >::create< $args_first( __VA_ARGS__ ) >( $ ); \
                         } \
                         operator value< lib::object >() { \
                           return get_object(); \
@@ -118,10 +118,9 @@ namespace lib {
                           return get_object( Z0::tag ); \
                         } \
                         $t<$n... ZZ> static auto create( ZZ&&... args ) { \
-                          return value< lib::object >::create< $0 >( args... ); \
+                          return value< lib::object >::create< $args_first( __VA_ARGS__ )  >( args... ); \
                         }
 
-  #define $ctype( $0, ... ) $0
   #define $cargs_1( $0 ) T0
   #define $cargs_2( $0, $1 ) $1
   #define $cobject_type( ... ) $apply( $paste( $cargs_, $args_size( __VA_ARGS__ ) ), __VA_ARGS__ )
@@ -137,9 +136,9 @@ namespace lib {
                           return object.has_object( id ); \
                         } \
                         $t<$n... ZZ> static auto create( ZZ&&... args ) { \
-                          return value< lib::object >::create< $ctype( __VA_ARGS__ ) >( args... ); \
+                          return value< lib::object >::create< $args_first( __VA_ARGS__ ) >( args... ); \
                         } \
-                        $ctype( __VA_ARGS__ ) ( $cobject_type( __VA_ARGS__ ) & object0 ) : object{ object0 } { } 
+                        $args_first( __VA_ARGS__ ) ( $cobject_type( __VA_ARGS__ ) & object0 ) : object{ object0 } { } 
 
 }
 

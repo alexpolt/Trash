@@ -31,6 +31,8 @@ $empty( __COUNTER__ )
 #define $args_size_( ... ) $args_size__( __VA_ARGS__, 3, 2, 1, 0 )
 #define $args_size( ... ) $args_size_( 0, ##__VA_ARGS__ )
 
+#define $args_first( $0, ... ) $0
+
 #define $apply1( $macro, $1 ) $macro( $1 );
 #define $apply2( $macro, $1, $2 ) $apply1( $macro, $1 ) $apply1( $macro, $2 )
 #define $apply3( $macro, $1, $2, $3 ) $apply2( $macro, $1, $2 ) $apply1( $macro, $3 )
