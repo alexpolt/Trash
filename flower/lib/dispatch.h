@@ -32,7 +32,7 @@ namespace lib {
       static void set_entry() {
 
         char dummy[] { 
-          ( dispatch_table[ init_index++ ] = { U0::object_id, UU::object_id, dispatcher< U0, UU > }, '\0' ) ...
+          ( dispatch_table[ init_index++ ] = { U0::interface_id, UU::interface_id, dispatcher< U0, UU > }, '\0' ) ...
         };
 
         (void) dummy;
@@ -42,8 +42,8 @@ namespace lib {
 
     typename T0::type_return operator()( value<object> a, value<object> b ) {
 
-      auto id_a = a->get_object_id();
-      auto id_b = b->get_object_id();
+      auto id_a = a->get_interface_id();
+      auto id_b = b->get_interface_id();
 
       for( auto e : dispatch_table ) {
         if( e.id_a == id_a and e.id_b == id_b ) return e.dispatcher( fn, a, b );

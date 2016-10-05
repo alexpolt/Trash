@@ -83,11 +83,11 @@ int main() {
   value< car > car0 = value<car>::create< lada >();
   auto car_ai0 = car0->get_object( car_ai::tag );
 
-  printf("car steer %s\n", car0->get_counter() == car_ai::left ? "left":"right");
+  printf("car %s steer %s\n", car0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
 
   car_ai0->steer( car_ai::right );
 
-  printf("car steer %s\n", car0->get_counter() == car_ai::left ? "left":"right");
+  printf("car %s steer %s\n", car_ai0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
 
   printf("value<car> size = %d\n", sizeof( car0 ) );
 
@@ -97,11 +97,11 @@ int main() {
   $escape( &v0 );
   $escape( &v1 );
 
-  v0[ 0 ] = value<car>::create< mazda >();
+  v0[ 1 ] = value<car>::create< mazda >();
 
   for( uint i{}; i < car_size; i++ ) v1[ i ] = new lada{};
 
-  v1[ 0 ] = new mazda{};
+  v1[ 1 ] = new mazda{};
 
   measure( v0 );
   measure( v1 );
@@ -114,7 +114,7 @@ void measure( T0& v0 ) {
   auto begin = std::chrono::high_resolution_clock::now();
 
 
-  for( uint i{}; i < 100000; i++ )
+  for( uint i{}; i < 1000000; i++ )
     for( auto& v : v0 ) 
       v->update();
 

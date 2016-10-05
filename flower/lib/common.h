@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdio>
+#include <cstdint>
+
 #include "types.h"
 #include "string.h"
 #include "macros.h"
