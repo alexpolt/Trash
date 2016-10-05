@@ -8,6 +8,9 @@ using iid_t = unsigned const;
 
 namespace lib {
 
+  $t<$n T0> struct type_tag {};
+
+
   struct type_true {
     static const bool value = true;
   };

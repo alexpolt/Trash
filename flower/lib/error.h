@@ -5,15 +5,15 @@ namespace lib {
 
   struct error {
 
-    error( cchar_ptr file, uint line ) { 
+    error( cchar_ptr file, uint line, cchar_ptr func ) { 
 
-        snprintf( file_line, sizeof( file_line ), "%s:%d", file, line );
+        snprintf( file_line, sizeof( file_line ), "%s:%d::%s() -> ", file, line, func );
 
     }
 
-    error( cchar_ptr file, uint line, cchar_ptr msg ) { 
+    error( cchar_ptr file, uint line, cchar_ptr func, cchar_ptr msg ) { 
 
-        snprintf( file_line, sizeof( file_line ), "%s:%d %s", file, line, msg );
+        snprintf( file_line, sizeof( file_line ), "%s:%d::%s() -> %s", file, line, func, msg );
 
     }
 
@@ -27,16 +27,16 @@ namespace lib {
 
   };
 
-  #define $error( $0 ) error{ __FILE__, __LINE__,$0 }
+  #define $error( $0 ) lib::error{ __FILE__, __LINE__, __func__, $0 }
 
 
   struct error_object : error {
 
-    error_object( cchar_ptr file, uint line, iid_t iid, cchar_ptr msg ) :
-      error{ file, line } {
+    error_object( cchar_ptr file, uint line, cchar_ptr func, iid_t iid, cchar_ptr msg ) :
+      error{ file, line, func } {
 
       snprintf( buf, sizeof( buf ), 
-        "%s: object %d not found in object( %s )", error::file_line, iid, msg );
+        "%s: object %d not found in object( %s )", error::what(), iid, msg );
 
     }
 
@@ -50,16 +50,16 @@ namespace lib {
 
   };
 
-  #define $error_object( $0, $1 ) error_object{ __FILE__, __LINE__, $0, $1 }
+  #define $error_object( $0, $1 ) lib::error_object{ __FILE__, __LINE__, __func__, $0, $1 }
 
 
   struct error_dispatch : error {
 
-    error_dispatch( cchar_ptr file, uint line, cchar_ptr msg_a, cchar_ptr msg_b ) : 
-      error{ file, line } {
+    error_dispatch( cchar_ptr file, uint line, cchar_ptr func, cchar_ptr msg_a, cchar_ptr msg_b ) : 
+      error{ file, line, func } {
         
       snprintf( buf, sizeof( buf ), 
-        "%s: dispatch failed for object( %s ) and object( %s )", error::file_line, msg_a, msg_b );
+        "%s: dispatch failed for object( %s ) and object( %s )", error::what(), msg_a, msg_b );
 
     }
 
@@ -73,7 +73,7 @@ namespace lib {
  
   };
 
-  #define $error_dispatch( $0, $1 ) error_dispatch{ __FILE__, __LINE__, $0, $1 }
+  #define $error_dispatch( $0, $1 ) lib::error_dispatch{ __FILE__, __LINE__, __func__, $0, $1 }
 
 
   struct error_input : error {
@@ -82,7 +82,7 @@ namespace lib {
 
   };
 
-  #define $error_input() error_input{ __FILE__, __LINE__, "bad input" }
+  #define $error_input( $0 ) lib::error_input{ __FILE__, __LINE__, __func__, $0 }
 
 
 

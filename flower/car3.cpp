@@ -69,8 +69,24 @@ $t<$n T0> struct car_ai_basic : car_ai {
     return object.angle;
   }
 
+  T0& object;
+};
+
+$t<> struct car_ai_basic<lada> : car_ai {
+
+  $component( car_ai_basic, lada );
+
+  void steer( dir_t dir ) override {
+    throw $error_input( "wrong direction" );
+  }
+
+  uint get_steer() const override {
+    return object.angle;
+  }
+
   lada& object;
 };
+
 
 
 $t<$n T0>
@@ -78,33 +94,41 @@ void measure( T0& v );
 
 int main() {
 
-  const int car_size = 512;
+  try {
 
-  value< car > car0 = value<car>::create< lada >();
-  auto car_ai0 = car0->get_object( car_ai::tag );
+    const int car_size = 512;
 
-  printf("car %s steer %s\n", car0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
+    value< car > car0 = value<car>::create< lada >();
+    auto car_ai0 = car0->get_object( car_ai::tag );
 
-  car_ai0->steer( car_ai::right );
+    printf("car %s steer %s\n", car0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
 
-  printf("car %s steer %s\n", car_ai0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
+    car_ai0->steer( car_ai::right );
 
-  printf("value<car> size = %d\n", sizeof( car0 ) );
+    printf("car %s steer %s\n", car_ai0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
 
-  std::vector< value<car> > v0{ car_size, car0 };
-  std::vector<car*> v1( car_size );
+    printf("value<car> size = %d\n", sizeof( car0 ) );
 
-  $escape( &v0 );
-  $escape( &v1 );
+    std::vector< value<car> > v0{ car_size, car0 };
+    std::vector<car*> v1( car_size );
 
-  v0[ 1 ] = value<car>::create< mazda >();
+    $escape( &v0 );
+    $escape( &v1 );
 
-  for( uint i{}; i < car_size; i++ ) v1[ i ] = new lada{};
+    v0[ 1 ] = value<car>::create< mazda >();
 
-  v1[ 1 ] = new mazda{};
+    for( uint i{}; i < car_size; i++ ) v1[ i ] = new lada{};
 
-  measure( v0 );
-  measure( v1 );
+    v1[ 1 ] = new mazda{};
+
+    measure( v0 );
+    measure( v1 );
+
+  } catch( lib::error& e ) {
+
+    printf( "%s\n", e.what() );
+
+  }
 
 }
 
