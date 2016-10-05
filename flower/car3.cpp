@@ -36,20 +36,20 @@ struct lada : car {
 
   void update() override {
     $clobber();
-    angle++;
+    ++*angle;
   }
 
   uint get_counter() override {
-    return angle;
+    return *angle;
   }
   
-  int angle{};
+  uint* angle = new uint{};
 };
 
 struct mazda : lada {
    void update() override {
      $clobber();
-    angle+=2;
+    *angle+=1;
   }
 };
 
@@ -60,31 +60,16 @@ $t<$n T0> struct car_ai_basic : car_ai {
 
   void steer( dir_t dir ) override {
     if( dir == left ) 
-      object.angle--;
+      --*object.angle;
     else
-      object.angle++;
+      ++*object.angle;
   }
 
   uint get_steer() const override {
-    return object.angle;
+    return *object.angle;
   }
 
   T0& object;
-};
-
-$t<> struct car_ai_basic<lada> : car_ai {
-
-  $component( car_ai_basic, lada );
-
-  void steer( dir_t dir ) override {
-    throw $error_input( "wrong direction" );
-  }
-
-  uint get_steer() const override {
-    return object.angle;
-  }
-
-  lada& object;
 };
 
 
@@ -115,11 +100,11 @@ int main() {
     $escape( &v0 );
     $escape( &v1 );
 
-    v0[ 1 ] = value<car>::create< mazda >();
+    v0[ 0 ] = value<car>::create< lada >();
+    v1[ 0 ] = new mazda{};
 
-    for( uint i{}; i < car_size; i++ ) v1[ i ] = new lada{};
-
-    v1[ 1 ] = new mazda{};
+    for( uint i = 1; i < car_size; i++ ) v0[ i ] = value<car>::create< mazda >();
+    for( uint i = 1; i < car_size; i++ ) v1[ i ] = new lada{};
 
     measure( v0 );
     measure( v1 );
@@ -138,7 +123,7 @@ void measure( T0& v0 ) {
   auto begin = std::chrono::high_resolution_clock::now();
 
 
-  for( uint i{}; i < 1000000; i++ )
+  for( uint i{}; i < 100000; i++ )
     for( auto& v : v0 ) 
       v->update();
 
@@ -147,7 +132,8 @@ void measure( T0& v0 ) {
 
   auto dt = std::chrono::duration_cast< std::chrono::milliseconds >( end - begin ).count();
 
-  printf( "car1 = %d, dt = %ld\n", v0[0]->get_counter(), (long)dt );
+  printf( "car1 = %d %d %d, dt = %ld\n", v0[0]->get_counter(), v0[1]->get_counter(), v0[2]->get_counter(), (long)dt );
+
 }
 
 
