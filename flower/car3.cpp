@@ -56,7 +56,7 @@ struct mazda : lada {
 
 $t<$n T0> struct car_ai_basic : car_ai {
 
-  $component( car_ai_basic, lada );
+  $component( car_ai_basic );
 
   void steer( dir_t dir ) override {
     if( dir == left ) 

@@ -121,11 +121,12 @@ namespace lib {
                           return value< lib::object >::create< $0 >( args... ); \
                         }
 
-  #define $component_args_0( ) T0
-  #define $component_args_1( $0 ) $0
-  #define $component_object_type( ... ) $apply( $paste( $component_args_, $args_size( __VA_ARGS__ ) ), __VA_ARGS__ )
+  #define $ctype( $0, ... ) $0
+  #define $cargs_1( $0 ) T0
+  #define $cargs_2( $0, $1 ) $1
+  #define $cobject_type( ... ) $apply( $paste( $cargs_, $args_size( __VA_ARGS__ ) ), __VA_ARGS__ )
 
-  #define $component( $0, ... ) \
+  #define $component( ... ) \
                         value< lib::object > get_object() override { \
                           return object.get_object(); \
                         } \
@@ -136,9 +137,9 @@ namespace lib {
                           return object.has_object( id ); \
                         } \
                         $t<$n... ZZ> static auto create( ZZ&&... args ) { \
-                          return value< lib::object >::create< $0 >( args... ); \
+                          return value< lib::object >::create< $ctype( __VA_ARGS__ ) >( args... ); \
                         } \
-                        $0( $component_object_type( __VA_ARGS__ ) & object0 ) : object{ object0 } { } 
+                        $ctype( __VA_ARGS__ ) ( $cobject_type( __VA_ARGS__ ) & object0 ) : object{ object0 } { } 
 
 }
 
