@@ -32,11 +32,11 @@ namespace lib {
 
   struct error_object : error {
 
-    error_object( cchar_ptr file, uint line, oid_t oid, cchar_ptr msg ) :
+    error_object( cchar_ptr file, uint line, iid_t iid, cchar_ptr msg ) :
       error{ file, line } {
 
       snprintf( buf, sizeof( buf ), 
-        "%s: object %d not found in object( %s )", error::file_line, oid, msg );
+        "%s: object %d not found in object( %s )", error::file_line, iid, msg );
 
     }
 
