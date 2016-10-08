@@ -13,7 +13,7 @@ namespace lib {
   $T<> struct log_format< int > : type_true { constexpr static cstr format = "%d"; };
 
 
-  $T<$N T0, $N T1> void operator,( T0, T1 ) = delete;
+  $T<$N... TT> log_t operator,( log_t, TT... ) = delete;
 
   log_t operator,( log_t log, endl_t ) { printf( "\n" ); return log; }
 

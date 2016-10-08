@@ -73,7 +73,6 @@ $T<$N T0> struct car_ai_basic : car_ai {
     return *owner.angle;
   }
 
-  T0& owner;
 };
 
 

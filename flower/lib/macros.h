@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstddef>
-
 #define $paste_( $0, $1 ) $0##$1
 #define $paste( $0, $1 ) $paste_( $0, $1 )
 
@@ -20,7 +18,7 @@ $empty( __COUNTER__ )
 
 #define $ (*this)
 
-#define $size( $0 ) ptrdiff_t( sizeof( $0 ) )
+#define $size( $0 ) int( sizeof( $0 ) )
 
 #define $N typename
 #define $T template

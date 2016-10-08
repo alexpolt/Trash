@@ -30,11 +30,14 @@ namespace lib {
     $T<$N... TT>
     auto operator()( TT... args ) { return $->operator()( args... ); }
 
+    $T<$N... TT>
+    auto operator()( TT... args ) const { return $->operator()( args... ); }
+
     $T<$N U0> 
-    explicit operator U0&() { 
-      printf("cast\n");
-      return *( U0* ) data; 
-    }
+    explicit operator U0&() { return *( U0* ) data; }
+
+    $T<$N U0> 
+    explicit operator U0 const&() const { return *( U0* ) data; }
 
 
     T0& operator*() { return ( T0& ) data; }

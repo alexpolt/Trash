@@ -11,6 +11,8 @@ namespace lib {
 
     virtual iid_t get_interface_id() const = 0;
 
+    virtual cstr get_interface_name() const = 0;
+
     virtual oid_t get_object_id() const;
 
     virtual value< object > get_object() const = 0;    
@@ -38,11 +40,13 @@ namespace lib {
   };
 
 
+  inline cstr object::get_interface_name() const { return "object"; }
+
   inline oid_t object::get_object_id() const { return get_interface_id();  }
 
   inline lib::string object::to_string() const {
     char buf[64];
-    snprintf( buf, sizeof( buf ), "0x%#X", (uintptr_t) this );
+    snprintf( buf, sizeof( buf ), "%s(0x%#X)", get_interface_name(), (uintptr_t) this );
     return lib::string{ buf };
   }
 
@@ -115,6 +119,7 @@ namespace lib {
                             using object_type = $0; \
                             constexpr static lib::type_tag< $0 > tag{}; \
                             iid_t get_interface_id() const override { return interface_id; } \
+                            cstr  get_interface_name() const override { return #$0; } \
 
   /*
     Usage in an primary object type:
@@ -167,7 +172,8 @@ namespace lib {
                         /* create factory method */ \
                         $T<$N U0> static auto create( U0&& owner ) { \
                           return value< object >::create< $0 >( owner ); \
-                        }
+                        } \
+                        lib::template_arg_t< $0 >& owner;
 
 }
 

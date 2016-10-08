@@ -12,13 +12,13 @@ struct mazda_i : lib::object {
   virtual ~mazda_i() { }
 };
 
-$t<$n T0> 
+$T<$N T0> 
 struct mazda : mazda_i {
 
   $component( mazda );
 
   void set_model( unsigned model ) override {
-    object.model = model;
+    owner.model = model;
   }
 
   void operator()() override {
@@ -29,7 +29,6 @@ struct mazda : mazda_i {
     printf("%s\n",__func__);
   }
 
-  T0& object;
 
 };
 
@@ -38,16 +37,15 @@ struct bmw_i : lib::object {
   virtual void set_model( unsigned ) = 0;
 };
 
-$t<$n T0> 
+$T<$N T0> 
 struct bmw : bmw_i {
 
   $component( bmw );
 
   void set_model( unsigned model ) override {
-    object.model = model;
+    owner.model = model;
   }
 
-  T0& object;
 
 };
 
@@ -57,7 +55,7 @@ struct info_i : lib::object {
 };
 
 
-$t<$n T0> 
+$T<$N T0> 
 struct info : info_i {
 
   $component( info );
@@ -66,7 +64,6 @@ struct info : info_i {
     printf("Hello car!\n");
   }
 
-  T0& object;
 
 };
 
@@ -96,11 +93,18 @@ struct car : lib::object {
 struct print {
 
   void operator()( value<bmw_i> a, value<info_i> b ) {
+    log, a, endl, b, endl;
     printf("dispatch!\n");
   }
 
-  $t<$n U0, $n U1> 
+  void operator()( value<info_i> a, value<bmw_i> b ) {
+    log, a, endl, b, endl;
+    printf("dispatch!\n");
+  }
+
+  $T<$N U0, $N U1> 
   void operator()( U0 a, U1 b ) {
+    log, a, endl, b, endl;
     printf("no dispatch\n");
   }
 

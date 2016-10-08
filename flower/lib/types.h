@@ -15,6 +15,10 @@ namespace lib {
 
   struct type_false { static const bool value = false; };
 
+  $T<$N...> struct type_first;
+
+  $T<$N T0, $N... TT> struct type_first< T0, TT... > { using type = T0; };
+
   $T<$N T0> T0 declval();
 
   $T<$N...> using void_t = void;
@@ -45,8 +49,11 @@ namespace lib {
   $T<$N>
   struct is_template : type_false { };
 
-  $T<$T1<$N...> class T0, $N... TT>
-  struct is_template< T0< TT... > > : type_true { };
+  $T< $T1<$N...> class T0, $N... TT >
+  struct is_template< T0< TT... > > : type_true { using type = $N type_first< TT... >::type; };
+
+  $T<$N T0>
+  using template_arg_t = $N is_template< T0 >::type;
 
 }
 
