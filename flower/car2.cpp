@@ -39,17 +39,17 @@ struct bmw : car {
 
   $object( bmw, bmw_info );
 
-  bmw( model_t m ) : model{ m } { printf( "create %d\n", m ); }
+  bmw( model_t m ) : _model{ m } { printf( "create %d\n", m ); }
 
   lib::string to_string() const override {
-    return lib::string{"I am car#"} + std::to_string( model );
+    return lib::string{"I am car#"} + std::to_string( _model );
   }
 
   void set_model( model_t m ) override {
-    model = m;
+    _model = m;
   }
 
-  model_t model{};
+  model_t _model{};
 
 };
 
@@ -80,17 +80,17 @@ int main() {
     auto car0 = bmw< bmw_info >::create( 1u );
     value<object> lada0 = lada<>{ 2u }.get_object();
 
-    printf("bmw = %d, size = %d\n", car0->get_interface_id(), sizeof( car0 ) );
+    printf("bmw = %d, size = %d\n", car0->get_interface_id(), $size( car0 ) );
 
     auto car0_info = car0->get_object( car_info::tag );
 
     car0_info->print();
 
-    printf( "car_info0 size = %d, lada0 to_string: %s\n", sizeof( car0_info ), lada0->to_string().data() );
+    printf( "car_info0 size = %d, lada0 to_string: %s\n", $size( car0_info ), lada0->to_string().data() );
 
     value<car> car1 = car0_info->get_object( car::tag );
 
-    printf( "value<car> size = %d, to_string: %s\n", sizeof(car1), car1->to_string().data() );
+    printf( "value<car> size = %d, to_string: %s\n", $size(car1), car1->to_string().data() );
 
     lib::dispatch< print, car > dispatch0;
     dispatch0( car0, lada0 );

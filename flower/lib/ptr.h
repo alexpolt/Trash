@@ -7,25 +7,17 @@ namespace lib {
   $T<$N T0>
   struct raw_ptr {
 
-    raw_ptr( T0* ptr ) : ptr{ ptr } { }
+    raw_ptr( T0* _ptr ) : _ptr{ _ptr } { }
 
-    T0* operator->() {
-      return ptr;
-    }
+    T0* operator->() { return _ptr; }
 
-    T0 const * operator->() const {
-      return ptr;
-    }
+    T0 const * operator->() const { return _ptr; }
 
-    T0& operator*() {
-      return *ptr;
-    }
+    T0& operator*() { return *_ptr; }
 
-    T0 const& operator*() const {
-      return *ptr;
-    }
+    T0 const& operator*() const { return *_ptr; }
 
-    T0* ptr;
+    T0* _ptr;
   };
 
 }

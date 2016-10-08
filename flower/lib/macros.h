@@ -16,7 +16,7 @@ $empty( __COUNTER__ )
 #define $clobber( $0 ) asm volatile( "" ::: "memory" )
 
 
-#define $ (*this)
+#define $this (*this)
 
 #define $size( $0 ) int( sizeof( $0 ) )
 

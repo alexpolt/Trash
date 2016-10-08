@@ -20,7 +20,6 @@ namespace lib {
   };
 
   using range = range_t< int >;
-  using xrange = range_t< intptr_t >;
 
 }
 

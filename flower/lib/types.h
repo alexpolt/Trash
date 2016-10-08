@@ -23,6 +23,8 @@ namespace lib {
 
   $T<$N...> using void_t = void;
 
+  $T<$N T0> struct identity { using type = T0; };
+
   $T<bool N0, $N T1, $N T2>
   struct select { using type = T2; };
 

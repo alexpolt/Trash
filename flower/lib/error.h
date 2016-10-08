@@ -7,23 +7,21 @@ namespace lib {
 
     error( cstr file, uint line, cstr func ) { 
 
-        snprintf( file_line, sizeof( file_line ), "%s:%d::%s() -> ", file, line, func );
+        snprintf( _file_line, $size( _file_line ), "%s:%d::%s() -> ", file, line, func );
 
     }
 
     error( cstr file, uint line, cstr func, cstr msg ) { 
 
-        snprintf( file_line, sizeof( file_line ), "%s:%d::%s() -> %s", file, line, func, msg );
+        snprintf( _file_line, $size( _file_line ), "%s:%d::%s() -> %s", file, line, func, msg );
 
     }
 
     virtual ~error() {}
 
-    virtual char const* what() const {
-      return file_line;
-    }
+    virtual char const* what() const { return _file_line; }
 
-    char file_line[512];
+    char _file_line[512];
 
   };
 
@@ -35,18 +33,14 @@ namespace lib {
     error_object( cstr file, uint line, cstr func, iid_t iid, cstr msg ) :
       error{ file, line, func } {
 
-      snprintf( buf, sizeof( buf ), 
+      snprintf( _buf, $size( _buf ), 
         "%s: object %d not found in object( %s )", error::what(), iid, msg );
 
     }
 
-    cstr what() const override {
+    cstr what() const override { return _buf; }
 
-      return buf;
-
-    }
-
-    char buf[1024];
+    char _buf[1024];
 
   };
 
@@ -58,18 +52,14 @@ namespace lib {
     error_dispatch( cstr file, uint line, cstr func, cstr msg_a, cstr msg_b ) : 
       error{ file, line, func } {
         
-      snprintf( buf, sizeof( buf ), 
+      snprintf( _buf, $size( _buf ), 
         "%s: dispatch failed for object( %s ) and object( %s )", error::what(), msg_a, msg_b );
 
     }
 
-    cstr what() const override {
+    cstr what() const override { return _buf; }
 
-      return buf;
-
-    }
-
-    char buf[1024];
+    char _buf[1024];
  
   };
 

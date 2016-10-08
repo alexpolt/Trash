@@ -18,7 +18,7 @@ struct mazda : mazda_i {
   $component( mazda );
 
   void set_model( unsigned model ) override {
-    owner.model = model;
+    _owner._model = model;
   }
 
   void operator()() override {
@@ -43,7 +43,7 @@ struct bmw : bmw_i {
   $component( bmw );
 
   void set_model( unsigned model ) override {
-    owner.model = model;
+    _owner._model = model;
   }
 
 
@@ -75,17 +75,17 @@ struct car : lib::object {
     printf("%s\n", to_string().data());
   }
 
-  car( unsigned m ) : model{ m } { }
+  car( unsigned m ) : _model{ m } { }
 
   $interface( car );
 
   $object( car, bmw, mazda, info  );
 
   lib::string to_string() const override {
-    return lib::string{"I am car#"} + std::to_string( model );
+    return lib::string{"I am car#"} + std::to_string( _model );
   }
 
-  unsigned model{};
+  unsigned _model{};
 
 };
 

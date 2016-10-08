@@ -36,24 +36,24 @@ struct lada : car {
 
   void update() override {
     $clobber();
-    ++*angle;
+    ++*_angle;
   }
 
   uint get_counter() override {
-    return *angle;
+    return *_angle;
   }
 
   lib::string to_string() const override {
     return "lada";
   }
 
-  uint* angle = new uint{};
+  uint* _angle = new uint{};
 };
 
 struct mazda : lada {
    void update() override {
      $clobber();
-    *angle+=1;
+    *_angle+=1;
   }
 };
 
@@ -64,13 +64,13 @@ $T<$N T0> struct car_ai_basic : car_ai {
 
   void steer( dir_t dir ) override {
     if( dir == left ) 
-      --owner.angle;
+      --_owner._angle;
     else
-      ++owner.angle;
+      ++_owner._angle;
   }
 
   uint get_steer() const override {
-    return *owner.angle;
+    return *_owner._angle;
   }
 
 };
@@ -105,7 +105,7 @@ int main() {
 
     printf("car %s steer %s\n", car_ai0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
 
-    printf("value<car> size = %d\n", sizeof( car0 ) );
+    printf("value<car> size = %d\n", $size( car0 ) );
 
     std::vector< value<car> > v0{ car_size, car0 };
     std::vector<car*> v1( car_size );
@@ -116,8 +116,10 @@ int main() {
     v0[ 0 ] = value<car>::create< mazda >();
     v1[ 0 ] = new mazda{};
 
-    for( uint i = 0; i < car_size; i++ ) v0[ i ] = value<car>::create< lada >();
-    for( uint i = 0; i < car_size; i++ ) v1[ i ] = new lada{};
+    for( auto i : range{ 0, car_size } ) {
+      v0[ i ] = value<car>::create< lada >();
+      v1[ i ] = new lada{};
+    }
 
     measure( v0 );
     measure( v1 );
