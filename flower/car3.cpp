@@ -28,7 +28,7 @@ struct car_ai : object {
 
 };
 
-$t<$n T0> struct car_ai_basic;
+$T<$N T0> struct car_ai_basic;
 
 struct lada : car {
 
@@ -42,7 +42,11 @@ struct lada : car {
   uint get_counter() override {
     return *angle;
   }
-  
+
+  lib::string to_string() const override {
+    return "lada";
+  }
+
   uint* angle = new uint{};
 };
 
@@ -54,37 +58,47 @@ struct mazda : lada {
 };
 
 
-$t<$n T0> struct car_ai_basic : car_ai {
+$T<$N T0> struct car_ai_basic : car_ai {
 
   $component( car_ai_basic );
 
   void steer( dir_t dir ) override {
     if( dir == left ) 
-      --*object.angle;
+      --owner.angle;
     else
-      ++*object.angle;
+      ++owner.angle;
   }
 
   uint get_steer() const override {
-    return *object.angle;
+    return *owner.angle;
   }
 
-  T0& object;
+  T0& owner;
 };
 
 
 
-$t<$n T0>
+$T<$N T0>
 void measure( T0& v );
 
 int main() {
+
+  for( auto i : range{ 0, 5 } ) log, i, " ";
+
+  log, endl;
 
   try {
 
     const int car_size = 512;
 
     value< car > car0 = value<car>::create< lada >();
+    log, "log: ", car0, endl;
+    printf("1\n");
     auto car_ai0 = car0->get_object( car_ai::tag );
+    printf("1\n");
+    //auto car_copy0 = car0->get_copy();
+    printf("1\n");
+    auto car_object0 = car0->get_object();
 
     printf("car %s steer %s\n", car0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
 
@@ -117,13 +131,13 @@ int main() {
 
 }
 
-$t<$n T0>
+$T<$N T0>
 void measure( T0& v0 ) {
 
   auto begin = std::chrono::high_resolution_clock::now();
 
 
-  for( uint i{}; i < 1000000; i++ )
+  for( uint i{}; i < 100000; i++ )
     for( auto& v : v0 ) 
       v->update();
 

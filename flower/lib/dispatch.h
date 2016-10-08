@@ -4,7 +4,7 @@
 
 namespace lib {
 
-  $t<$n T0, $n... TT>
+  $T<$N T0, $N... TT>
   struct dispatch {
 
     T0 fn;
@@ -16,7 +16,7 @@ namespace lib {
 
     struct init_t {
 
-      $t<$n... UU> 
+      $T<$N... UU> 
       static void init() {
 
         char dummy[] { ( set_entry_t< TT >::template set_entry< UU... >(), '\0' )... }; 
@@ -26,9 +26,9 @@ namespace lib {
 
     }; 
 
-    $t<$n U0> struct set_entry_t {
+    $T<$N U0> struct set_entry_t {
 
-      $t<$n... UU> 
+      $T<$N... UU> 
       static void set_entry() {
 
         char dummy[] { 
@@ -52,7 +52,7 @@ namespace lib {
       throw $error_dispatch( a->to_string().data(), b->to_string().data() );
     }
 
-    $t<$n U0, $n U1>
+    $T<$N U0, $N U1>
     static typename T0::type_return dispatcher( T0 fn, value< object > a, value< object > b ) {
 
       return fn( a->get_object( U0::tag ),  b->get_object( U1::tag ) );
@@ -73,9 +73,9 @@ namespace lib {
   };
 
 
-  $t<$n T0, $n... TT> unsigned dispatch< T0, TT... >::init_index;
+  $T<$N T0, $N... TT> unsigned dispatch< T0, TT... >::init_index;
 
-  $t<$n T0, $n... TT> 
+  $T<$N T0, $N... TT> 
     typename dispatch< T0, TT... >::dispatch_data
       dispatch< T0, TT... >::dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
 

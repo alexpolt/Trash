@@ -5,13 +5,13 @@ namespace lib {
 
   struct error {
 
-    error( cchar_ptr file, uint line, cchar_ptr func ) { 
+    error( cstr file, uint line, cstr func ) { 
 
         snprintf( file_line, sizeof( file_line ), "%s:%d::%s() -> ", file, line, func );
 
     }
 
-    error( cchar_ptr file, uint line, cchar_ptr func, cchar_ptr msg ) { 
+    error( cstr file, uint line, cstr func, cstr msg ) { 
 
         snprintf( file_line, sizeof( file_line ), "%s:%d::%s() -> %s", file, line, func, msg );
 
@@ -32,7 +32,7 @@ namespace lib {
 
   struct error_object : error {
 
-    error_object( cchar_ptr file, uint line, cchar_ptr func, iid_t iid, cchar_ptr msg ) :
+    error_object( cstr file, uint line, cstr func, iid_t iid, cstr msg ) :
       error{ file, line, func } {
 
       snprintf( buf, sizeof( buf ), 
@@ -40,7 +40,7 @@ namespace lib {
 
     }
 
-    cchar_ptr what() const override {
+    cstr what() const override {
 
       return buf;
 
@@ -55,7 +55,7 @@ namespace lib {
 
   struct error_dispatch : error {
 
-    error_dispatch( cchar_ptr file, uint line, cchar_ptr func, cchar_ptr msg_a, cchar_ptr msg_b ) : 
+    error_dispatch( cstr file, uint line, cstr func, cstr msg_a, cstr msg_b ) : 
       error{ file, line, func } {
         
       snprintf( buf, sizeof( buf ), 
@@ -63,7 +63,7 @@ namespace lib {
 
     }
 
-    cchar_ptr what() const override {
+    cstr what() const override {
 
       return buf;
 

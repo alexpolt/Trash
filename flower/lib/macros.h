@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #define $paste_( $0, $1 ) $0##$1
 #define $paste( $0, $1 ) $paste_( $0, $1 )
 
@@ -18,10 +20,12 @@ $empty( __COUNTER__ )
 
 #define $ (*this)
 
-#define $n typename
-#define $t template
-#define $t1 template
-#define $t2 template
+#define $size( $0 ) ptrdiff_t( sizeof( $0 ) )
+
+#define $N typename
+#define $T template
+#define $T1 template
+#define $T2 template
 
 #define $static_assert( $0 ) static_assert( ( $0 ), #$0 )
 

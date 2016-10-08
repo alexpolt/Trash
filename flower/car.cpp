@@ -8,6 +8,8 @@
 struct mazda_i : lib::object {
   $interface( mazda_i );
   virtual void set_model( unsigned ) = 0;
+  virtual void operator()() = 0;
+  virtual ~mazda_i() { }
 };
 
 $t<$n T0> 
@@ -17,6 +19,14 @@ struct mazda : mazda_i {
 
   void set_model( unsigned model ) override {
     object.model = model;
+  }
+
+  void operator()() override {
+    printf("%s\n",__func__);
+  }
+
+  ~mazda() {
+    printf("%s\n",__func__);
   }
 
   T0& object;
@@ -64,9 +74,14 @@ struct car : lib::object {
 
   car() { }
 
+  ~car() {
+    printf("%s\n", to_string().data());
+  }
+
   car( unsigned m ) : model{ m } { }
 
   $interface( car );
+
   $object( car, bmw, mazda, info  );
 
   lib::string to_string() const override {
@@ -98,9 +113,13 @@ int main() {
   try {
 
     auto car0 = car::create( 1u );
+
+    car0->get_object( mazda_i::tag )();
+
     printf("bmw = %d\n", car0->get_object( bmw_i::tag )->get_interface_id());
 
     auto car1 = car::create( 2u );
+
     printf("mazda = %d\n", car1->get_object( mazda_i::tag )->get_interface_id());
 
     lib::dispatch< print, bmw_i, info_i, mazda_i > dispatch0;

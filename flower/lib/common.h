@@ -4,16 +4,24 @@
 #include <cstdio>
 #include <cstdint>
 
+#include "ptr.h"
 #include "types.h"
+#include "value.h"
 #include "string.h"
 #include "macros.h"
 #include "error.h"
-#include "value.h"
 #include "object.h"
-
+#include "range.h"
+#include "log.h"
 
 //#include ""
 
 using lib::object;
 using lib::value;
+using lib::raw_ptr;
+using lib::range;
+using lib::move;
+using lib::forward;
+using lib::log;
+using lib::endl;
 

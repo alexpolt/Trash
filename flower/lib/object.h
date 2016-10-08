@@ -9,54 +9,62 @@ namespace lib {
 
     virtual ~object() {}
 
-
     virtual iid_t get_interface_id() const = 0;
 
-    virtual oid_t get_object_id() const {
-      return get_interface_id();
-    }
+    virtual oid_t get_object_id() const;
 
-    virtual lib::string to_string() const {
-      char buf[64];
-      snprintf( buf, sizeof( buf ), "0x%#X", (uintptr_t) this );
-      return lib::string{ buf };
-    }
+    virtual value< object > get_object() const = 0;    
 
+    virtual lib::string to_string() const; 
+
+    // copying
+
+    virtual value< object > get_copy() const;
+
+    $T<$N T0>
+    value< T0 > get_copy() const; 
 
     // working with components
 
-    virtual value<object> get_object() = 0;
-
     virtual bool has_object( iid_t ) const = 0;
+
+    $T<$N T0> 
+    bool has_object( type_tag<T0> ) const;
 
     virtual value< object > get_object( iid_t ) = 0;
 
-    $t<$n T0> 
-    bool has_object( type_tag<T0> ) const {
-      return has_object( T0::interface_id );
-    }
-    
-    $t<$n T0> 
-    value<T0> get_object( type_tag<T0> ) {
-
-      union {
-        value< object > r0;
-        value< T0 > r1;
-      };
-
-      r0 = get_object( T0::interface_id );
-
-      return r1;
-    }
-
+    $T<$N T0> 
+    value< T0 > get_object( type_tag<T0> );
   };
+
+
+  inline oid_t object::get_object_id() const { return get_interface_id();  }
+
+  inline lib::string object::to_string() const {
+    char buf[64];
+    snprintf( buf, sizeof( buf ), "0x%#X", (uintptr_t) this );
+    return lib::string{ buf };
+  }
+
+  inline value< object > object::get_copy() const { return get_object(); };
+
+  $T<$N T0>
+  inline value< T0 > object::get_copy() const { return static_cast< value<T0> >( get_copy( ) ); }
+
+  $T<$N T0> 
+  inline bool object::has_object( type_tag<T0> ) const { return has_object( T0::interface_id ); }
+  
+  $T<$N T0> 
+  inline value< T0 > object::get_object( type_tag<T0> ) { return static_cast< value<T0> >( get_object( T0::interface_id ) ); }
+
+
 
 
   /* Helper template used by a primary object to ask for components. */
 
-  $t<$n T0, $t1< $n > class... TT> struct object_factory {
+  $T<$N T0, $T1< $N > class... TT> struct object_factory {
 
-    using create_f = value< object >(*)( T0& object );
+    using create_f = value< object > (*)( T0& );
 
     static create_f create_list[];
     static iid_t iid_list[];
@@ -71,28 +79,28 @@ namespace lib {
 
     }
 
-    static value< object > get_object( iid_t iid, T0& object ) {
+    static value< object > get_object( iid_t iid, T0& owner ) {
 
       uint counter{};
 
       for( auto i : iid_list ) {
 
         if( iid == i ) 
-          return create_list[ counter ]( object );
+          return create_list[ counter ]( owner );
 
         ++counter;
       }
 
-      throw $error_object( iid, object.to_string().data() );
+      throw $error_object( iid, owner.to_string().data() );
 
     }
 
   };
 
-  $t<$n T0, $t1< $n > class... TT>
+  $T<$N T0, $T1< $N > class... TT>
     iid_t object_factory< T0, TT... >::iid_list[] = { T0::interface_id, TT< T0 >::interface_id... };
     
-  $t<$n T0, $t1< $n > class... TT>
+  $T<$N T0, $T1< $N > class... TT>
     typename object_factory< T0, TT... >::create_f 
       object_factory< T0, TT... >::create_list[] = { T0::create, TT< T0 >::create... };
 
@@ -121,58 +129,45 @@ namespace lib {
                         using object_factory = lib::object_factory< __VA_ARGS__ >; \
                         using object::has_object; \
                         using object::get_object; \
-                         value<object> get_object( iid_t id ) override { \
+                        value<object> get_object( iid_t id ) override { \
                           return object_factory::get_object( id, $ ); \
                         } \
                         bool has_object( iid_t id ) const override { \
                           return object_factory::has_object( id ); \
                         } \
-                        /* getting the primary object */ \
-                        value< lib::object > get_object() override { \
-                          return value< lib::object >::create< $args_first( __VA_ARGS__ ) >( $ ); \
+                        /* getting a copy of the primary object */ \
+                        value< lib::object > get_object() const override { \
+                          return create( $ );\
                         } \
-                        operator value< lib::object >() { \
-                          return get_object(); \
-                        } \
-                        $t<$n Z0> explicit operator value< Z0 >() { \
-                          return get_object( Z0::tag ); \
-                        } \
-                        /* create( ... ): used by object_factory to create objects (copies) */ \
-                        $t<$n... ZZ> static auto create( ZZ&&... args ) { \
-                          return value< lib::object >::create< $args_first( __VA_ARGS__ )  >( args... ); \
+                        /* create factory method */ \
+                        $T<$N... UU> static value< object > create( UU&&... args ) { \
+                          return value< lib::object >::create< $args_first( __VA_ARGS__) >( args... ); \
                         }
-
-  #define $cargs_1( $0 ) T0
-  #define $cargs_2( $0, $1 ) $1
-  #define $cobject_type( ... ) $apply( $paste( $cargs_, $args_size( __VA_ARGS__ ) ), __VA_ARGS__ )
 
   /*
     Usage in a component template (with one type parameter for the object type) class:
-    $component( component_template_name ); or
-    $component( component_specialization_name, object_type );
+    $component( component_template_name );
 
     For example:
-    $component( car_physics ); or
-    $component( car_physics, car_bmw );
+    $component( car_physics );
   */
 
-  #define $component( ... ) \
+  #define $component( $0 ) \
                         /* getting the primary object */ \
-                        value< lib::object > get_object() override { \
-                          return object.get_object(); \
+                        value< lib::object > get_object() const override { \
+                          return owner.get_object(); \
                         } \
                         value<object> get_object( iid_t id ) override { \
-                          return object.get_object( id ); \
+                          return owner.get_object( id ); \
                         } \
                         bool has_object( iid_t id ) const override { \
-                          return object.has_object( id ); \
+                          return owner.has_object( id ); \
                         } \
-                        /* create( ... ): used by object_factory to create objects */ \
-                        $t<$n... ZZ> static auto create( ZZ&&... args ) { \
-                          return value< lib::object >::create< $args_first( __VA_ARGS__ ) >( args... ); \
-                        } \
-                        /* a constructor: component( object_type& ) */\
-                        $args_first( __VA_ARGS__ ) ( $cobject_type( __VA_ARGS__ ) & object0 ) : object{ object0 } { } 
+                        $T<$N U0> $0( U0&& owner ) : owner{ owner } { } \
+                        /* create factory method */ \
+                        $T<$N U0> static auto create( U0&& owner ) { \
+                          return value< object >::create< $0 >( owner ); \
+                        }
 
 }
 
