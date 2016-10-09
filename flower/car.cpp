@@ -122,6 +122,9 @@ int main() {
       printf( "scope destruct\n" );
     };
 
+    void* test[4];
+    log, "test[4] = ", $length( test ), ", sizeof = ", (int)sizeof( test ), endl;
+
     auto car0 = car::create( 1u );
 
     car0->get_object( mazda_i::tag )();

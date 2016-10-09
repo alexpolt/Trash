@@ -15,7 +15,6 @@ $empty( __COUNTER__ )
 #define $escape( $0 ) asm volatile( "" : : "g" ((void*)$0) : "memory" )
 #define $clobber( $0 ) asm volatile( "" ::: "memory" )
 
-
 #define $this (*this)
 
 #define $size( $0 ) int( sizeof( $0 ) )
@@ -24,6 +23,11 @@ $empty( __COUNTER__ )
 #define $T template
 #define $T1 template
 #define $T2 template
+
+$T<$N T0, unsigned N0> 
+auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
+
+#define $length( $0 ) $size( array_length_function( $0 ) )
 
 #define $static_assert( $0 ) static_assert( ( $0 ), #$0 )
 
