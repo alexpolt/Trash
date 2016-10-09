@@ -79,10 +79,12 @@ struct car : lib::object {
 
   $interface( car );
 
-  $object( car, bmw, mazda, info  );
+  $object( car, bmw, mazda  );
 
-  lib::string to_string() const override {
-    return lib::string{"I am car#"} + std::to_string( _model );
+  global::buffer to_string() const override {
+    global::buffer b;
+    snprintf( b.data(), b.size(), "%s%d", "I am car #",  _model );
+    return b;
   }
 
   unsigned _model{};
@@ -115,6 +117,10 @@ struct print {
 int main() {
 
   try {
+
+    $on_return {
+      printf( "scope destruct\n" );
+    };
 
     auto car0 = car::create( 1u );
 

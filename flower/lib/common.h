@@ -15,6 +15,7 @@
 #include "object.h"
 #include "range.h"
 #include "log.h"
+#include "scope-guard.h"
 
 //#include ""
 

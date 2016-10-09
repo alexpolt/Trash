@@ -27,7 +27,7 @@ struct bmw_info : car_info {
     printf("Hello car!\n");
   }
 
-  lib::string to_string() const override {
+  global::buffer to_string() const override {
     return "object info_basic : info";
   }
 
@@ -41,8 +41,10 @@ struct bmw : car {
 
   bmw( model_t m ) : _model{ m } { printf( "create %d\n", m ); }
 
-  lib::string to_string() const override {
-    return lib::string{"I am car#"} + std::to_string( _model );
+  global::buffer to_string() const override {
+    global::buffer b;
+    snprintf( b.data(), b.size(), "%s%d", "I am car #",  _model );
+    return b;
   }
 
   void set_model( model_t m ) override {

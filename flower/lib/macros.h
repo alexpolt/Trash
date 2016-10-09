@@ -27,6 +27,8 @@ $empty( __COUNTER__ )
 
 #define $static_assert( $0 ) static_assert( ( $0 ), #$0 )
 
+#define $var $paste( var, __COUNTER__ )
+
 #define $apply( $0, ... ) $0( __VA_ARGS__ )
 
 #define $args_size__( $0, $1, $2, $3, N, ... ) N
