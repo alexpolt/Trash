@@ -9,7 +9,7 @@ struct car : object {
 
   $interface( car );
 
-  void virtual update() = 0; 
+  void virtual update( int ) = 0; 
 
   uint virtual get_counter() = 0;
 
@@ -34,7 +34,7 @@ struct lada : car {
 
   $object( lada, car_ai_basic );
 
-  void update() override {
+  void update( int ) override {
     $clobber();
     ++*_angle;
   }
@@ -43,7 +43,7 @@ struct lada : car {
     return *_angle;
   }
 
-  lib::string to_string() const override {
+  global::buffer to_string() const override {
     return "lada";
   }
 
@@ -51,7 +51,7 @@ struct lada : car {
 };
 
 struct mazda : lada {
-   void update() override {
+   void update( int ) override {
      $clobber();
     *_angle+=1;
   }
@@ -92,11 +92,8 @@ int main() {
 
     value< car > car0 = value<car>::create< lada >();
     log, "log: ", car0, endl;
-    printf("1\n");
     auto car_ai0 = car0->get_object( car_ai::tag );
-    printf("1\n");
-    //auto car_copy0 = car0->get_copy();
-    printf("1\n");
+    auto car_copy0 = car0->get_copy();
     auto car_object0 = car0->get_object();
 
     printf("car %s steer %s\n", car0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
@@ -137,10 +134,9 @@ void measure( T0& v0 ) {
 
   auto begin = std::chrono::high_resolution_clock::now();
 
-
-  for( uint i{}; i < 100000; i++ )
+  for( auto i : range{ 0, 1000000 } )
     for( auto& v : v0 ) 
-      v->update();
+      v->update( i );
 
 
   auto end = std::chrono::high_resolution_clock::now();

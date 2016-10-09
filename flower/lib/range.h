@@ -5,10 +5,10 @@ namespace lib {
   $T<$N T0> struct range_t {
   
     struct iterator {
-      operator T0&() { return index; }
-      T0 operator *() { return index; }
-      bool operator !=( T0 other ) { return index != other; }
-      T0 index;
+      operator T0&() { return _index; }
+      T0& operator *() { return _index; }
+      bool operator !=( T0 other ) { return _index != other; }
+      T0 _index;
     };
 
     iterator begin() const { return iterator{ _begin }; }

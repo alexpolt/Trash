@@ -17,7 +17,7 @@ namespace lib {
 
     virtual value< object > get_object() const = 0;    
 
-    virtual lib::string to_string() const; 
+    virtual global::buffer to_string() const; 
 
     // copying
 
@@ -44,10 +44,10 @@ namespace lib {
 
   inline oid_t object::get_object_id() const { return get_interface_id();  }
 
-  inline lib::string object::to_string() const {
-    char buf[64];
-    snprintf( buf, $size( buf ), "%s(0x%#X)", get_interface_name(), (uintptr_t) this );
-    return lib::string{ buf };
+  inline global::buffer object::to_string() const {
+    global::buffer buf;
+    snprintf( buf.data(), buf.size(), "%s(0x%#X)", get_interface_name(), (uintptr_t) this );
+    return buf;
   }
 
   inline value< object > object::get_copy() const { return get_object(); };

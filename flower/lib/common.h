@@ -3,13 +3,15 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstdint>
+#include <cstring>
 
 #include "ptr.h"
 #include "types.h"
+#include "error.h"
+#include "global.h"
 #include "value.h"
 #include "string.h"
 #include "macros.h"
-#include "error.h"
 #include "object.h"
 #include "range.h"
 #include "log.h"
