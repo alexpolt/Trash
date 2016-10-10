@@ -20,6 +20,17 @@ namespace lib {
     T0* _ptr;
   };
 
+
+  $T<$N T0>
+  struct out {
+
+    explicit out( T0& value ) : _value{ value } { }
+
+    
+
+    T0& _value;
+  };
+
 }
 
 
