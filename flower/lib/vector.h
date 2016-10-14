@@ -44,17 +44,9 @@ namespace lib {
     vector& operator=( vector&& other ) = delete;
 
     ~vector() {
-
-      clear();
-      free();
+      log::info, "~vector: data = ", _data, ", capacity = ", _capacity, ", index = ", _index, log::endl;
+      clear(); free();
     }
-
-    void create( size_type index, value_type value ) { 
-
-      new( &_data[ index ] ) value_type{ move( value ) }; 
-    }
-
-    void destroy( value_type& object ) { object.~value_type(); }
 
     void free() {
 
@@ -66,7 +58,7 @@ namespace lib {
 
     void clear() {
 
-      for( auto i : range{ 0, size() } ) destroy( _data[ i ] );
+      for( auto i : range{ 0, size() } ) _data[ i ].~value_type();
 
       _index = 0;
     }
@@ -103,7 +95,7 @@ namespace lib {
         reserve( size_new );
       } 
 
-      create( _index++, move( value ) );
+      new( &_data[ _index++ ] ) value_type{ move( value ) }; 
     }
 
     value_type pop_back() {
@@ -116,6 +108,8 @@ namespace lib {
 
       return move( value );
     }
+
+    iterator erase( size_type index ) { return erase( begin() + index ); }
 
     iterator erase( iterator it ) {
 
@@ -188,12 +182,12 @@ namespace lib {
     auto& operator[]( ssize_t index ) { return _object[ _index + index ]; }
     auto& operator*() { return _object[ _index ]; }
 
-    auto operator==( iterator const& other ) { return _index == other._index; }
-    auto operator!=( iterator const& other ) { return _index != other._index; }
-    auto operator<( iterator const& other ) { return _index < other._index; }
+    auto operator==( iterator other ) { return _index == other._index; }
+    auto operator!=( iterator other ) { return _index != other._index; }
+    auto operator<( iterator other ) { return _index < other._index; }
 
-    auto operator+( iterator const& other ) { return iterator{ _object, _index + other._index }; }
-    auto operator-( iterator const& other ) { return iterator{ _object, _index - other._index }; }
+    auto operator+( ssize_t index ) { return iterator{ _object, _index + index }; }
+    auto operator-( ssize_t index ) { return iterator{ _object, _index - index }; }
 
     auto operator+=( ssize_t index ) { return iterator{ _object, _index + index }; }
     auto operator-=( ssize_t index ) { return iterator{ _object, _index - index }; }

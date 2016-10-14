@@ -28,7 +28,11 @@ For actions the order is conventional.
 
 ###Handling Errors
 
+###Exceptions and Assertions
+
 ###Object Creation
+
+###Unsigned or Signed
 
 ###Memory Management
 

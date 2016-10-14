@@ -31,6 +31,7 @@ namespace log {
   $T<> struct log_format< bool > { constexpr static cstr format = "%d"; };
   $T<> struct log_format< uint > { constexpr static cstr format = "%d"; };
   $T<> struct log_format< int > { constexpr static cstr format = "%d"; };
+  $T<> struct log_format< void* > { constexpr static cstr format = "%p"; };
   $T<> struct log_format< float > { constexpr static cstr format = "%.5f"; };
   $T<> struct log_format< double > { constexpr static cstr format = "%.5f"; };
 
@@ -49,6 +50,14 @@ namespace log {
   auto operator,( log_t< T0 > log, cstr const& data ) { 
 
     log.print( log_format< cstr >::format, data );
+
+    return log;
+  }
+
+  $T<$N T0, $N T1>
+  auto operator,( log_t< T0 > log, T1* data ) { 
+
+    log.print( log_format< void* >::format, (void*) data );
 
     return log;
   }
