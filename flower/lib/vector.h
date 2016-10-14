@@ -43,10 +43,7 @@ namespace lib {
     vector& operator=( vector const& other ) = delete;
     vector& operator=( vector&& other ) = delete;
 
-    ~vector() {
-      log::info, "~vector: data = ", _data, ", capacity = ", _capacity, ", index = ", _index, log::endl;
-      clear(); free();
-    }
+    ~vector() { clear(); free(); }
 
     void free() {
 

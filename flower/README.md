@@ -40,6 +40,8 @@ For actions the order is conventional.
 
 ###Primitive Types
 
+###Move Semantics
+
 ###Object Sharing
 
 ##License
