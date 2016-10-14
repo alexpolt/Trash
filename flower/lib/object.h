@@ -45,8 +45,8 @@ namespace lib {
   inline oid_t object::get_object_id() const { return get_interface_id();  }
 
   inline global::buffer object::to_string() const {
-    global::buffer buf;
-    snprintf( buf.data(), buf.size(), "%s(0x%#X)", get_interface_name(), (uintptr_t) this );
+    auto& buf = global::buffer<>;
+    snprintf( buf.data(), buf.size(), "%s(%#X)", get_interface_name(), (uintptr_t) this );
     return buf;
   }
 
@@ -115,7 +115,7 @@ namespace lib {
     $interface( car );
   */
 
-  #define $interface( $0 )  static iid_t interface_id = __COUNTER__; \
+  #define $interface( $0 )  constexpr static iid_t interface_id = __COUNTER__; \
                             using object_type = $0; \
                             constexpr static lib::type_tag< $0 > tag{}; \
                             iid_t get_interface_id() const override { return interface_id; } \

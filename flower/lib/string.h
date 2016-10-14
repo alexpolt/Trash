@@ -1,13 +1,11 @@
 #pragma once
 
-#include <string>
-
+#include "vector"
 
 namespace lib {
 
-  using std::string;
-  using std::to_string;
-  using std::stol;
-  using std::stoi;
+  $T<$N T0, size_t N0>
+  using string = vector< T0, N0, true >;
+
 }
 

@@ -1,33 +1,36 @@
 #pragma once
 
-#include "common.h"
+#include "macros.h"
+#include "types.h"
+#include "oid-generator.h"
+#include "vector.h"
+
 
 namespace global {
 
-  $T<$N T0, int N0>
-  struct buffer_t : lib::nocopy {
+  using namespace lib;
 
-    buffer_t() { }
+  $T<$N T0, int N0 = 0>
+  struct objects {
 
-    buffer_t( cstr str )  { 
+    thread_local static T0 array[ N0 ];
 
-      if( strlen( str ) >= N0 ) 
-        throw $error_input( "string length exceeds global::buffer size" );
+    thread_local static oid_generator_t oid_source;
 
-      strcpy( _data, str );
-    }
-
-    T0* data() { return _data; }
-    
-    int size() { return N0; }
-
-    thread_local static T0 _data[ N0 ];
   };
 
   $T<$N T0, int N0>
-  thread_local T0 buffer_t< T0, N0 >::_data[ N0 ]; 
+  thread_local T0 objects< T0, N0 >::array[ N0 ];
 
-  using buffer = buffer_t< char, 256 >;
+  $T<$N T0, int N0>
+  thread_local oid_generator_t objects< T0, N0 >::oid_source;
+
+
+  oid_t get_object_id() { return objects< oid_t >::oid_source.next(); }
+
+
+  $T<$N T0 = char, lib::size_t N0 = 1024 >
+  vector< T0, N0 > buffer{ objects< T0, N0 >::array };
 
 }
 

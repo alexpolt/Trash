@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdio>
-#include "macros.h"
 #include <new>
+#include "macros.h"
 
 
 namespace lib {

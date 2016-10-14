@@ -1,17 +1,25 @@
 #pragma once
 
+#include <cstdio>
+#include "macros.h"
+#include "types.h"
 
 namespace lib {
 
   struct error {
 
-    error( cstr file, uint line, cstr func ) { 
+    error( cstr msg ) {
+
+        snprintf( _file_line, $size( _file_line ), "%s", msg );
+    }
+
+    error( cstr file, int line, cstr func ) { 
 
         snprintf( _file_line, $size( _file_line ), "%s:%d::%s() -> ", file, line, func );
 
     }
 
-    error( cstr file, uint line, cstr func, cstr msg ) { 
+    error( cstr file, int line, cstr func, cstr msg ) { 
 
         snprintf( _file_line, $size( _file_line ), "%s:%d::%s() -> %s", file, line, func, msg );
 
@@ -30,7 +38,7 @@ namespace lib {
 
   struct error_object : error {
 
-    error_object( cstr file, uint line, cstr func, iid_t iid, cstr msg ) :
+    error_object( cstr file, int line, cstr func, iid_t iid, cstr msg ) :
       error{ file, line, func } {
 
       snprintf( _buf, $size( _buf ), 
@@ -49,7 +57,7 @@ namespace lib {
 
   struct error_dispatch : error {
 
-    error_dispatch( cstr file, uint line, cstr func, cstr msg_a, cstr msg_b ) : 
+    error_dispatch( cstr file, int line, cstr func, cstr msg_a, cstr msg_b ) : 
       error{ file, line, func } {
         
       snprintf( _buf, $size( _buf ), 

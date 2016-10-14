@@ -3,8 +3,8 @@
 #define $paste_( $0, $1 ) $0##$1
 #define $paste( $0, $1 ) $paste_( $0, $1 )
 
-#define $string_( $0 ) #$0
-#define $string( $0 ) $string( $0 )
+#define $str_( $0 ) #$0
+#define $str( $0 ) $str_( $0 )
 
 #define $empty_( ... )
 #define $empty( ... ) $empty_( __VA_ARGS__ )
@@ -29,7 +29,7 @@ auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
 
 #define $length( $0 ) $size( array_length_function( $0 ) )
 
-#define $static_assert( $0 ) static_assert( ( $0 ), #$0 )
+#define $static_assert( $0 ) static_assert( $0, #$0 )
 
 #define $var $paste( var, __COUNTER__ )
 

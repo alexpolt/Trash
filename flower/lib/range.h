@@ -1,5 +1,8 @@
 #pragma once
 
+#include "macros.h"
+#include "types.h"
+
 namespace lib {
 
   $T<$N T0> struct range_t {
@@ -7,7 +10,6 @@ namespace lib {
     struct iterator {
       operator T0&() { return _index; }
       T0& operator *() { return _index; }
-      bool operator !=( T0 other ) { return _index != other; }
       T0 _index;
     };
 
@@ -19,7 +21,7 @@ namespace lib {
 
   };
 
-  using range = range_t< int >;
+  using range = range_t< ssize_t >;
 
 }
 
