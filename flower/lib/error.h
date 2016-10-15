@@ -27,7 +27,7 @@ namespace lib {
 
     virtual ~error() {}
 
-    virtual char const* what() const { return _file_line; }
+    virtual cstr what() const { return _file_line; }
 
     char _file_line[512];
 

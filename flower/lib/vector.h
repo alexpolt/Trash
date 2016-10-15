@@ -1,24 +1,25 @@
 #pragma once
 
+#include <new>
+
 #include "assert.h"
 #include "macros.h"
 #include "types.h"
+#include "ptr.h"
 #include "range.h"
 #include "memory.h"
-#include "log.h"
-#include "new.h"
 
 namespace lib {
 
 
-  $T<$N T0>
+  TP<TN T0>
   struct vector_iterator;
 
-  $T<$N T0, ssize_t N0>
+  TP<TN T0, ssize_t N0>
   auto make_vector( T0 ( &data)[ N0 ] ); 
 
 
-  $T<$N T0, ssize_t N0 = 0, bool is_string = false>
+  TP<TN T0, ssize_t N0 = 0, bool is_string = false>
   struct vector {
 
     using value_type = T0;
@@ -34,7 +35,15 @@ namespace lib {
 
     vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
 
+    TP<TN... UU>
+    vector( UU&&... args ) {
+
+      char dummy[] { ( $this << forward<UU>( args ), '\0' )... };
+      (void) dummy;
+    }
+
     vector( vector const& other ) = delete;
+
     vector( vector&& other ) : 
       _data{ move( other._data ) }, 
       _capacity{ move( other._capacity ) },
@@ -49,7 +58,8 @@ namespace lib {
 
       if( N0 > 0 ) return;
 
-      lib::free( _data, capacity() );  
+      $free( $out( _data ), $size( value_type ) * capacity() );
+
       _capacity = 0; 
     }
 
@@ -64,7 +74,7 @@ namespace lib {
 
       $assert( size_new > capacity(), "new size must be bigger than current capacity" );
 
-      value_type* data_new = alloc< value_type >( $size( value_type ) * size_new );
+      value_type* data_new = (value_type*) $alloc( $size( value_type ) * size_new );
 
       for( auto i : range{ 0, size() } ) data_new[ i ] = move( _data[ i ] );
 
@@ -106,6 +116,9 @@ namespace lib {
       return move( value );
     }
 
+    TP<TN... UU>
+    void emplace_back( UU... args ) { push_back( value_type{ forward< UU >( args )... } ); }
+
     iterator erase( size_type index ) { return erase( begin() + index ); }
 
     iterator erase( iterator it ) {
@@ -127,23 +140,44 @@ namespace lib {
     auto const& operator[]( ssize_t index ) const { $assert( index < size(), "out of bounds" ); return _data[ index ]; }
 
 
-    $T<$N U0, ssize_t M0 >
-    auto& operator<<( U0 const ( &other)[ M0 ] ) { for( auto& e : other ) push_back( value_type{ e } ); return $this; }
+    TP<TN U0, TN = TN enable_if< $size( U0 ) and is_string >::type >
+    auto& operator<<( U0 const* other ) { 
 
-    $T<$N U0, $N = decltype( &U0::begin ), $N = decltype( &U0::end )  >
-    auto& operator<<( U0 const& other ) { for( auto& e : other ) push_back( value_type{ e } ); return $this; }
+      if( size() > 0 ) pop_back();
 
-    $T<$N U0, $N = decltype( &U0::begin ), $N = decltype( &U0::end )  >
-    auto& operator<<( U0&& other ) { for( auto& e : other ) push_back( value_type{ move( e ) } ); return $this; }
+      while( *other ) push_back( *other++ );
 
-    $T<$N U0>
-    auto& operator<<( U0 other ) { push_back( value_type{ move( other ) } ); return $this; }
+      push_back( '\0' );
+
+      return $this;
+    }
+
+    TP<TN U0, TN = enable_if_t< is_string and !is_container< U0 >::value >>
+    auto& operator<<( U0&& other ) { 
+      
+      if( size() > 0 ) pop_back(); 
+      
+      emplace_back( move( other ) );
+
+      push_back( '\0' );
+
+      return $this; 
+    }
+
+    TP<TN U0, TN = enable_if_t< !is_string and !is_container< U0 >::value >, TN>
+    auto& operator<<( U0&& other ) { emplace_back( move( other ) ); return $this; }
+
+    TP<TN U0, TN = enable_if_t< !is_string and is_container< U0 >::value >>
+    auto& operator<<( U0 const& other ) { for( auto& e : other ) emplace_back( e ); return $this; }
+
+    TP<TN U0, TN = enable_if_t< !is_string and ! is_ref_t< U0 > and is_container< U0 >::value >, bool = true>
+    auto& operator<<( U0&& other ) { for( auto& e : other ) emplace_back( move( e ) ); return $this; }
 
 
-    $T<$N U0>
+    TP<TN U0>
     void append( U0 const* data, ssize_t size ) { 
       
-      for( auto i : range{ 0, size } ) push_back( value_type{ data[ i ] } );
+      for( auto i : range{ 0, size } ) emplace_back( data[ i ] );
     }
 
 
@@ -168,7 +202,7 @@ namespace lib {
   };
 
 
-  $T<$N T0>
+  TP<TN T0>
   struct vector_iterator {
 
     using iterator = vector_iterator;
@@ -201,7 +235,7 @@ namespace lib {
     ssize_t _index;
   };
 
-  $T<$N T0, ssize_t N0>
+  TP<TN T0, ssize_t N0>
   auto make_vector( T0 ( &data)[ N0 ] ) { return vector< T0, N0 >{ data };  }
 
 

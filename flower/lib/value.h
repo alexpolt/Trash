@@ -7,13 +7,13 @@
 
 namespace lib {
   
-  $T<$N T0> struct value {
-  //$T<$N T0, owner> struct value {
+  TP<TN T0> struct value {
+  //TP<TN T0, owner> struct value {
 
     ~value() { $this->~T0(); }
 
 
-    $T<$N U0, $N... TT> 
+    TP<TN U0, TN... TT> 
     static auto create( TT&&... args ) {
 
       $static_assert( $size( U0 ) <= $size( _data ) );
@@ -27,16 +27,16 @@ namespace lib {
 
     }
 
-    $T<$N... TT>
+    TP<TN... TT>
     auto operator()( TT... args ) { return $this->operator()( args... ); }
 
-    $T<$N... TT>
+    TP<TN... TT>
     auto operator()( TT... args ) const { return $this->operator()( args... ); }
 
-    $T<$N U0> 
+    TP<TN U0> 
     explicit operator U0&() { return *( U0* ) _data; }
 
-    $T<$N U0> 
+    TP<TN U0> 
     explicit operator U0 const&() const { return *( U0* ) _data; }
 
 

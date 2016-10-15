@@ -1,34 +1,33 @@
 #pragma once
 
-#include "common.h"
+#include "macros.h"
+#include "types.h"
 
 namespace lib {
 
-  $T<$N T0, $N... TT>
+  TP<TN T0, TN... TT>
   struct dispatch {
 
     T0 fn;
 
     dispatch() {
-      init_t::template init< TT... >();
+
+      init< TT... >();
     }
 
 
-    struct init_t {
+    TP<TN... UU> 
+    static void init() {
 
-      $T<$N... UU> 
-      static void init() {
+      char dummy[] { ( set_entry_t< TT >::TP set_entry< UU... >(), '\0' )... }; 
 
-        char dummy[] { ( set_entry_t< TT >::template set_entry< UU... >(), '\0' )... }; 
+      (void) dummy;
+    };
+    
 
-        (void) dummy;
-      };
+    TP<TN U0> struct set_entry_t {
 
-    }; 
-
-    $T<$N U0> struct set_entry_t {
-
-      $T<$N... UU> 
+      TP<TN... UU> 
       static void set_entry() {
 
         char dummy[] { 
@@ -45,14 +44,16 @@ namespace lib {
       auto id_a = a->get_interface_id();
       auto id_b = b->get_interface_id();
 
-      for( auto e : dispatch_table ) {
-        if( e.id_a == id_a and e.id_b == id_b ) return e.dispatcher( fn, a, b );
-      }
+      for( auto e : dispatch_table )
+
+        if( e.id_a == id_a and e.id_b == id_b ) 
+          
+          return e.dispatcher( fn, a, b );
 
       throw $error_dispatch( a->to_string().data(), b->to_string().data() );
     }
 
-    $T<$N U0, $N U1>
+    TP<TN U0, TN U1>
     static typename T0::type_return dispatcher( T0 fn, value< object > a, value< object > b ) {
 
       return fn( a->get_object( U0::tag ),  b->get_object( U1::tag ) );
@@ -62,20 +63,20 @@ namespace lib {
     using dispatch_f = typename T0::type_return (*)( T0 fn, value<object> a, value<object> b );
 
     struct dispatch_data {
-      unsigned id_a;
-      unsigned id_b;
+      iid_t id_a;
+      iid_t id_b;
       dispatch_f dispatcher;
     };
  
     static dispatch_data dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
-    static unsigned init_index;
+    static ssize_t init_index;
 
   };
 
 
-  $T<$N T0, $N... TT> unsigned dispatch< T0, TT... >::init_index;
+  TP<TN T0, TN... TT> unsigned dispatch< T0, TT... >::init_index;
 
-  $T<$N T0, $N... TT> 
+  TP<TN T0, TN... TT> 
     typename dispatch< T0, TT... >::dispatch_data
       dispatch< T0, TT... >::dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
 

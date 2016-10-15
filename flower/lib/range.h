@@ -5,7 +5,7 @@
 
 namespace lib {
 
-  $T<$N T0> struct range_t {
+  TP<TN T0> struct range_t {
   
     struct iterator {
       operator T0&() { return _index; }
