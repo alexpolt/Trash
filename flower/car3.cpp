@@ -28,11 +28,11 @@ struct car_ai : object {
 
 };
 
-$T<$N T0> struct car_ai_basic;
+TP<TN T0> struct car_ai_basic;
 
 struct lada : car {
 
-  $object( lada, car_ai_basic );
+  $object( lada, car_ai_basic< lada > );
 
   void update( int ) override {
     $clobber();
@@ -43,7 +43,7 @@ struct lada : car {
     return *_angle;
   }
 
-  global::buffer to_string() const override {
+  string to_string() const override {
     return "lada";
   }
 
@@ -58,7 +58,7 @@ struct mazda : lada {
 };
 
 
-$T<$N T0> struct car_ai_basic : car_ai {
+TP<TN T0> struct car_ai_basic : car_ai {
 
   $component( car_ai_basic );
 
@@ -77,21 +77,19 @@ $T<$N T0> struct car_ai_basic : car_ai {
 
 
 
-$T<$N T0>
+TP<TN T0>
 void measure( T0& v );
 
 int main() {
-
-  for( auto i : range{ 0, 5 } ) log, i, " ";
-
-  log, endl;
 
   try {
 
     const int car_size = 512;
 
     value< car > car0 = value<car>::create< lada >();
-    log, "log: ", car0, endl;
+
+    info, "log: ", car0, endl;
+
     auto car_ai0 = car0->get_object( car_ai::tag );
     auto car_copy0 = car0->get_copy();
     auto car_object0 = car0->get_object();
@@ -129,7 +127,7 @@ int main() {
 
 }
 
-$T<$N T0>
+TP<TN T0>
 void measure( T0& v0 ) {
 
   auto begin = std::chrono::high_resolution_clock::now();

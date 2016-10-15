@@ -108,7 +108,7 @@ namespace lib {
   TP<> struct is_primitive< long long > : type_true { };
 
 
-  TP<TN T0> 
+  TP<TN T0, TN = enable_if_t< is_ref_t< T0 > >> 
   TN no_ref< T0 >::type&& move( T0&& value ) { 
 
     return static_cast< TN no_ref< T0 >::type && > ( value ); 
@@ -120,7 +120,7 @@ namespace lib {
     auto value_orig = value; value = T0{}; return value_orig; 
   }
 
-   TP<TN T0> 
+  TP<TN T0> 
   T0* move( T0*& ptr ) { 
     
     auto ptr_orig = ptr; ptr = nullptr; return ptr_orig; 

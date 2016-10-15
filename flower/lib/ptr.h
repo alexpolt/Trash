@@ -3,7 +3,6 @@
 #include "macros.h"
 #include "types.h"
 
-#include <cstdio>
 
 namespace lib {
 
@@ -88,7 +87,7 @@ namespace lib {
   };
 
   TP<TN T0>
-  out<T0> make_out( T0& value ) { return out< T0 >{ value }; }
+  out< T0 > make_out( T0& value ) { return out< T0 >{ value }; }
 
   #define $out( $0 ) make_out( $0 )
 

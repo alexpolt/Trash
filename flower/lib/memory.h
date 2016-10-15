@@ -25,7 +25,7 @@ namespace lib {
 
     auto alloc( ssize_t size, cstr file_line ) {
 
-      get_stats().alloc.add( size, std::memory_order_relaxed );
+      get_stats().alloc.add( size );
 
       log::memory, file_line, " alloc(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
 
@@ -40,7 +40,7 @@ namespace lib {
     TP<TN T0>
     void free( out< T0* > ptr, ssize_t size, cstr file_line ) { 
       
-      get_stats().alloc.sub( size, std::memory_order_relaxed );
+      get_stats().alloc.sub( size );
 
       log::memory, file_line, " free(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
 

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "common.h"
+#include "macros.h"
+#include "types.h"
+#include "string.h"
 
 namespace lib {
 
@@ -46,7 +48,7 @@ namespace lib {
 
   inline string object::to_string() const {
     string s{ 64 };
-    snprintf( s.data(), s.size(), "%s(%#X)", get_interface_name(), (uintptr_t) this );
+    snprintf( s.data(), s.capacity(), "%s(%#X)", get_interface_name(), (uintptr_t) this );
     return s;
   }
 
@@ -95,7 +97,7 @@ namespace lib {
         ++counter;
       }
 
-      throw error_object( iid, owner.to_string().data() );
+      throw $error_object( iid, owner.to_string().data() );
 
     }
 
@@ -115,11 +117,11 @@ namespace lib {
     interface( car );
   */
 
-  #define interface( $0 )  constexpr static iid_t interface_id = __COUNTER__; \
+  #define $interface( $0 )  constexpr static lib::iid_t interface_id = __COUNTER__; \
                             using object_type = $0; \
                             constexpr static lib::type_tag< $0 > tag{}; \
-                            iid_t get_interface_id() const override { return interface_id; } \
-                            cstr  get_interface_name() const override { return #$0; } \
+                            lib::iid_t get_interface_id() const override { return interface_id; } \
+                            cstr  get_interface_name() const override { return #$0; } 
 
   /*
     Usage in an primary object type:
@@ -129,15 +131,15 @@ namespace lib {
     object( car, car_physics, car_ai );
   */
 
-  #define object( ... ) \
+  #define $object( ... ) \
                         /* methods to create components instantiated with the object type */ \
                         using object_factory = lib::object_factory< __VA_ARGS__ >; \
                         using object::has_object; \
                         using object::get_object; \
-                        value<object> get_object( iid_t id ) override { \
+                        value<object> get_object( lib::iid_t id ) override { \
                           return object_factory::get_object( id, $this ); \
                         } \
-                        bool has_object( iid_t id ) const override { \
+                        bool has_object( lib::iid_t id ) const override { \
                           return object_factory::has_object( id ); \
                         } \
                         /* getting a copy of the primary object */ \
@@ -146,7 +148,7 @@ namespace lib {
                         } \
                         /* create factory method */ \
                         TP<TN... UU> static value< object > create( UU&&... args ) { \
-                          return value< lib::object >::create< args_first( __VA_ARGS__) >( args... ); \
+                          return value< lib::object >::create< $args_first( __VA_ARGS__) >( args... ); \
                         }
 
   /*
@@ -157,15 +159,15 @@ namespace lib {
     component( car_physics );
   */
 
-  #define component( $0 ) \
+  #define $component( $0 ) \
                         /* getting the primary object */ \
                         value< lib::object > get_object() const override { \
                           return _owner.get_object(); \
                         } \
-                        value<object> get_object( iid_t id ) override { \
+                        value<object> get_object( lib::iid_t id ) override { \
                           return _owner.get_object( id ); \
                         } \
-                        bool has_object( iid_t id ) const override { \
+                        bool has_object( lib::iid_t id ) const override { \
                           return _owner.has_object( id ); \
                         } \
                         TP<TN U0> $0( U0&& owner ) : _owner{ owner } { } \
