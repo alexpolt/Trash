@@ -27,7 +27,7 @@ namespace log {
   log_t< printer_t > info;
   log_t< printer_t > error;
   log_t< ignore_t > debug;
-  log_t< ignore_t > memory;
+  log_t< printer_t > memory;
   endl_t endl;
 
 
@@ -38,6 +38,8 @@ namespace log {
   TP<> struct log_format< char* > { constexpr static cstr format = "%s"; };
   TP<> struct log_format< bool > { constexpr static cstr format = "%d"; };
   TP<> struct log_format< uint > { constexpr static cstr format = "%d"; };
+  TP<> struct log_format< long long > { constexpr static cstr format = "%lld"; };
+  TP<> struct log_format< long > { constexpr static cstr format = "%ld"; };
   TP<> struct log_format< int > { constexpr static cstr format = "%d"; };
   TP<> struct log_format< void* > { constexpr static cstr format = "%p"; };
   TP<> struct log_format< float > { constexpr static cstr format = "%.5f"; };

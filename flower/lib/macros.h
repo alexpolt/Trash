@@ -19,12 +19,12 @@ $empty( __COUNTER__ )
 
 #define $size( $0 ) int( sizeof( $0 ) )
 
-#define $N typename
-#define $T template
-#define $T1 template
-#define $T2 template
+#define TN typename
+#define TP template
+#define TP1 template
+#define TP2 template
 
-$T<$N T0, unsigned N0> 
+TP<TN T0, unsigned N0> 
 auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
 
 #define $length( $0 ) $size( array_length_function( $0 ) )

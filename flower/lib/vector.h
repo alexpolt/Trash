@@ -35,22 +35,30 @@ namespace lib {
 
     vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
 
-    TP<TN... UU>
-    vector( UU&&... args ) {
-
-      char dummy[] { ( $this << forward<UU>( args ), '\0' )... };
-      (void) dummy;
-    }
-
-    vector( vector const& other ) = delete;
+    vector( vector const& other ) { for( auto& e : other ) emplace_back( e ); }
 
     vector( vector&& other ) : 
       _data{ move( other._data ) }, 
       _capacity{ move( other._capacity ) },
       _index{ move( other._index ) } { }
 
-    vector& operator=( vector const& other ) = delete;
-    vector& operator=( vector&& other ) = delete;
+    TP<TN... UU>
+    vector( UU&&... args ) { char dummy[] { ( $this << forward< UU >( args ), '\0' )... }; (void) dummy; }
+
+    TP<TN U0, ssize_t M0>
+    vector( U0 ( &args)[ M0 ] ) { $this << args; }
+
+    vector& operator=( vector const& other ) { clear(); $this << other; return $this; }
+    vector& operator=( vector&& other ) { clear(); $this << move( other ); return $this; }
+
+    TP<TN U0>
+    vector& operator=( vector< U0 >&& other ) { clear(); $this << move( other ); return $this; }
+
+    TP<TN U0>
+    vector& operator=( vector< U0 > const& other ) { clear(); $this << other; return $this; }
+
+    TP<TN U0, ssize_t M0>
+    vector& operator=( U0 ( &args)[ M0 ] ) { clear(); $this << args; return $this; }
 
     ~vector() { clear(); free(); }
 
@@ -117,7 +125,7 @@ namespace lib {
     }
 
     TP<TN... UU>
-    void emplace_back( UU... args ) { push_back( value_type{ forward< UU >( args )... } ); }
+    void emplace_back( UU&&... args ) { push_back( value_type{ forward< UU >( args )... } ); }
 
     iterator erase( size_type index ) { return erase( begin() + index ); }
 
@@ -140,7 +148,7 @@ namespace lib {
     auto const& operator[]( ssize_t index ) const { $assert( index < size(), "out of bounds" ); return _data[ index ]; }
 
 
-    TP<TN U0, TN = TN enable_if< $size( U0 ) and is_string >::type >
+    TP<TN U0, TN = TN enable_if< is_string and $size( U0 ) >::type >
     auto& operator<<( U0 const* other ) { 
 
       if( size() > 0 ) pop_back();
@@ -152,8 +160,8 @@ namespace lib {
       return $this;
     }
 
-    TP<TN U0, TN = enable_if_t< is_string and !is_container< U0 >::value >>
-    auto& operator<<( U0&& other ) { 
+    TP<TN U0, TN = enable_if_t< is_string and !is_ptr_t< U0 > >>
+    auto& operator<<( U0 other ) { 
       
       if( size() > 0 ) pop_back(); 
       
@@ -164,14 +172,41 @@ namespace lib {
       return $this; 
     }
 
-    TP<TN U0, TN = enable_if_t< !is_string and !is_container< U0 >::value >, TN>
-    auto& operator<<( U0&& other ) { emplace_back( move( other ) ); return $this; }
+    TP<TN U0, TN = enable_if_t< is_string and $size( U0 ) >, TN = void>
+    auto& operator<<( vector< U0, 0, true > const& other ) { 
+
+      $this << other.data();
+
+      return $this; 
+    }
+
+    TP<TN U0, TN = enable_if_t< !is_string and !is_container< U0 >::value >, TN = void>
+    auto& operator<<( U0 other ) { emplace_back( move( other ) ); return $this; }
 
     TP<TN U0, TN = enable_if_t< !is_string and is_container< U0 >::value >>
-    auto& operator<<( U0 const& other ) { for( auto& e : other ) emplace_back( e ); return $this; }
+    auto& operator<<( U0&& other ) { 
 
-    TP<TN U0, TN = enable_if_t< !is_string and ! is_ref_t< U0 > and is_container< U0 >::value >, bool = true>
-    auto& operator<<( U0&& other ) { for( auto& e : other ) emplace_back( move( e ) ); return $this; }
+      if( is_ref_t< U0 > )
+        for( auto& e : other ) emplace_back( e );
+      else
+        for( auto& e : other ) emplace_back( move( e ) );
+
+      return $this; 
+    }
+
+    TP<TN U0, ssize_t M0, TN = enable_if_t< !is_string and sizeof( U0 ) >>
+    auto& operator<<( U0 ( &other)[ M0 ] ) { for( auto& e : other ) emplace_back( e ); return $this; }
+
+    TP<TN U0, TN = enable_if_t< !is_string and $size( U0 ) >>
+    auto& operator<<( vector< U0 >&& other ) { 
+
+      for( auto& e : other ) emplace_back( move( e ) ); 
+
+      other._index = 0;
+
+      return $this; 
+    }
+
 
 
     TP<TN U0>
@@ -207,7 +242,14 @@ namespace lib {
 
     using iterator = vector_iterator;
 
-    auto operator=( iterator other ) { _index = other._index; return $this; }
+    auto operator=( iterator other ) { 
+      
+      $assert( &_object == &other._object, "iterators from different objects" );
+
+      _index = other._index; 
+
+      return $this; 
+    }
 
     auto operator->() { return &_object[ _index ]; }
     auto& operator[]( ssize_t index ) { return _object[ _index + index ]; }

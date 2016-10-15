@@ -115,11 +115,11 @@ namespace lib {
     interface( car );
   */
 
-  #define interface( 0 )  constexpr static iid_t interface_id = __COUNTER__; \
-                            using object_type = 0; \
-                            constexpr static lib::type_tag< 0 > tag{}; \
+  #define interface( $0 )  constexpr static iid_t interface_id = __COUNTER__; \
+                            using object_type = $0; \
+                            constexpr static lib::type_tag< $0 > tag{}; \
                             iid_t get_interface_id() const override { return interface_id; } \
-                            cstr  get_interface_name() const override { return #0; } \
+                            cstr  get_interface_name() const override { return #$0; } \
 
   /*
     Usage in an primary object type:
@@ -157,7 +157,7 @@ namespace lib {
     component( car_physics );
   */
 
-  #define component( 0 ) \
+  #define component( $0 ) \
                         /* getting the primary object */ \
                         value< lib::object > get_object() const override { \
                           return _owner.get_object(); \
@@ -168,12 +168,12 @@ namespace lib {
                         bool has_object( iid_t id ) const override { \
                           return _owner.has_object( id ); \
                         } \
-                        TP<TN U0> 0( U0&& owner ) : _owner{ owner } { } \
+                        TP<TN U0> $0( U0&& owner ) : _owner{ owner } { } \
                         /* create factory method */ \
                         TP<TN U0> static auto create( U0&& owner ) { \
-                          return value< object >::create< 0 >( owner ); \
+                          return value< object >::create< $0 >( owner ); \
                         } \
-                        lib::template_arg_t< 0 >& _owner;
+                        lib::template_arg_t< $0 >& _owner;
 
 }
 

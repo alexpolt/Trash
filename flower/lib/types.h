@@ -74,8 +74,15 @@ namespace lib {
 
   TP<TN T0> struct is_ref : type_false { };
   TP<TN T0> struct is_ref< T0& > : type_true { };
+  TP<TN T0> struct is_ref< T0&& > : type_true { };
   TP<TN T0> 
-  bool is_ref_t = is_ref< T0 >::value;
+  constexpr bool is_ref_t = is_ref< T0 >::value;
+
+  TP<TN T0> struct is_ptr : type_false { };
+  TP<TN T0> struct is_ptr< T0* > : type_true { };
+  TP<TN T0> 
+  constexpr bool is_ptr_t = is_ptr< T0 >::value;
+
 
 
   TP<TN T0> struct no_ref { using type = T0; };

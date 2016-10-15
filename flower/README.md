@@ -16,6 +16,8 @@ For actions the order is conventional.
 
 ###Namespaces
 
+###Spaces, Tabs, Empty Lines
+
 ###Headers
 
 ###Macros
