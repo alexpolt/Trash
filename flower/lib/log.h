@@ -27,7 +27,7 @@ namespace log {
   log_t< printer_t > info;
   log_t< printer_t > error;
   log_t< ignore_t > debug;
-  log_t< printer_t > memory;
+  log_t< ignore_t > memory;
   endl_t endl;
 
 
