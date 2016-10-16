@@ -47,6 +47,8 @@ namespace lib {
     TP<TN... UU>
     explicit vector( UU&&... args ) { char dummy[] { ( $this << forward< UU >( args ), '\0' )... }; (void) dummy; }
 
+    vector( cstr other ) { $this << other; }
+
     TP<TN U0, ssize_t M0>
     vector( U0 ( &args)[ M0 ] ) { $this << args; }
 
