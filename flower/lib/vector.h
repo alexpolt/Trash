@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <new>
 
 #include "assert.h"
@@ -8,6 +9,7 @@
 #include "ptr.h"
 #include "range.h"
 #include "memory.h"
+#include "algo.h"
 
 namespace lib {
 
@@ -31,13 +33,26 @@ namespace lib {
     using iterator = vector_iterator< vector >;
     using const_iterator = vector_iterator< vector const >;
 
+    TP<TN U0>
+    struct is_vector;
+
+    TP<TN U0>
+    static constexpr bool is_vector_v = is_vector< U0 >::value;
+
+
     vector( ) { if( N0 > 0 ) reserve( N0 ); }
 
     explicit vector( ssize_t size ) { reserve( size ); }
 
     explicit vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
 
-    vector( vector const& other ) { reserve( other.size() ); for( auto& e : other ) push_back( e ); }
+    vector( vector const& other ) { 
+
+      if( other.size() > 0 ) { 
+
+        $this << other;
+      }
+    }
 
     vector( vector&& other ) : 
       _data{ move( other._data ) }, 
@@ -52,14 +67,18 @@ namespace lib {
     TP<TN U0, ssize_t M0>
     vector( U0 ( &args)[ M0 ] ) { $this << args; }
 
-    vector& operator=( vector const& other ) { clear(); $this << other; return $this; }
-    vector& operator=( vector&& other ) { clear(); $this << move( other ); return $this; }
+//    vector& operator=( vector const& other ) { clear(); $this << other; return $this; }
+//    vector& operator=( vector&& other ) { clear(); $this << move( other ); return $this; }
 
-    TP<TN U0, ssize_t M0, bool is_str>
-    vector& operator=( vector< U0, M0, is_str >&& other ) { clear(); $this << move( other ); return $this; }
+    TP<TN U0>
+    vector& operator=( U0&& other ) { clear(); $this << forward< U0 >( other ); return $this; }
 
-    TP<TN U0, ssize_t M0, bool is_str>
-    vector& operator=( vector< U0, M0, is_str > const& other ) { clear(); $this << other; return $this; }
+//
+//    TP<TN U0, ssize_t M0, bool is_str>
+//    vector& operator=( vector< U0, M0, is_str >&& other ) { clear(); $this << move( other ); return $this; }
+//
+//    TP<TN U0, ssize_t M0, bool is_str>
+//    vector& operator=( vector< U0, M0, is_str > const& other ) { clear(); $this << other; return $this; }
 
     TP<TN U0, ssize_t M0>
     vector& operator=( U0 ( &args)[ M0 ] ) { clear(); $this << args; return $this; }
@@ -82,11 +101,19 @@ namespace lib {
       _index = 0;
     }
 
-    void reserve( ssize_t size_new ) {
+    void reserve( ssize_t size_new = 0 ) {
 
       if( N0 > 0 ) return;
+
+      size_new = max( 4, size_new );
+
+      if( size_new <= available() ) return;
+
+      auto size_calc = capacity() < ( 1 << 22 ) ? capacity() * 4 : capacity() * 7 / 4;
+
+      size_new = max( size_new, size_calc );
       
-      $assert( size_new > capacity(), "new size must be bigger than current capacity" );
+      size_new = size_new + ( size_new & 0x1 );
 
       value_type* data_new = (value_type*) $alloc( this, value_size * size_new );
 
@@ -108,13 +135,11 @@ namespace lib {
 
     void push_back( value_type value ) {
 
-      if( capacity() - size() == 0 ) {
+      if( available() == 0 ) {
 
         $assert( N0 == 0, "statically sized vector exceeded" );
 
-        auto size_new = size() ? size() * 7 / 4 : 8;
-
-        reserve( size_new );
+        reserve();
       } 
 
       new( &_data[ _index++ ] ) value_type{ move( value ) }; 
@@ -167,7 +192,7 @@ namespace lib {
       return $this;
     }
 
-    TP<TN U0, TN = enable_if_t< is_string and !is_ptr_t< U0 > >>
+    TP<TN U0, TN = enable_if_t< is_string and !is_ptr_v< U0 > >>
     auto& operator<<( U0 other ) { 
       
       if( size() > 0 ) pop_back(); 
@@ -179,44 +204,117 @@ namespace lib {
       return $this; 
     }
 
-    TP<TN U0, TN = enable_if_t< is_string and $size( U0 ) >, TN = void>
-    auto& operator<<( vector< U0, 0, true > const& other ) { 
-
-      $this << other.data();
-
-      return $this; 
-    }
+//    TP<TN U0, TN = enable_if_t< is_string and $size( U0 ) >, TN = void>
+//    auto& operator<<( vector< U0, 0, true > const& other ) { 
+//
+//      reserve( other.size() );
+//
+//      $this << other.data();
+//
+//      return $this; 
+//    }
 
     auto& operator<<( value_type other ) { push_back( move( other ) ); return $this; }
 
     TP<TN U0, TN = enable_if_t< !is_string and !is_container< U0 >::value >, TN = void>
     auto& operator<<( U0 other ) { push_back( move( other ) ); return $this; }
 
-    TP<TN U0, TN = enable_if_t< !is_string and is_container< U0 >::value >>
-    auto& operator<<( U0&& other ) { 
+    TP<TN U0, TN = enable_if_t< !is_string and !is_vector< no_cref_t< U0 > >::value>, TN = void>
+    auto& operator<<( U0&& other_ ) { 
+      
+      auto &other = const_cast< no_cref_t< U0 >& >( other_ );
 
-      if( is_ref_t< U0 > ) 
-        for( auto& e : other ) push_back( e );
+      for( auto& e : other ) {
 
-      else
-        for( auto& e : other ) push_back( move( e ) );
+        if( !is_const_v< no_ref_t< U0 > > and !is_ref_v< U0 > )
+
+          push_back( move( e ) );
+        else
+          
+          push_back( e );
+
+      }
+
+      return $this;
+    }
+
+    TP< TN U0, 
+        TN = enable_if_t< !is_string and is_vector< no_cref_t< U0 > >::value and
+                          ( ! is_primitive_v< typename no_cref_t< U0 >::value_type >  or 
+                              ( is_primitive_v< typename no_cref_t< U0 >::value_type >  and 
+                              value_size != no_cref_t< U0 >::value_size )
+                           ) >>
+
+    auto& operator<<( U0&& other_ ) { 
+
+      auto &other = const_cast< no_cref_t< U0 >& >( other_ );
+
+      ssize_t size = other.size();
+
+      reserve( size );
+
+      constexpr bool can_move = !is_const_v< no_ref_t< U0 > > and !is_ref_v< U0 >;
+
+      if( size >= 4 ) 
+        for( auto i : range{ 0, size/4 } ) {
+
+          auto index = i * 4;
+
+          if( can_move ) { 
+
+            push_back( move( other[ index + 0 ] ) ); 
+            push_back( move( other[ index + 1 ] ) ); 
+            push_back( move( other[ index + 2 ] ) ); 
+            push_back( move( other[ index + 3 ] ) ); 
+            
+          } else {
+
+            push_back( other[ index + 0 ] ); 
+            push_back( other[ index + 1 ] ); 
+            push_back( other[ index + 2 ] ); 
+            push_back( other[ index + 3 ] ); 
+
+          }
+      } 
+
+      auto rest = size % 4;
+
+      for( auto index : range{ size - rest, size } ) 
+
+        if( can_move ) 
+
+            push_back( move( other[ index ] ) ); 
+        else
+            push_back( other[ index ] ); 
+
+      if( !is_const_v< no_ref_t< U0 > > and is_vector_v< U0 > and is_ref_v< U0 > ) other._index = 0;
 
       return $this; 
     }
+
+    TP<TN U0, ssize_t M0, bool is_str, TN = enable_if_t< is_primitive_v< U0 > and $size( U0 ) == value_size>>
+    auto& operator<<( vector< U0, M0, is_str > const& other ) { 
+
+      auto size_other = other.size();
+
+      reserve( size_other );
+      
+      auto index = size(), null_char = 0;
+
+      if( is_str and size() > 0 ) null_char = 1;
+
+      void *to = &data()[ index - null_char ], *from = other.data();
+
+      memcpy( to, from, size_other * value_size );
+
+      _index += size_other - null_char;
+
+      return $this;
+    }
+
 
     TP<TN U0, ssize_t M0, TN = enable_if_t< !is_string and sizeof( U0 ) >>
     auto& operator<<( U0 ( &other)[ M0 ] ) { for( auto& e : other ) push_back( e ); return $this; }
-
-    TP<TN U0, TN = enable_if_t< !is_string and $size( U0 ) >>
-    auto& operator<<( vector< U0 >&& other ) { 
-
-      for( auto& e : other ) push_back( move( e ) ); 
-
-      other._index = 0;
-
-      return $this; 
-    }
-
 
 
     TP<TN U0>
@@ -238,6 +336,7 @@ namespace lib {
     auto data() const { return _data; }
     auto size() const { return _index; }
     auto capacity() const { return _capacity; }
+    auto available() const { return capacity() - size(); }
     bool empty() const { return size() == 0; }
 
 
@@ -245,6 +344,16 @@ namespace lib {
     size_type _capacity{};
     size_type _index{};
   };
+
+
+  TP<TN T0, ssize_t N0, bool is_string>
+  TP<TN U0>
+  struct vector< T0, N0, is_string >::is_vector : type_false { };
+
+  TP<TN T0, ssize_t N0, bool is_string>
+  TP<TN U0, ssize_t M0, bool is_str>
+  struct vector< T0, N0, is_string >::is_vector< vector< U0, M0, is_str > > : type_true { };
+
 
 
   TP<TN T0>

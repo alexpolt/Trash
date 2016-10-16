@@ -60,7 +60,7 @@ namespace log {
 
   TP<log_type T0, TN... TT> log_t< T0 > operator,( log_t< T0 >, TT... ) = delete;
   
-  TP<log_type T0, TN T1, TN = enable_if_t< is_container< T1 >::value >>
+  TP<log_type T0, TN T1, TN = enable_if_t< is_container_v< T1 > >>
   auto operator,( log_t< T0 > logger, T1 const& data ) { 
 
     for( auto& e : data ) logger, e, ", ";

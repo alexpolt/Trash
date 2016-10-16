@@ -7,11 +7,11 @@
 
 namespace lib {
   
-  TP<TN T0> struct value {
-  //TP<TN T0, owner> struct value {
+  TP<TN T0, bool owner = true> 
+  struct value : select_t< owner, empty_base, empty_base > {
+  //struct value : select_t< owner, nocopy, empty_base > {
 
-    ~value() { $this->~T0(); }
-
+    ~value() { if( owner ) $this->~T0(); }
 
     TP<TN U0, TN... TT> 
     static auto create( TT&&... args ) {
@@ -54,4 +54,5 @@ namespace lib {
 
 
 }
+
 

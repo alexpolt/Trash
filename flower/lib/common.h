@@ -6,6 +6,7 @@
 #include "error.h"
 #include "global.h"
 #include "value.h"
+#include "algo.h"
 #include "string.h"
 #include "to-string.h"
 #include "object.h"
