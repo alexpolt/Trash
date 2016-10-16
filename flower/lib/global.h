@@ -2,7 +2,6 @@
 
 #include "macros.h"
 #include "types.h"
-#include "vector.h"
 
 
 namespace global {

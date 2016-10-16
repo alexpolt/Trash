@@ -31,7 +31,7 @@ namespace lib {
       static void set_entry() {
 
         char dummy[] { 
-          ( dispatch_table[ init_index++ ] = { U0::interface_id, UU::interface_id, dispatcher< U0, UU > }, '\0' ) ...
+          ( _dispatch_table[ _init_index++ ] = { U0::interface_id, UU::interface_id, dispatcher< U0, UU > }, '\0' ) ...
         };
 
         (void) dummy;
@@ -44,7 +44,7 @@ namespace lib {
       auto id_a = a->get_interface_id();
       auto id_b = b->get_interface_id();
 
-      for( auto e : dispatch_table )
+      for( auto e : _dispatch_table )
 
         if( e.id_a == id_a and e.id_b == id_b ) 
           
@@ -68,17 +68,17 @@ namespace lib {
       dispatch_f dispatcher;
     };
  
-    static dispatch_data dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
-    static ssize_t init_index;
+    static dispatch_data _dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
+    static ssize_t _init_index;
 
   };
 
 
-  TP<TN T0, TN... TT> unsigned dispatch< T0, TT... >::init_index;
+  TP<TN T0, TN... TT> ssize_t dispatch< T0, TT... >::_init_index;
 
   TP<TN T0, TN... TT> 
     typename dispatch< T0, TT... >::dispatch_data
-      dispatch< T0, TT... >::dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
+      dispatch< T0, TT... >::_dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
 
  
 

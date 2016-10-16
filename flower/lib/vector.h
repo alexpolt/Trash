@@ -22,6 +22,8 @@ namespace lib {
   TP<TN T0, ssize_t N0 = 0, bool is_string = false>
   struct vector {
 
+    static const ssize_t value_size = $size( T0 );
+
     using value_type = T0;
     using size_type = ssize_t;
     using pointer = T0*;
@@ -31,11 +33,11 @@ namespace lib {
 
     vector( ) { if( N0 > 0 ) reserve( N0 ); }
 
-    vector( ssize_t size ) { reserve( size ); }
+    explicit vector( ssize_t size ) { reserve( size ); }
 
-    vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
+    explicit vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
 
-    vector( vector const& other ) { for( auto& e : other ) emplace_back( e ); }
+    vector( vector const& other ) { reserve( other.size() ); for( auto& e : other ) push_back( e ); }
 
     vector( vector&& other ) : 
       _data{ move( other._data ) }, 
@@ -43,7 +45,7 @@ namespace lib {
       _index{ move( other._index ) } { }
 
     TP<TN... UU>
-    vector( UU&&... args ) { char dummy[] { ( $this << forward< UU >( args ), '\0' )... }; (void) dummy; }
+    explicit vector( UU&&... args ) { char dummy[] { ( $this << forward< UU >( args ), '\0' )... }; (void) dummy; }
 
     TP<TN U0, ssize_t M0>
     vector( U0 ( &args)[ M0 ] ) { $this << args; }
@@ -51,11 +53,11 @@ namespace lib {
     vector& operator=( vector const& other ) { clear(); $this << other; return $this; }
     vector& operator=( vector&& other ) { clear(); $this << move( other ); return $this; }
 
-    TP<TN U0>
-    vector& operator=( vector< U0 >&& other ) { clear(); $this << move( other ); return $this; }
+    TP<TN U0, ssize_t M0, bool is_str>
+    vector& operator=( vector< U0, M0, is_str >&& other ) { clear(); $this << move( other ); return $this; }
 
-    TP<TN U0>
-    vector& operator=( vector< U0 > const& other ) { clear(); $this << other; return $this; }
+    TP<TN U0, ssize_t M0, bool is_str>
+    vector& operator=( vector< U0, M0, is_str > const& other ) { clear(); $this << other; return $this; }
 
     TP<TN U0, ssize_t M0>
     vector& operator=( U0 ( &args)[ M0 ] ) { clear(); $this << args; return $this; }
@@ -66,7 +68,7 @@ namespace lib {
 
       if( N0 > 0 ) return;
 
-      $free( $out( _data ), $size( value_type ) * capacity() );
+      $free( this, $out( _data ), value_size * capacity() );
 
       _capacity = 0; 
     }
@@ -80,11 +82,14 @@ namespace lib {
 
     void reserve( ssize_t size_new ) {
 
+      if( N0 > 0 ) return;
+      
       $assert( size_new > capacity(), "new size must be bigger than current capacity" );
 
-      value_type* data_new = (value_type*) $alloc( $size( value_type ) * size_new );
+      value_type* data_new = (value_type*) $alloc( this, value_size * size_new );
 
-      for( auto i : range{ 0, size() } ) data_new[ i ] = move( _data[ i ] );
+      for( auto i : range{ 0, size() } ) 
+        new( &data_new[ i ] ) value_type{ move( _data[ i ] ) };
 
       free();
 
@@ -165,7 +170,7 @@ namespace lib {
       
       if( size() > 0 ) pop_back(); 
       
-      emplace_back( move( other ) );
+      push_back( move( other ) );
 
       push_back( '\0' );
 
@@ -180,27 +185,30 @@ namespace lib {
       return $this; 
     }
 
+    auto& operator<<( value_type other ) { push_back( move( other ) ); return $this; }
+
     TP<TN U0, TN = enable_if_t< !is_string and !is_container< U0 >::value >, TN = void>
-    auto& operator<<( U0 other ) { emplace_back( move( other ) ); return $this; }
+    auto& operator<<( U0 other ) { push_back( move( other ) ); return $this; }
 
     TP<TN U0, TN = enable_if_t< !is_string and is_container< U0 >::value >>
     auto& operator<<( U0&& other ) { 
 
-      if( is_ref_t< U0 > )
-        for( auto& e : other ) emplace_back( e );
+      if( is_ref_t< U0 > ) 
+        for( auto& e : other ) push_back( e );
+
       else
-        for( auto& e : other ) emplace_back( move( e ) );
+        for( auto& e : other ) push_back( move( e ) );
 
       return $this; 
     }
 
     TP<TN U0, ssize_t M0, TN = enable_if_t< !is_string and sizeof( U0 ) >>
-    auto& operator<<( U0 ( &other)[ M0 ] ) { for( auto& e : other ) emplace_back( e ); return $this; }
+    auto& operator<<( U0 ( &other)[ M0 ] ) { for( auto& e : other ) push_back( e ); return $this; }
 
     TP<TN U0, TN = enable_if_t< !is_string and $size( U0 ) >>
     auto& operator<<( vector< U0 >&& other ) { 
 
-      for( auto& e : other ) emplace_back( move( e ) ); 
+      for( auto& e : other ) push_back( move( e ) ); 
 
       other._index = 0;
 
@@ -212,7 +220,7 @@ namespace lib {
     TP<TN U0>
     void append( U0 const* data, ssize_t size ) { 
       
-      for( auto i : range{ 0, size } ) emplace_back( data[ i ] );
+      for( auto i : range{ 0, size } ) push_back( data[ i ] );
     }
 
 

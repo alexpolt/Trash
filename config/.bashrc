@@ -11,8 +11,10 @@ alias v='vim -p'
 alias p='pwd'
 alias make='make -r'
 
+export dir0=/P/MyProgTests/3D
 export dir1=/P/MyProgTests/git
 export dir2=/P/MyProgTests/VisualC/Tests/glut/win/
-cd $dir1 
+
+cd $dir1
 
 

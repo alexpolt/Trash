@@ -7,6 +7,7 @@
 #include "global.h"
 #include "value.h"
 #include "string.h"
+#include "to-string.h"
 #include "object.h"
 #include "range.h"
 #include "log.h"
@@ -18,7 +19,7 @@
 using lib::object;
 using lib::value;
 using lib::raw_ptr;
-using lib::own_ptr; 
+using lib::owner; 
 using lib::make_out;
 using lib::range;
 using lib::move;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdio>
+
 #include "macros.h"
 #include "types.h"
 
@@ -15,6 +17,8 @@ namespace lib {
     TP<TN U0>
     raw_ptr( raw_ptr< U0 >&& other ) : _ptr { move( other._ptr ) } { }
 
+    T0* get() { return _ptr; }
+    
     T0* operator->() { return _ptr; }
 
     T0 const * operator->() const { return _ptr; }
@@ -29,32 +33,34 @@ namespace lib {
 
 
   TP<TN T0>
-  struct own_ptr : nocopy {
+  struct owner : nocopy {
 
-    own_ptr() = default;
+    owner() : _ptr{} { }
 
-    explicit own_ptr( T0* ptr ) : _ptr{ ptr } { }
+    explicit owner( T0* ptr ) : _ptr{ ptr } { }
 
-    own_ptr( own_ptr&& other ) : _ptr { move( other._ptr ) } { }
+    owner( owner&& other ) : _ptr { move( other._ptr ) } { }
 
     TP<TN U0>
-    own_ptr( own_ptr< U0 >&& other ) : _ptr { move( other._ptr ) } { }
+    owner( owner< U0 >&& other ) : _ptr { move( other._ptr ) } { }
 
-    own_ptr& operator=( own_ptr&& other ) {
+    owner& operator=( owner&& other ) {
       destroy();
-      _ptr = move_ptr( other._ptr );
+      _ptr = move( other._ptr );
       return $this;
     }
 
-    own_ptr& operator=( T0* ptr ) {
+    owner& operator=( T0* ptr ) {
       destroy();
       _ptr = ptr;
       return $this;
     }
 
-    ~own_ptr() { destroy(); }
+    ~owner() { destroy(); }
 
     void destroy() { delete _ptr; }
+
+    T0* get() { return _ptr; }
 
     T0* operator->() { return _ptr; }
 
@@ -64,13 +70,13 @@ namespace lib {
 
     T0 const& operator*() const { return *_ptr; }
 
-    T0* _ptr{};
+    T0* _ptr;
 
   };
 
   TP<TN T0>
-  struct own_ptr< T0[] > {
-    static_assert( $size( T0 ) == 0, "don't use own_ptr for arrays, use a vector" );
+  struct owner< T0[] > {
+    static_assert( $size( T0 ) == 0, "don't use owner for arrays, use a vector" );
   };
 
 
