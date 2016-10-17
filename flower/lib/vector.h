@@ -67,18 +67,8 @@ namespace lib {
     TP<TN U0, ssize_t M0>
     vector( U0 ( &args)[ M0 ] ) { $this << args; }
 
-//    vector& operator=( vector const& other ) { clear(); $this << other; return $this; }
-//    vector& operator=( vector&& other ) { clear(); $this << move( other ); return $this; }
-
     TP<TN U0>
     vector& operator=( U0&& other ) { clear(); $this << forward< U0 >( other ); return $this; }
-
-//
-//    TP<TN U0, ssize_t M0, bool is_str>
-//    vector& operator=( vector< U0, M0, is_str >&& other ) { clear(); $this << move( other ); return $this; }
-//
-//    TP<TN U0, ssize_t M0, bool is_str>
-//    vector& operator=( vector< U0, M0, is_str > const& other ) { clear(); $this << other; return $this; }
 
     TP<TN U0, ssize_t M0>
     vector& operator=( U0 ( &args)[ M0 ] ) { clear(); $this << args; return $this; }
@@ -113,7 +103,7 @@ namespace lib {
 
       size_new = max( size_new, size_calc );
       
-      size_new = size_new + ( size_new & 0x1 );
+      size_new = ( size_new + 3 ) & ~0b11;
 
       value_type* data_new = (value_type*) $alloc( this, value_size * size_new );
 
@@ -203,16 +193,6 @@ namespace lib {
 
       return $this; 
     }
-
-//    TP<TN U0, TN = enable_if_t< is_string and $size( U0 ) >, TN = void>
-//    auto& operator<<( vector< U0, 0, true > const& other ) { 
-//
-//      reserve( other.size() );
-//
-//      $this << other.data();
-//
-//      return $this; 
-//    }
 
     auto& operator<<( value_type other ) { push_back( move( other ) ); return $this; }
 

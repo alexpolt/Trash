@@ -14,20 +14,36 @@ namespace lib {
 
     struct error_memory : error { using error::error; };
 
+    struct block_t { ssize_t size; void* data; };
+
     struct stats_t {
 
       lib::atomic< ssize_t > alloc;
 
+      block_t cache;
+
     };
 
-    inline stats_t& get_stats() { static stats_t stats; return stats; }
+    inline stats_t& get_stats() { static stats_t stats{}; return stats; }
 
+    TP<TN T0>
+    inline void free( void* object, out< T0* > ptr, ssize_t size, cstr file_line );
 
-    inline auto alloc( void* object, ssize_t size, cstr file_line ) {
+    inline void* alloc( void* object, ssize_t size, cstr file_line ) {
 
-      get_stats().alloc.add( size );
+      auto& stats = get_stats();
+
+      stats.alloc.add( size );
 
       log::memory, object, " alloc(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
+
+      if( stats.cache.size == size and stats.cache.data ) 
+
+          return move( stats.cache.data );
+
+      if( stats.cache.data )
+
+        free( nullptr, $out( stats.cache.data ), stats.cache.size, __FILE__ );
 
       auto ptr = ::malloc( size );
 
@@ -40,7 +56,15 @@ namespace lib {
     TP<TN T0>
     inline void free( void* object, out< T0* > ptr, ssize_t size, cstr file_line ) { 
       
-      get_stats().alloc.sub( size );
+      auto& stats = get_stats();
+
+      stats.alloc.sub( size );
+
+      if( stats.cache.data == nullptr ) {
+        stats.cache.data = *ptr;
+        stats.cache.size = size;
+        return;
+      }
 
       log::memory, object, " free(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
 
