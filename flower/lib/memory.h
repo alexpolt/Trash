@@ -20,7 +20,9 @@ namespace lib {
 
       lib::atomic< ssize_t > alloc;
 
-      block_t cache;
+      block_t cache[4];
+
+      uint cache_index;
 
     };
 
@@ -37,13 +39,12 @@ namespace lib {
 
       log::memory, object, " alloc(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
 
-      if( stats.cache.size == size and stats.cache.data ) 
+      for( auto& e : stats.cache ) {
 
-          return move( stats.cache.data );
+        if( e.data and e.size == size )
 
-      if( stats.cache.data )
-
-        free( nullptr, $out( stats.cache.data ), stats.cache.size, __FILE__ );
+          return move( e.data );
+      }
 
       auto ptr = ::malloc( size );
 
@@ -60,17 +61,34 @@ namespace lib {
 
       stats.alloc.sub( size );
 
-      if( stats.cache.data == nullptr ) {
-        stats.cache.data = *ptr;
-        stats.cache.size = size;
-        return;
+      for( auto& e : stats.cache ) {
+
+        if( e.data == nullptr ) {
+
+          e.data = *ptr;
+          e.size = size;
+          return;
+        }
       }
+
+      auto index = stats.cache_index++;
+
+      auto& block = stats.cache[ index % $length( stats.cache ) ];
+
+      auto block_old = block;
+
+      block.data = *ptr;
+      block.size = size;
+
+      *ptr = (T0*) block_old.data;
+      size = block_old.size;
 
       log::memory, object, " free(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
 
       ::free( *ptr ); 
       
       *ptr = nullptr; 
+
       
     };
 
