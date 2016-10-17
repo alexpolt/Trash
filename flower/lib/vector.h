@@ -279,7 +279,8 @@ namespace lib {
 
       reserve( size_other );
       
-      auto index = size(), null_char = 0;
+      auto index = size();
+      auto null_char = 0;
 
       if( is_str and size() > 0 ) null_char = 1;
 

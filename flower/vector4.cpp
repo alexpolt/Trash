@@ -39,7 +39,7 @@ void measure1( T0& v0 ) {
 
   std::vector< int > v1;
 
-  for( auto i : range{ 0, 50'000 } ) {
+  for( auto i : range{ 0, 500'000 } ) {
 
       (void)i;
 
@@ -72,7 +72,7 @@ void measure2( T0& v0 ) {
 
 //  log::memory.on();
 
-  for( auto i : range{ 0, 50'000 } ) {
+  for( auto i : range{ 0, 500'000 } ) {
 
       (void)i;
 

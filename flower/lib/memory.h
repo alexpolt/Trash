@@ -20,7 +20,7 @@ namespace lib {
 
       lib::atomic< ssize_t > alloc;
 
-      block_t cache[4];
+      block_t cache[8];
 
       uint cache_index;
 
