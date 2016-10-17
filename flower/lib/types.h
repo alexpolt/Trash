@@ -36,6 +36,7 @@ namespace lib {
 
   TP<TN T0> T0 declval();
 
+  TP<ssize_t...> using void_v = void;
   TP<TN...> using void_t = void;
 
   TP<TN T0> struct identity { using type = T0; };
@@ -116,37 +117,47 @@ namespace lib {
   TP<TN T0> 
   constexpr bool is_cptr_v = is_const_v< no_ptr_t< T0 > >;
 
+  TP<TN T0, TN = void >
+  struct is_primitive_class : type_false { }; 
 
-  TP<TN> struct is_primitive : type_false { };
-
-  TP<> struct is_primitive< int > : type_true { };
-  TP<> struct is_primitive< uint > : type_true { };
-  TP<> struct is_primitive< char > : type_true { };
-  TP<> struct is_primitive< bool > : type_true { };
-  TP<> struct is_primitive< uchar > : type_true { };
-  TP<> struct is_primitive< float > : type_true { };
-  TP<> struct is_primitive< double > : type_true { };
-  TP<> struct is_primitive< long > : type_true { };
-  TP<> struct is_primitive< long long > : type_true { };
+  TP<TN T0> 
+  struct is_primitive_class< T0, void_v< T0::is_primitive >> : type_true { };
 
   TP<TN T0>
-  constexpr bool is_primitive_v = is_primitive< no_const_t< no_ptr_t< T0 > > >::value;
+  constexpr bool is_primitive_class_v = is_primitive_class< T0 >::value;
+  
+  TP<TN T0, TN = select_t< is_ptr_v< T0 >, int, T0 > > 
+  struct is_primitive : type_false { }; 
+
+  TP<TN T0> struct is_primitive< T0, int > : type_true { };
+  TP<TN T0> struct is_primitive< T0, uint > : type_true { };
+  TP<TN T0> struct is_primitive< T0, char > : type_true { };
+  TP<TN T0> struct is_primitive< T0, bool > : type_true { };
+  TP<TN T0> struct is_primitive< T0, uchar > : type_true { };
+  TP<TN T0> struct is_primitive< T0, float > : type_true { };
+  TP<TN T0> struct is_primitive< T0, double > : type_true { };
+  TP<TN T0> struct is_primitive< T0, long > : type_true { };
+  TP<TN T0> struct is_primitive< T0, long long > : type_true { };
+
+  TP<TN T0>
+  constexpr bool is_primitive_v = is_primitive_class_v< T0 > or 
+                                  is_primitive< no_const_t< T0 > >::value;
 
 
   TP<TN T0, ssize_t N0> T0* begin( T0 ( &data)[ N0 ] ) { return data; }
   TP<TN T0, ssize_t N0> T0  end  ( T0 ( &data)[ N0 ] ) { return &data[ N0 ]; }
 
-  TP<TN T0, typename T0::iterator( T0::*)() = &T0::begin > 
-  typename T0::iterator begin( T0& data ) { return data.begin(); }
+  TP<TN T0> 
+  auto& begin( T0& data ) { return data.begin(); }
 
-  TP<TN T0, TN T0::iterator( T0::*)() = &T0::end   > 
-  typename T0::iterator end  ( T0& data ) { return data.end(); }
+  TP<TN T0> 
+  auto& end  ( T0& data ) { return data.end(); }
 
-  TP<TN T0, TN T0::iterator( T0::*)() = &T0::begin > 
-  typename T0::const_iterator begin( T0 const& data ) { return data.begin(); }
+  TP<TN T0> 
+  auto& begin( T0 const& data ) { return data.begin(); }
 
-  TP<TN T0, TN T0::iterator( T0::*)() = &T0::end   > 
-  typename T0::const_iterator end  ( T0 const& data ) { return data.end(); }
+  TP<TN T0> 
+  auto& end  ( T0 const& data ) { return data.end(); }
 
 
   TP<TN T0, TN = enable_if_t< is_ref_v< T0 > >> 
@@ -182,8 +193,9 @@ namespace lib {
   TP<TN T0>
   struct is_container< T0,  disable_if_t< is_primitive_v< T0 > >,
                             disable_if_t< is_array_v< T0 > >,
-                            decltype( (void) begin( declval< T0& >() ) ), 
-                            decltype( (void) end( declval< T0& >() ) ) > : type_true { };
+                            decltype( (void) ( typename T0::iterator( T0::*)() ) & T0::begin ),
+                            decltype( (void) ( typename T0::iterator( T0::*)() ) & T0::end )
+                     > : type_true { };
   TP<TN T0> 
   constexpr bool is_container_v = is_container< T0 >::value;
 

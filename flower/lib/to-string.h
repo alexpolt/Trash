@@ -26,7 +26,7 @@ namespace lib {
   TP<TN T0>
   cstr to_string( T0 const& arg ) { 
 
-    auto& buffer = global::get_buffer<char>();
+    auto& buffer = global::get_buffer< char >();
 
     snprintf( buffer, $length( buffer ), str_format< T0 >::format, arg ); 
 

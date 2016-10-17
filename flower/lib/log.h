@@ -3,6 +3,7 @@
 #include <cstdio>
 #include "macros.h"
 #include "types.h"
+#include "ptr.h"
 #include "value.h"
 #include "to-string.h"
 
@@ -100,7 +101,7 @@ namespace log {
     return logger;
   }
 
-  TP<log_type T0, TN T1, char = str_format< T1 >::format[0] >
+  TP<log_type T0, TN T1, char = str_format< T1 >::format[0]>
   auto operator,( log_t< T0 > logger, T1 const& data ) { 
     
     logger.log( to_string( data ) ); 
@@ -108,13 +109,22 @@ namespace log {
     return logger;
   }
 
-  TP<log_type T0, TN T1>
-  auto operator,( log_t< T0 > logger, value< T1 > const& data ) { 
+  TP<log_type T0, TN T1, cstr (T1::*)()const = &T1::to_string, TN = void>
+  auto operator,( log_t< T0 > logger, T1 const& data ) { 
 
-    logger.log( data->to_string().data() ); 
+    logger.log( data.to_string() ); 
 
     return logger;
   }
+
+  TP<log_type T0, TN T1, cstr (T1::*)()const = &T1::operator(), TN = void, TN = void>
+  auto operator,( log_t< T0 > logger, T1 const& data ) { 
+
+    logger.log( data() ); 
+
+    return logger;
+  }
+
 
 }
 

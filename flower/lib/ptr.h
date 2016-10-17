@@ -10,29 +10,6 @@ namespace lib {
 
 
   TP<TN T0>
-  struct raw_ptr {
-
-    raw_ptr( T0* _ptr ) : _ptr{ _ptr } { }
-
-    TP<TN U0>
-    raw_ptr( raw_ptr< U0 >&& other ) : _ptr { move( other._ptr ) } { }
-
-    T0* get() { return _ptr; }
-    
-    T0* operator->() { return _ptr; }
-
-    T0 const * operator->() const { return _ptr; }
-
-    T0& operator*() { return *_ptr; }
-
-    T0 const& operator*() const { return *_ptr; }
-
-    T0* _ptr;
-  };
-
-
-
-  TP<TN T0>
   struct owner : nocopy {
 
     owner() : _ptr{} { }
@@ -44,13 +21,14 @@ namespace lib {
     TP<TN U0>
     owner( owner< U0 >&& other ) : _ptr { move( other._ptr ) } { }
 
-    owner& operator=( owner&& other ) {
+    TP<TN U0>
+    auto& operator=( owner< U0 >&& other ) {
       destroy();
       _ptr = move( other._ptr );
       return $this;
     }
 
-    owner& operator=( T0* ptr ) {
+    auto& operator=( T0* ptr ) {
       destroy();
       _ptr = ptr;
       return $this;
@@ -60,15 +38,15 @@ namespace lib {
 
     void destroy() { delete _ptr; }
 
-    T0* get() { return _ptr; }
+    auto get() { return _ptr; }
 
-    T0* operator->() { return _ptr; }
+    auto operator->() { return _ptr; }
 
-    T0 const * operator->() const { return _ptr; }
+    auto const * operator->() const { return _ptr; }
 
-    T0& operator*() { return *_ptr; }
+    auto& operator*() { return *_ptr; }
 
-    T0 const& operator*() const { return *_ptr; }
+    auto const& operator*() const { return *_ptr; }
 
     T0* _ptr;
 
@@ -85,15 +63,23 @@ namespace lib {
 
     explicit out( T0& value ) : _value{ value } { }
 
-    T0* operator->() { return &_value; }
+    auto operator->() { return &_value; }
 
-    T0& operator*() { return _value; }
+    auto& operator*() { return _value; }
+
+    TP<TN U0>
+    auto& operator=( U0 value_new ) { 
+      
+      _value = move( value_new );
+
+      return $this;
+    }
 
     T0& _value;
   };
 
   TP<TN T0>
-  out< T0 > make_out( T0& value ) { return out< T0 >{ value }; }
+  auto make_out( T0& value ) { return out< T0 >{ value }; }
 
   #define $out( $0 ) make_out( $0 )
 

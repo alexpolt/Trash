@@ -14,20 +14,24 @@ namespace lib {
 
     struct error_memory : error { using error::error; };
 
-    struct block_t { ssize_t size; void* data; };
+    TP< ssize_t N0 >
+    struct cache_t { 
+      void* ptr[ N0 ]; 
+      void* owner[ N0 ];
+      ssize_t size[ N0 ]; 
+      ssize_t index;
+    };
 
     struct stats_t {
 
       lib::atomic< ssize_t > alloc;
-
-      block_t cache[8];
-
-      uint cache_index;
+      
+      cache_t< 8 > cache;
 
     };
 
     inline stats_t& get_stats() { static stats_t stats{}; return stats; }
-
+/*
     TP<TN T0>
     inline void free( void* object, out< T0* > ptr, ssize_t size, cstr file_line );
 
@@ -55,7 +59,7 @@ namespace lib {
     };
 
     TP<TN T0>
-    inline void free( void* object, out< T0* > ptr, ssize_t size, cstr file_line ) { 
+    inline void free( void* owner, out< T0* > ptr, ssize_t size, cstr file_line ) { 
       
       auto& stats = get_stats();
 
@@ -83,7 +87,7 @@ namespace lib {
       *ptr = (T0*) block_old.data;
       size = block_old.size;
 
-      log::memory, object, " free(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
+      log::memory, owner, " free(", size, "), stat = ", (ssize_t) get_stats().alloc, log::endl;
 
       ::free( *ptr ); 
       
@@ -94,7 +98,7 @@ namespace lib {
 
   }
 
-
+*/
   #define $alloc( $0, $1 ) lib::alloc::alloc( (void*)$0, $1, __FILE__ ":" $str( __LINE__ ) )
   #define $free( $0, $1, $2 ) lib::alloc::free( (void*)$0, $1, $2, __FILE__ ":" $str( __LINE__ ) )
 

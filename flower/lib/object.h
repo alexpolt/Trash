@@ -2,7 +2,6 @@
 
 #include "macros.h"
 #include "types.h"
-#include "string.h"
 
 namespace lib {
 
@@ -19,7 +18,7 @@ namespace lib {
 
     virtual value< object > get_object() const = 0;    
 
-    virtual string to_string() const; 
+    virtual cstr to_string() const; 
 
     // copying
 
@@ -46,9 +45,9 @@ namespace lib {
 
   inline oid_t object::get_object_id() const { return get_interface_id();  }
 
-  inline string object::to_string() const {
-    string s{ 64 };
-    snprintf( s.data(), s.capacity(), "%s(%#X)", get_interface_name(), (uintptr_t) this );
+  inline cstr object::to_string() const {
+    auto& buffer = global::get_buffer<char>();
+    snprintf( buffer, $length( buffer ), "%s(%#X)", get_interface_name(), (uintptr_t) this );
     return s;
   }
 

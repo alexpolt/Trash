@@ -19,7 +19,6 @@
 
 using lib::object;
 using lib::value;
-using lib::raw_ptr;
 using lib::owner; 
 using lib::make_out;
 using lib::range;

@@ -48,15 +48,17 @@ void measure1( T0& v0 ) {
   std::vector< int > v1;
 
 
-  for( auto i : range{ 0, 500'000 } ) {
+  for( auto i : range{ 0, 50'000'000 } ) {
 
       (void)i;
 
 //      std::vector< int > v1;
 
-      v1 = v0;
+//      v1 = v0;
 
-//      v1.insert( v1.end(), v2.begin(), v2.end() );
+//      v1.insert( v1.end(), v0.begin(), v0.end() );
+
+    v1.push_back( 1 );
 
       $clobber();
   }
@@ -83,13 +85,15 @@ void measure2( T0& v0 ) {
 
 //  log::memory.on();
 
-  for( auto i : range{ 0, 500'000 } ) {
+  for( auto i : range{ 0, 50'000'000 } ) {
 
       (void)i;
 
 //     lib::vector< int > v1;
 
-      v1 = v0 ;
+//      v1 = v0 ;
+
+      v1.push_back( 1 );
 
 //      v1 << move( v2 );
 
