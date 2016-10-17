@@ -19,8 +19,16 @@ int main() {
 
   info, "is_array: ", lib::is_array_v<decltype(a0)>, lib::is_array_v<decltype(a1)>, endl;
 
-  std::vector< int > v0{ 1, 2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5};
-  lib::vector< int > v1{ 1, 2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5};
+  
+  std::vector< int > v0{};
+  lib::vector< int > v1{};
+
+  for( auto i : range{ 0, 1024 } ) {
+
+    v0.push_back( i );
+
+    v1 << i;
+  }
 
 
   info, "v1 source: ", v1, endl, endl;
@@ -39,12 +47,14 @@ void measure1( T0& v0 ) {
 
   std::vector< int > v1;
 
+
   for( auto i : range{ 0, 500'000 } ) {
 
       (void)i;
 
-      std::vector< int > v2;
-      v2 = v0;
+//      std::vector< int > v1;
+
+      v1 = v0;
 
 //      v1.insert( v1.end(), v2.begin(), v2.end() );
 
@@ -68,6 +78,7 @@ void measure2( T0& v0 ) {
 
   auto begin = std::chrono::high_resolution_clock::now();
           
+
   lib::vector< int > v1;
 
 //  log::memory.on();
@@ -76,9 +87,9 @@ void measure2( T0& v0 ) {
 
       (void)i;
 
-      lib::vector< int  > v2;
+//     lib::vector< int > v1;
 
-      v2 = v0 ;
+      v1 = v0 ;
 
 //      v1 << move( v2 );
 

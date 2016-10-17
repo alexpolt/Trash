@@ -85,8 +85,24 @@ namespace lib {
     }
 
     void clear() {
+      
+      if( ! is_primitive_v< value_type > ) {
+        
+        if( size() >= 4 ) 
+          for( auto i : range{ 0, size()/4 } ) {
 
-      for( auto i : range{ 0, size() } ) _data[ i ].~value_type();
+            auto index = i * 4;
+            
+            _data[ index + 0 ].~value_type();
+            _data[ index + 1 ].~value_type();
+            _data[ index + 2 ].~value_type();
+            _data[ index + 3 ].~value_type();
+          }
+
+        auto rest = size() % 4;
+
+        for( auto i : range{ size()-rest, size() } ) _data[ i ].~value_type();
+     }
 
       _index = 0;
     }
@@ -95,20 +111,45 @@ namespace lib {
 
       if( N0 > 0 ) return;
 
-      size_new = max( 4, size_new );
+      size_new = max( 8, size_new );
 
       if( size_new <= available() ) return;
 
-      auto size_calc = capacity() < ( 1 << 22 ) ? capacity() * 4 : capacity() * 7 / 4;
+      if( capacity() > 0 ) {
 
-      size_new = max( size_new, size_calc );
+        auto size_calc = capacity() < ( 1 << 22 ) ? capacity() * 4 : capacity() * 7 / 4;
+
+        size_new = max( size_new, size_calc );
+      }
       
       size_new = ( size_new + 3 ) & ~0b11;
 
-      value_type* data_new = (value_type*) $alloc( this, value_size * size_new );
+      auto size_new_bytes = value_size * size_new;
 
-      for( auto i : range{ 0, size() } ) 
-        new( &data_new[ i ] ) value_type{ move( _data[ i ] ) };
+      value_type* data_new = (value_type*) $alloc( this, size_new_bytes );
+
+      if( ! is_primitive_v< value_type > ) {
+
+        if( size() >= 4 )
+          for( auto i : range{ 0, size()/4 } ) {
+
+            auto index = i * 4;
+            
+            new( &data_new[ index + 0 ] ) value_type{ move( _data[ index + 0 ] ) };
+            new( &data_new[ index + 1 ] ) value_type{ move( _data[ index + 1 ] ) };
+            new( &data_new[ index + 2 ] ) value_type{ move( _data[ index + 2 ] ) };
+            new( &data_new[ index + 3 ] ) value_type{ move( _data[ index + 3 ] ) };
+          }
+
+        auto rest = size() % 4;
+
+        for( auto i : range{ size()-rest, size() } )
+
+          new( &data_new[ i ] ) value_type{ move( _data[ i ] ) };
+        
+      } else
+
+        memcpy( data_new, data(), bytes() );
 
       free();
 
@@ -196,10 +237,12 @@ namespace lib {
 
     auto& operator<<( value_type other ) { push_back( move( other ) ); return $this; }
 
-    TP<TN U0, TN = enable_if_t< !is_string and !is_container< U0 >::value >, TN = void>
+    TP<TN U0, TN = enable_if_t< !is_string and !is_container_v< U0 > >, TN = void>
     auto& operator<<( U0 other ) { push_back( move( other ) ); return $this; }
 
-    TP<TN U0, TN = enable_if_t< !is_string and !is_vector< no_cref_t< U0 > >::value>, TN = void>
+    TP<TN U0, TN = enable_if_t< !is_string and 
+                                is_container_v< no_cref_t< U0 > > and 
+                                !is_vector< no_cref_t< U0 > >::value>, TN = void>
     auto& operator<<( U0&& other_ ) { 
       
       auto &other = const_cast< no_cref_t< U0 >& >( other_ );
@@ -267,7 +310,7 @@ namespace lib {
         else
             push_back( other[ index ] ); 
 
-      if( !is_const_v< no_ref_t< U0 > > and is_vector_v< U0 > and is_ref_v< U0 > ) other._index = 0;
+      if( is_vector_v< U0 > and can_move ) other._index = 0;
 
       return $this; 
     }
@@ -280,6 +323,7 @@ namespace lib {
       reserve( size_other );
       
       auto index = size();
+
       auto null_char = 0;
 
       if( is_str and size() > 0 ) null_char = 1;
@@ -318,6 +362,7 @@ namespace lib {
     auto size() const { return _index; }
     auto capacity() const { return _capacity; }
     auto available() const { return capacity() - size(); }
+    auto bytes() const { return size() * value_size; }
     bool empty() const { return size() == 0; }
 
 
