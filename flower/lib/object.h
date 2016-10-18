@@ -48,7 +48,7 @@ namespace lib {
   inline cstr object::to_string() const {
     auto& buffer = global::get_buffer<char>();
     snprintf( buffer, $length( buffer ), "%s(%#X)", get_interface_name(), (uintptr_t) this );
-    return s;
+    return buffer;
   }
 
   inline value< object > object::get_copy() const { return get_object(); };

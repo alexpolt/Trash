@@ -178,7 +178,15 @@ namespace lib {
     auto ptr_orig = ptr; ptr = nullptr; return ptr_orig; 
   }
 
- 
+  TP<TN U0, TN U1> 
+  U0 type_cast( U1& value ) { 
+
+    char* from = (char*) &value;
+
+    return *(no_cref_t< U0 >*) from;
+  }
+
+
   TP<TN T0> 
   typename select< is_ref_v< T0 >, T0, T0&& >::type 
   forward( no_ref_t< T0 >& value ) { 

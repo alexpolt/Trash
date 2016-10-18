@@ -38,7 +38,7 @@ namespace lib {
 
     void destroy() { delete _ptr; }
 
-    auto get() { return _ptr; }
+    auto get() const { return _ptr; }
 
     auto operator->() { return _ptr; }
 
@@ -62,6 +62,14 @@ namespace lib {
   struct out {
 
     explicit out( T0& value ) : _value{ value } { }
+
+    TP<TN U0>
+    out( out< U0 >& other ) : _value { other._value } { }
+
+    TP<TN U0>
+    out( out< U0 >&& other ) : out{ other } { }
+
+    auto& get() { return _value; }
 
     auto operator->() { return &_value; }
 

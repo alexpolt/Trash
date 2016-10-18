@@ -44,8 +44,8 @@ namespace log {
 
     void set_logger( owner< logger > logger ) { get_logger() = move( logger ); }
 
-    auto& get_flag() { static bool flag; return flag; }
-    auto& get_logger() { static owner< logger > logger; return logger; }
+    auto& get_flag() const { static bool flag; return flag; }
+    auto& get_logger() const { static owner< logger > logger; return logger; }
 
   };
 
@@ -78,7 +78,7 @@ namespace log {
   }
 
   TP<log_type T0>
-  auto operator,( log_t< T0 > logger, cstr const& data ) { 
+  auto operator,( log_t< T0 > logger, cstr data ) { 
 
     logger.log( data );
 
