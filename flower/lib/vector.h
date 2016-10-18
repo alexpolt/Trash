@@ -24,7 +24,7 @@ namespace lib {
   TP<TN T0, ssize_t N0 = 0, bool is_string = false>
   struct vector {
 
-    static const ssize_t value_size = $size( T0 );
+    static constexpr ssize_t value_size = $size( T0 );
 
     using value_type = T0;
     using size_type = ssize_t;
@@ -42,7 +42,13 @@ namespace lib {
 
     vector( ) { if( N0 > 0 ) reserve( N0 ); }
 
-    explicit vector( ssize_t size ) { reserve( size ); }
+    explicit vector( ssize_t size, value_type value = value_type{} ) { 
+      
+      reserve( size ); 
+
+      for( auto i : range{ 0, size } ) emplace_back( value ), (void)i;
+
+    }
 
     explicit vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
 
@@ -60,7 +66,12 @@ namespace lib {
       _index{ move( other._index ) } { }
 
     TP<TN... UU>
-    explicit vector( UU&&... args ) { char dummy[] { ( $this << forward< UU >( args ), '\0' )... }; (void) dummy; }
+    explicit vector( UU&&... args ) { 
+
+      reserve( sizeof...( args ) );
+      
+      char dummy[] { ( $this << forward< UU >( args ), '\0' )... }; (void) dummy; 
+    }
 
     vector( cstr other ) { $this << other; }
 
@@ -79,6 +90,8 @@ namespace lib {
 
       if( N0 > 0 ) return;
 
+      if( capacity() == 0 ) return;
+
       $free( this, $out( _data ), value_size * capacity() );
 
       _capacity = 0; 
@@ -86,9 +99,10 @@ namespace lib {
 
     void clear() {
       
-      if( ! is_primitive_v< value_type > ) {
+      if( not is_primitive_v< value_type > ) {
         
-        if( size() >= 4 ) 
+        if( size() >= 4 ) {
+
           for( auto i : range{ 0, size()/4 } ) {
 
             auto index = i * 4;
@@ -98,11 +112,12 @@ namespace lib {
             _data[ index + 2 ].~value_type();
             _data[ index + 3 ].~value_type();
           }
+        }
 
         auto rest = size() % 4;
 
         for( auto i : range{ size()-rest, size() } ) _data[ i ].~value_type();
-     }
+      }
 
       _index = 0;
     }
@@ -128,7 +143,7 @@ namespace lib {
 
       value_type* data_new = (value_type*) $alloc( this, size_new_bytes );
 
-      if( ! is_primitive_v< value_type > ) {
+      if( not is_primitive_v< value_type > ) {
 
         if( size() >= 4 )
           for( auto i : range{ 0, size()/4 } ) {
@@ -223,7 +238,7 @@ namespace lib {
       return $this;
     }
 
-    TP<TN U0, TN = enable_if_t< is_string and !is_ptr_v< U0 > >>
+    TP<TN U0, TN = enable_if_t< is_string and not is_ptr_v< U0 > >>
     auto& operator<<( U0 other ) { 
       
       if( size() > 0 ) pop_back(); 
@@ -237,19 +252,19 @@ namespace lib {
 
     auto& operator<<( value_type other ) { push_back( move( other ) ); return $this; }
 
-    TP<TN U0, TN = enable_if_t< !is_string and !is_container_v< U0 > >, TN = void>
+    TP<TN U0, TN = enable_if_t< not is_string and not is_container_v< U0 > >, TN = void>
     auto& operator<<( U0 other ) { push_back( move( other ) ); return $this; }
 
-    TP<TN U0, TN = enable_if_t< !is_string and 
+    TP<TN U0, TN = enable_if_t< not is_string and 
                                 is_container_v< no_cref_t< U0 > > and 
-                                !is_vector< no_cref_t< U0 > >::value>, TN = void>
+                                not is_vector< no_cref_t< U0 > >::value>, TN = void>
     auto& operator<<( U0&& other_ ) { 
       
       auto &other = const_cast< no_cref_t< U0 >& >( other_ );
 
       for( auto& e : other ) {
 
-        if( !is_const_v< no_ref_t< U0 > > and !is_ref_v< U0 > )
+        if( not is_const_v< no_ref_t< U0 > > and not is_ref_v< U0 > )
 
           push_back( move( e ) );
         else
@@ -262,10 +277,10 @@ namespace lib {
     }
 
     TP< TN U0, 
-        TN = enable_if_t< !is_string and is_vector< no_cref_t< U0 > >::value and
-                          ( ! is_primitive_v< typename no_cref_t< U0 >::value_type >  or 
+        TN = enable_if_t< not is_string and is_vector< no_cref_t< U0 > >::value and
+                          ( not  is_primitive_v< typename no_cref_t< U0 >::value_type >  or 
                               ( is_primitive_v< typename no_cref_t< U0 >::value_type >  and 
-                              value_size != no_cref_t< U0 >::value_size )
+                              value_size not_eq no_cref_t< U0 >::value_size )
                            ) >>
 
     auto& operator<<( U0&& other_ ) { 
@@ -276,7 +291,7 @@ namespace lib {
 
       reserve( size );
 
-      constexpr bool can_move = !is_const_v< no_ref_t< U0 > > and !is_ref_v< U0 >;
+      constexpr bool can_move = not is_const_v< no_ref_t< U0 > > and not is_ref_v< U0 >;
 
       if( size >= 4 ) 
         for( auto i : range{ 0, size/4 } ) {
@@ -338,7 +353,7 @@ namespace lib {
     }
 
 
-    TP<TN U0, ssize_t M0, TN = enable_if_t< !is_string and sizeof( U0 ) >>
+    TP<TN U0, ssize_t M0, TN = enable_if_t< not is_string and sizeof( U0 ) >>
     auto& operator<<( U0 ( &other)[ M0 ] ) { for( auto& e : other ) push_back( e ); return $this; }
 
 

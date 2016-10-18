@@ -43,9 +43,11 @@ struct lada : car {
     return *_angle;
   }
 
-  string to_string() const override {
+  cstr to_string() const override {
     return "lada";
   }
+
+  //~lada(){ info, "~lada( ", this, " )", endl; }
 
   uint* _angle = new uint{};
 };
@@ -55,6 +57,7 @@ struct mazda : lada {
      $clobber();
     *_angle+=1;
   }
+  //~mazda(){ info, "~mazda( ", this, " )", endl; }
 };
 
 
@@ -73,51 +76,47 @@ TP<TN T0> struct car_ai_basic : car_ai {
     return *_owner._angle;
   }
 
+  ~car_ai_basic(){ info, "~car_ai_basic()", endl; }
 };
 
 
 
-TP<TN T0>
-void measure( T0& v );
+void measure0();
+void measure1();
 
 int main() {
 
   try {
 
-    const int car_size = 512;
+    const int car_size = 256;
 
-    value< car > car0 = value<car>::create< lada >();
+    auto c0 = owner< car >::create< lada >();
+    c0 = owner< car >::create< lada >();
 
-    info, "log: ", car0, endl;
+    owner<car> car0 = owner< car >::create< mazda >();
+
+    info, "log: ", c0, endl;
 
     auto car_ai0 = car0->get_object( car_ai::tag );
     auto car_copy0 = car0->get_copy();
     auto car_object0 = car0->get_object();
 
-    printf("car %s steer %s\n", car0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
+    printf("car %s steer %s\n", car0->to_string(), car0->get_counter() == car_ai::left ? "left":"right");
 
     car_ai0->steer( car_ai::right );
 
-    printf("car %s steer %s\n", car_ai0->to_string().data(), car0->get_counter() == car_ai::left ? "left":"right");
+    printf("car %s steer %s\n", car_ai0->to_string(), car0->get_counter() == car_ai::left ? "left":"right");
 
     printf("value<car> size = %d\n", $size( car0 ) );
 
-    std::vector< value<car> > v0{ car_size, car0 };
-    std::vector<car*> v1( car_size );
+    log::memory.on();
 
-    $escape( &v0 );
-    $escape( &v1 );
+    info, endl, "-- measure0 --", endl;
+    measure0();
 
-    v0[ 0 ] = value<car>::create< mazda >();
-    v1[ 0 ] = new mazda{};
+    info, endl, "-- measure1 --", endl;
+    measure1();
 
-    for( auto i : range{ 0, car_size } ) {
-      v0[ i ] = value<car>::create< lada >();
-      v1[ i ] = new lada{};
-    }
-
-    measure( v0 );
-    measure( v1 );
 
   } catch( lib::error& e ) {
 
@@ -127,23 +126,66 @@ int main() {
 
 }
 
-TP<TN T0>
-void measure( T0& v0 ) {
+void measure0() {
+
+  vector< owner< car > > v;
 
   auto begin = std::chrono::high_resolution_clock::now();
 
-  for( auto i : range{ 0, 1000000 } )
-    for( auto& v : v0 ) 
-      v->update( i );
+
+  for( auto i : range{ 0, 5'000 } ) {
+
+    v << owner< car >::create< mazda >();
+
+    for( auto i : range{ 0, 1024 } ) v << owner< car >::create< lada >();
+
+    $escape( &v );
+
+    for( auto& e : v ) e->update( i );
+
+    $clobber();
+
+    v.clear();
+  }
 
 
   auto end = std::chrono::high_resolution_clock::now();
 
   auto dt = std::chrono::duration_cast< std::chrono::milliseconds >( end - begin ).count();
 
-  printf( "car1 = %d %d %d, dt = %ld\n", v0[0]->get_counter(), v0[1]->get_counter(), v0[2]->get_counter(), (long)dt );
+  printf( "dt = %ld\n", (long)dt );
 
 }
 
+void measure1() {
+
+  vector< lib::owner_ptr<car> > v;
+
+  auto begin = std::chrono::high_resolution_clock::now();
+
+
+  for( auto i : range{ 0, 5'000 } ) {
+
+    v << lib::make_owner< mazda >();
+
+    for( auto i : range{ 0, 1024 } ) v << lib::make_owner< lada >(); 
+
+    $escape( &v );
+
+    for( auto& e : v ) e->update( i );    
+
+    $clobber();
+
+    v.clear();
+  }
+
+
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto dt = std::chrono::duration_cast< std::chrono::milliseconds >( end - begin ).count();
+
+  printf( "dt = %ld\n", (long)dt );
+
+}
 
 

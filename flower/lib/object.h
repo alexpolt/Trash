@@ -2,6 +2,8 @@
 
 #include "macros.h"
 #include "types.h"
+#include "value.h"
+#include "global.h"
 
 namespace lib {
 
@@ -46,7 +48,7 @@ namespace lib {
   inline oid_t object::get_object_id() const { return get_interface_id();  }
 
   inline cstr object::to_string() const {
-    auto& buffer = global::get_buffer<char>();
+    auto& buffer = global::get_buffer< char >();
     snprintf( buffer, $length( buffer ), "%s(%#X)", get_interface_name(), (uintptr_t) this );
     return buffer;
   }
@@ -96,7 +98,7 @@ namespace lib {
         ++counter;
       }
 
-      throw $error_object( iid, owner.to_string().data() );
+      throw $error_object( iid, owner.to_string() );
 
     }
 
@@ -120,7 +122,7 @@ namespace lib {
                             using object_type = $0; \
                             constexpr static lib::type_tag< $0 > tag{}; \
                             lib::iid_t get_interface_id() const override { return interface_id; } \
-                            cstr  get_interface_name() const override { return #$0; } 
+                            cstr get_interface_name() const override { return #$0; } 
 
   /*
     Usage in an primary object type:
@@ -135,7 +137,7 @@ namespace lib {
                         using object_factory = lib::object_factory< __VA_ARGS__ >; \
                         using object::has_object; \
                         using object::get_object; \
-                        value<object> get_object( lib::iid_t id ) override { \
+                        value< object > get_object( lib::iid_t id ) override { \
                           return object_factory::get_object( id, $this ); \
                         } \
                         bool has_object( lib::iid_t id ) const override { \

@@ -15,7 +15,7 @@ namespace lib {
 
   TP<TN T0> struct type_tag {};
 
-  struct empty_base { };
+  struct empty_struct { };
 
   struct nocopy { 
     nocopy() { } 
@@ -121,7 +121,10 @@ namespace lib {
   struct is_primitive_class : type_false { }; 
 
   TP<TN T0> 
-  struct is_primitive_class< T0, void_v< T0::is_primitive >> : type_true { };
+  struct is_primitive_class< T0, void_v< T0::is_primitive >> { 
+
+    static constexpr bool value = T0::is_primitive; 
+  };
 
   TP<TN T0>
   constexpr bool is_primitive_class_v = is_primitive_class< T0 >::value;
@@ -166,12 +169,6 @@ namespace lib {
     return static_cast< no_ref_t< T0 >&& > ( value ); 
   }
 
-  TP<TN T0, TN = enable_if_t< is_primitive_v< T0 > >>
-  T0 move( T0& value ) { 
-    
-    auto value_orig = value; value = T0{}; return value_orig; 
-  }
-
   TP<TN T0> 
   T0* move( T0*& ptr ) { 
     
@@ -179,7 +176,7 @@ namespace lib {
   }
 
   TP<TN U0, TN U1> 
-  U0 type_cast( U1& value ) { 
+  U0 type_cast( U1&& value ) { 
 
     char* from = (char*) &value;
 

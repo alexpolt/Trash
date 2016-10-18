@@ -14,7 +14,6 @@ namespace lib {
 
     struct error_memory : error { using error::error; };
 
-
     struct stats_t {
 
       lib::atomic< ssize_t > alloc;
@@ -24,11 +23,11 @@ namespace lib {
     inline stats_t& get_stats() { static stats_t stats{}; return stats; }
 
 
-    TP< ssize_t N0 >
     struct cache_t { 
 
-      static const ssize_t size = N0;
-      static const ssize_t size_max = 1024;
+      static constexpr ssize_t cache_size = 16;
+      static constexpr ssize_t size = cache_size;
+      static constexpr ssize_t size_max = 512;
 
       ~cache_t() {
         
@@ -48,24 +47,21 @@ namespace lib {
         }
       }
 
-      void* _ptr[ N0 ]; 
-      void* _owner[ N0 ];
-      ssize_t _size[ N0 ]; 
+      void* _ptr[ size ]; 
+      void* _owner[ size ];
+      ssize_t _size[ size ]; 
       ssize_t _index;
     };
 
-    inline cache_t< 8 >& get_cache() { static cache_t< 8 > cache{}; return cache; }
+
+    inline cache_t& get_cache() { static cache_t cache{}; return cache; }
 
  
     inline void* alloc( void* object, ssize_t size, cstr file_line ) {
 
       auto& stats = get_stats();
 
-      stats.alloc.add( size );
-
-      log::memory, "object ", object, " alloc( ", size, 
-
-                   " ), stat = ", (ssize_t) get_stats().alloc, log::endl;
+      log::memory, "object ", object, " alloc( ", size, " ) ", log::endl;
 
       auto& cache = get_cache();
 
@@ -73,33 +69,34 @@ namespace lib {
 
         for( auto i : range{ 0, cache.size } ) {
 
-          if( cache._ptr[ i ] and cache._size[ i ] == size )
+          if( cache._ptr[ i ] and cache._size[ i ] == size ) 
 
             return move( cache._ptr[ i ] );
         }
 
       auto ptr = ::malloc( size );
 
+      stats.alloc.add( size );
+
+      log::memory, "stat = ", (ssize_t) stats.alloc, log::endl;
+
       if( ! ptr ) throw error_memory{ "malloc failed" };
 
-      return ptr;
+      return ptr; 
+    }
 
-    };
 
-
-      TP<TN T0>
-      inline void free( void* owner, out< T0* > ptr, ssize_t size, cstr file_line ) { 
-      
+    TP<TN T0>
+    inline void free( void* owner, out< T0* > ptr, ssize_t size, cstr file_line ) { 
+    
       auto& stats = get_stats();
-
-
       auto& cache = get_cache();
 
       if( size > cache.size_max ) {
 
         stats.alloc.sub( size );
 
-        log::memory, "object ", owner, ", free( ", size, " ), stat = ", (ssize_t) get_stats().alloc, log::endl;
+        log::memory, "object ", owner, ", free1( ", size, " ), stat = ", (ssize_t) stats.alloc, log::endl;
 
         ::free( ptr.get() ); 
 
@@ -122,9 +119,9 @@ namespace lib {
 
         stats.alloc.sub( cache._size[ idx ] );
 
-        log::memory, "object ", cache._owner[ idx ], ", free( ", cache._size[ idx ], 
+        log::memory, "object ", cache._owner[ idx ], ", free2( ", cache._size[ idx ], 
 
-                     " ), stat = ", (ssize_t) get_stats().alloc, log::endl;
+                     " ), stat = ", (ssize_t) stats.alloc, log::endl;
 
         ::free( cache._ptr[ idx ] ); 
 
@@ -135,9 +132,7 @@ namespace lib {
       }
 
       ptr = nullptr; 
-
-      
-    };
+    }
 
 
   }

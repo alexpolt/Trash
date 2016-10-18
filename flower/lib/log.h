@@ -42,10 +42,10 @@ namespace log {
     void log( cstr str ) { if( get_flag() ) get_logger()->log( str ); }
     void log( endl_t endl ) { if( get_flag() ) get_logger()->log( endl ); }
 
-    void set_logger( owner< logger > logger ) { get_logger() = move( logger ); }
+    void set_logger( owner_ptr< logger > logger ) { get_logger() = move( logger ); }
 
     auto& get_flag() const { static bool flag; return flag; }
-    auto& get_logger() const { static owner< logger > logger; return logger; }
+    auto& get_logger() const { static owner_ptr< logger > logger; return logger; }
 
   };
 
@@ -109,7 +109,7 @@ namespace log {
     return logger;
   }
 
-  TP<log_type T0, TN T1, cstr (T1::*)()const = &T1::to_string, TN = void>
+  TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::to_string>
   auto operator,( log_t< T0 > logger, T1 const& data ) { 
 
     logger.log( data.to_string() ); 
@@ -117,7 +117,7 @@ namespace log {
     return logger;
   }
 
-  TP<log_type T0, TN T1, cstr (T1::*)()const = &T1::operator(), TN = void, TN = void>
+  TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::operator(), TN = void>
   auto operator,( log_t< T0 > logger, T1 const& data ) { 
 
     logger.log( data() ); 

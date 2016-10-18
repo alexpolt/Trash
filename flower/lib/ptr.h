@@ -10,19 +10,27 @@ namespace lib {
 
 
   TP<TN T0>
-  struct owner : nocopy {
+  struct owner_ptr;
 
-    owner() : _ptr{} { }
 
-    explicit owner( T0* ptr ) : _ptr{ ptr } { }
+  TP<TN T0, TN... TT>
+  auto make_owner( TT&&... args ) { return owner_ptr< T0 >{ new T0{ forward< T0 >( args )... } }; }
 
-    owner( owner&& other ) : _ptr { move( other._ptr ) } { }
+
+  TP<TN T0>
+  struct owner_ptr : nocopy {
+
+    owner_ptr() : _ptr{} { }
+
+    explicit owner_ptr( T0* ptr ) : _ptr{ ptr } { }
+
+    owner_ptr( owner_ptr&& other ) : _ptr { move( other._ptr ) } { }
 
     TP<TN U0>
-    owner( owner< U0 >&& other ) : _ptr { move( other._ptr ) } { }
+    owner_ptr( owner_ptr< U0 >&& other ) : _ptr { move( other._ptr ) } { }
 
     TP<TN U0>
-    auto& operator=( owner< U0 >&& other ) {
+    auto& operator=( owner_ptr< U0 >&& other ) {
       destroy();
       _ptr = move( other._ptr );
       return $this;
@@ -34,7 +42,7 @@ namespace lib {
       return $this;
     }
 
-    ~owner() { destroy(); }
+    ~owner_ptr() { destroy(); }
 
     void destroy() { delete _ptr; }
 
@@ -53,8 +61,8 @@ namespace lib {
   };
 
   TP<TN T0>
-  struct owner< T0[] > {
-    static_assert( $size( T0 ) == 0, "don't use owner for arrays, use a vector" );
+  struct owner_ptr< T0[] > {
+    static_assert( $size( T0 ) == 0, "don't use owner_ptr for arrays, use a vector" );
   };
 
 
