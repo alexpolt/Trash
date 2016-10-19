@@ -24,10 +24,10 @@ namespace lib {
 
     explicit owner_ptr( T0* ptr ) : _ptr{ ptr } { }
 
-    owner_ptr( owner_ptr&& other ) : _ptr { other.release() } noexcept { }
+    owner_ptr( owner_ptr&& other ) noexcept : _ptr { other.release() } { }
 
     TP<TN U0>
-    owner_ptr( owner_ptr< U0 >&& other ) : _ptr { other.release() } noexcept { }
+    owner_ptr( owner_ptr< U0 >&& other ) noexcept : _ptr { other.release() } { }
 
     TP<TN U0>
     auto& operator=( owner_ptr< U0 >&& other ) noexcept {
@@ -75,10 +75,10 @@ namespace lib {
     explicit out_ref( T0& value ) : _value{ value } { }
 
     TP<TN U0>
-    out_ref( out_ref< U0 >& other ) : _value { other._value } noexcept { }
+    out_ref( out_ref< U0 >& other ) noexcept : _value { other._value } { }
 
     TP<TN U0>
-    out_ref( out_ref< U0 >&& other ) : out_ref{ other } noexcept { }
+    out_ref( out_ref< U0 >&& other ) noexcept : out_ref{ other } { }
 
     auto& get() { return _value; }
 

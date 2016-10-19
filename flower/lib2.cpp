@@ -36,6 +36,10 @@ int main() {
 
   log::memory.on();
 
+  info, "compilation date = ", lib::config::compilation_date, endl,
+        "program name = ", lib::config::program_name, endl,
+        "program version = ", lib::config::program_version, endl;
+
   info, "Start Programm", endl;
 
   auto alex0 = owner< human >::create< alex >();

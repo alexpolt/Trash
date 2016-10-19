@@ -60,10 +60,10 @@ namespace lib {
       }
     }
 
-    vector( vector&& other ) : 
+    vector( vector&& other ) noexcept : 
       _data{ move( other._data ) }, 
       _capacity{ move( other._capacity ) },
-      _index{ move( other._index ) } noexcept { }
+      _index{ move( other._index ) } { }
 
     TP<TN... UU>
     explicit vector( UU&&... args ) { 
