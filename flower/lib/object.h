@@ -18,7 +18,6 @@ namespace lib {
 
     virtual oid_t get_object_id() const;
 
-    virtual value< object > get_object() const = 0;    
 
     virtual cstr to_string() const; 
 
@@ -30,6 +29,11 @@ namespace lib {
     value< T0 > get_copy() const; 
 
     // working with components
+
+    value< object > get_object() const;
+
+    TP<TN U0>
+    static value< object > get_object( U0& );
 
     virtual bool has_object( iid_t ) const = 0;
 
@@ -53,7 +57,7 @@ namespace lib {
     return buffer;
   }
 
-  inline value< object > object::get_copy() const { return get_object(); };
+  inline value< object > object::get_copy() const { throw $error_not_implemented(); };
 
   TP<TN T0>
   inline value< T0 > object::get_copy() const { return static_cast< value<T0> >( get_copy( ) ); }
@@ -63,6 +67,11 @@ namespace lib {
   
   TP<TN T0> 
   inline value< T0 > object::get_object( type_tag<T0> ) { return static_cast< value<T0> >( get_object( T0::interface_id ) ); }
+
+  TP<TN U0>
+  value< lib::object > object::get_object( U0& object ) { return lib::type_cast< value< lib::object >& >( object ); }
+
+  value< lib::object > object::get_object() const { return lib::type_cast< value< lib::object >& >( $this ); }
 
 
 
@@ -109,7 +118,7 @@ namespace lib {
     
   TP<TN T0, TN... TT>
     typename object_factory< T0, TT... >::create_f 
-      object_factory< T0, TT... >::_create_list[] = { T0::create, TT::create... };
+      object_factory< T0, TT... >::_create_list[] = { T0::get_object, TT::create... };
 
   /*
     Usage:
@@ -137,19 +146,15 @@ namespace lib {
                         using object_factory = lib::object_factory< __VA_ARGS__ >; \
                         using object::has_object; \
                         using object::get_object; \
-                        value< object > get_object( lib::iid_t id ) override { \
+                        value< lib::object > get_object( lib::iid_t id ) override { \
                           return object_factory::get_object( id, $this ); \
                         } \
                         bool has_object( lib::iid_t id ) const override { \
                           return object_factory::has_object( id ); \
                         } \
-                        /* getting a copy of the primary object */ \
-                        value< lib::object > get_object() const override { \
-                          return create( $this );\
-                        } \
-                        /* create factory method */ \
-                        TP<TN... UU> static value< object > create( UU&&... args ) { \
-                          return value< lib::object >::create< $args_first( __VA_ARGS__) >( args... ); \
+                       /* create factory method */ \
+                        TP<TN... UU> static value< lib::object > create( UU&&... args ) { \
+                          return value< lib::object >::create< $args_first( __VA_ARGS__) >( forward< UU >( args )... ); \
                         }
 
   /*
@@ -165,17 +170,18 @@ namespace lib {
                         value< lib::object > get_object() const override { \
                           return _owner.get_object(); \
                         } \
-                        value<object> get_object( lib::iid_t id ) override { \
+                        value< lib::object > get_object( lib::iid_t id ) override { \
                           return _owner.get_object( id ); \
                         } \
                         bool has_object( lib::iid_t id ) const override { \
                           return _owner.has_object( id ); \
                         } \
-                        TP<TN U0> $0( U0&& owner ) : _owner{ owner } { } \
+                        TP<TN U0> $0( U0& owner ) : _owner{ owner } { } \
                         /* create factory method */ \
-                        TP<TN U0> static auto create( U0&& owner ) { \
-                          return value< object >::create< $0 >( owner ); \
+                        TP<TN U0> static auto create( U0& owner ) { \
+                          return value< lin::object >::create< $0 >( owner ); \
                         } \
+                        /* data member */ \
                         lib::template_arg_t< $0 >& _owner;
 
 }

@@ -62,20 +62,21 @@ namespace lib {
 
   TP<TN T0>
   struct owner_ptr< T0[] > {
+
     static_assert( $size( T0 ) == 0, "don't use owner_ptr for arrays, use a vector" );
   };
 
 
   TP<TN T0>
-  struct out {
+  struct out_ref {
 
-    explicit out( T0& value ) : _value{ value } { }
-
-    TP<TN U0>
-    out( out< U0 >& other ) : _value { other._value } { }
+    explicit out_ref( T0& value ) : _value{ value } { }
 
     TP<TN U0>
-    out( out< U0 >&& other ) : out{ other } { }
+    out_ref( out_ref< U0 >& other ) : _value { other._value } { }
+
+    TP<TN U0>
+    out_ref( out_ref< U0 >&& other ) : out_ref{ other } { }
 
     auto& get() { return _value; }
 
@@ -95,7 +96,7 @@ namespace lib {
   };
 
   TP<TN T0>
-  auto make_out( T0& value ) { return out< T0 >{ value }; }
+  auto make_out( T0& value ) { return out_ref< T0 >{ value }; }
 
   #define $out( $0 ) make_out( $0 )
 

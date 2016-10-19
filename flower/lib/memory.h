@@ -45,7 +45,11 @@ namespace lib {
 
           }
         }
+
+        destroyed = true;
       }
+
+      bool destroyed = false;
 
       void* _ptr[ size ]; 
       void* _owner[ size ];
@@ -64,6 +68,8 @@ namespace lib {
       log::memory, "object ", object, " alloc( ", size, " ) ", log::endl;
 
       auto& cache = get_cache();
+      
+      $assert( not cache.destroyed, "alloc failed, memory cache was destroyed" );
 
       if( size <= cache.size_max )
 
@@ -87,10 +93,12 @@ namespace lib {
 
 
     TP<TN T0>
-    inline void free( void* owner, out< T0* > ptr, ssize_t size, cstr file_line ) { 
+    inline void free( void* owner, out_ref< T0* > ptr, ssize_t size, cstr file_line ) { 
     
       auto& stats = get_stats();
       auto& cache = get_cache();
+
+      $assert( not cache.destroyed, "free failed, memory cache was destroyed" );
 
       if( size > cache.size_max ) {
 

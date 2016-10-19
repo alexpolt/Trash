@@ -19,9 +19,9 @@ namespace lib {
     TP<TN U0, TN... TT> 
     static value create( TT&&... args ) {
 
-      $static_assert( $size( U0 ) <= $size( data_ptr ) );
+      static_assert( $size( U0 ) <= $size( data_ptr ), "The data size is too big for a value<...>.");
 
-      $static_assert( alignof( T0 ) == alignof( U0 ) );
+      static_assert( alignof( T0 ) == alignof( U0 ), "Alignment is wrong." );
 
       auto value_new = value{};
 
@@ -30,8 +30,6 @@ namespace lib {
       return value_new;
 
     }
-
-    cstr to_string() const { return $this->to_string(); }
 
     TP<TN... TT>
     auto operator()( TT... args ) const -> decltype( declval< T0& >()( forward< TT >( declval< TT >() )... ) ) { 
@@ -73,7 +71,6 @@ namespace lib {
       data_ptr( data_ptr&& other ) { 
 
         memcpy( _ptr, other._ptr, value_size ); 
-
         memset( other._ptr, 0, value_size );
       }
 
@@ -87,7 +84,6 @@ namespace lib {
       auto& operator=( data_ptr&& other ) {
 
         memcpy( _ptr, other._ptr, value_size ); 
-
         memset( other._ptr, 0, value_size );
 
         return $this;

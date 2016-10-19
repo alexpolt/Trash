@@ -83,6 +83,14 @@ namespace lib {
   #define $error_input( $0 ) lib::error_input{ __FILE__, __LINE__, __func__, $0 }
 
 
+  struct error_not_implemented : error {
+
+    using error::error;
+
+  };
+
+  #define $error_not_implemented( $0 ) lib::error_not_implemented{ __FILE__, __LINE__, __func__, $0 }
+
 
 }
 

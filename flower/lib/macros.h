@@ -29,8 +29,6 @@ auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
 
 #define $length( $0 ) $size( array_length_function( $0 ) )
 
-#define $static_assert( $0 ) static_assert( $0, #$0 )
-
 #define $var $paste( var, __COUNTER__ )
 
 #define $apply( $0, ... ) $0( __VA_ARGS__ )
@@ -45,6 +43,6 @@ auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
 #define $apply2( $macro, $1, $2 ) $apply1( $macro, $1 ) $apply1( $macro, $2 )
 #define $apply3( $macro, $1, $2, $3 ) $apply2( $macro, $1, $2 ) $apply1( $macro, $3 )
 
-#define $applyall( $macro, ... ) $apply( $paste( $check, $numargs(__VA_ARGS__) ), $macro, __VA_ARGS__ )
+#define $applyall( $macro, ... ) $apply( $paste( $apply, $args_size( __VA_ARGS__ ) ), $macro, __VA_ARGS__ )
 
 
