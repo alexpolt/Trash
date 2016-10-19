@@ -89,6 +89,7 @@ int main() {
   try {
 
     auto c0 = owner< car >::create< lada >();
+
     c0 = owner< car >::create< lada >();
 
     owner<car> car0 = owner< car >::create< mazda >();

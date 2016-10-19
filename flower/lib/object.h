@@ -12,12 +12,13 @@ namespace lib {
 
     virtual ~object() {}
 
+    // basic interface
+
     virtual iid_t get_interface_id() const = 0;
 
     virtual cstr get_interface_name() const = 0;
 
     virtual oid_t get_object_id() const;
-
 
     virtual cstr to_string() const; 
 
@@ -28,12 +29,16 @@ namespace lib {
     TP<TN T0>
     value< T0 > get_copy() const; 
 
-    // working with components
+    // getting the primary object
+
+    virtual value< object > get_owner() const;
 
     value< object > get_object() const;
 
     TP<TN U0>
     static value< object > get_object( U0& );
+
+    // dealing components
 
     virtual bool has_object( iid_t ) const = 0;
 
@@ -57,16 +62,21 @@ namespace lib {
     return buffer;
   }
 
+
   inline value< object > object::get_copy() const { throw $error_not_implemented(); };
 
   TP<TN T0>
-  inline value< T0 > object::get_copy() const { return static_cast< value<T0> >( get_copy( ) ); }
+  inline value< T0 > object::get_copy() const { return static_cast< value< T0 > >( get_copy( ) ); }
+
 
   TP<TN T0> 
   inline bool object::has_object( type_tag<T0> ) const { return has_object( T0::interface_id ); }
   
   TP<TN T0> 
   inline value< T0 > object::get_object( type_tag<T0> ) { return static_cast< value<T0> >( get_object( T0::interface_id ) ); }
+
+
+  value< lib::object > object::get_owner() const { return get_object(); }
 
   TP<TN U0>
   value< lib::object > object::get_object( U0& object ) { return lib::type_cast< value< lib::object >& >( object ); }
@@ -167,7 +177,7 @@ namespace lib {
 
   #define $component( $0 ) \
                         /* getting the primary object */ \
-                        value< lib::object > get_object() const override { \
+                        value< lib::object > get_owner() const override { \
                           return _owner.get_object(); \
                         } \
                         value< lib::object > get_object( lib::iid_t id ) override { \
@@ -179,7 +189,7 @@ namespace lib {
                         TP<TN U0> $0( U0& owner ) : _owner{ owner } { } \
                         /* create factory method */ \
                         TP<TN U0> static auto create( U0& owner ) { \
-                          return value< lin::object >::create< $0 >( owner ); \
+                          return value< lib::object >::create< $0 >( owner ); \
                         } \
                         /* data member */ \
                         lib::template_arg_t< $0 >& _owner;

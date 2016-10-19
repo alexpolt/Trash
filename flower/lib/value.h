@@ -31,6 +31,8 @@ namespace lib {
 
     }
 
+    cstr to_string() const { return $this.to_string(); }
+
     TP<TN... TT>
     auto operator()( TT... args ) const -> decltype( declval< T0& >()( forward< TT >( declval< TT >() )... ) ) { 
 

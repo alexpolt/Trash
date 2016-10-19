@@ -24,15 +24,15 @@ namespace lib {
 
     explicit owner_ptr( T0* ptr ) : _ptr{ ptr } { }
 
-    owner_ptr( owner_ptr&& other ) : _ptr { move( other._ptr ) } { }
+    owner_ptr( owner_ptr&& other ) : _ptr { other.release() } { }
 
     TP<TN U0>
-    owner_ptr( owner_ptr< U0 >&& other ) : _ptr { move( other._ptr ) } { }
+    owner_ptr( owner_ptr< U0 >&& other ) : _ptr { other.release() } { }
 
     TP<TN U0>
     auto& operator=( owner_ptr< U0 >&& other ) {
       destroy();
-      _ptr = move( other._ptr );
+      _ptr = other.release();
       return $this;
     }
 
@@ -45,6 +45,8 @@ namespace lib {
     ~owner_ptr() { destroy(); }
 
     void destroy() { delete _ptr; }
+
+    T0* release() { return move( _ptr ); }
 
     auto get() const { return _ptr; }
 
