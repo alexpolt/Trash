@@ -86,6 +86,10 @@ void measure1();
 
 int main() {
 
+  info, "compilation date = ", lib::config::compilation_date, endl,
+        "program name = ", lib::config::program_name, endl,
+        "program version = ", lib::config::program_version, endl;
+
   $try {
 
     auto c0 = owner< car >::create< lada >();

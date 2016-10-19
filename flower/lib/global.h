@@ -4,18 +4,19 @@
 #include "types.h"
 
 
-namespace global {
+namespace lib {
 
-  using namespace lib;
+  inline namespace global {
 
-  TP<TN T0 = char, ssize_t N0 = 256 > 
-  auto& get_buffer() { 
+    TP<TN T0 = char, ssize_t N0 = 256 > 
+    auto& get_buffer() { 
 
-    thread_local static T0 array[ N0 ];
+      thread_local static T0 array[ N0 ];
 
-    return array; 
+      return array; 
+    }
+
   }
-
 
 }
 
