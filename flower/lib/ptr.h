@@ -24,19 +24,19 @@ namespace lib {
 
     explicit owner_ptr( T0* ptr ) : _ptr{ ptr } { }
 
-    owner_ptr( owner_ptr&& other ) : _ptr { other.release() } { }
+    owner_ptr( owner_ptr&& other ) : _ptr { other.release() } noexcept { }
 
     TP<TN U0>
-    owner_ptr( owner_ptr< U0 >&& other ) : _ptr { other.release() } { }
+    owner_ptr( owner_ptr< U0 >&& other ) : _ptr { other.release() } noexcept { }
 
     TP<TN U0>
-    auto& operator=( owner_ptr< U0 >&& other ) {
+    auto& operator=( owner_ptr< U0 >&& other ) noexcept {
       destroy();
       _ptr = other.release();
       return $this;
     }
 
-    auto& operator=( T0* ptr ) {
+    auto& operator=( T0* ptr ) noexcept {
       destroy();
       _ptr = ptr;
       return $this;
@@ -46,7 +46,7 @@ namespace lib {
 
     void destroy() { delete _ptr; }
 
-    T0* release() { return move( _ptr ); }
+    auto release() { return move( _ptr ); }
 
     auto get() const { return _ptr; }
 
@@ -75,10 +75,10 @@ namespace lib {
     explicit out_ref( T0& value ) : _value{ value } { }
 
     TP<TN U0>
-    out_ref( out_ref< U0 >& other ) : _value { other._value } { }
+    out_ref( out_ref< U0 >& other ) : _value { other._value } noexcept { }
 
     TP<TN U0>
-    out_ref( out_ref< U0 >&& other ) : out_ref{ other } { }
+    out_ref( out_ref< U0 >&& other ) : out_ref{ other } noexcept { }
 
     auto& get() { return _value; }
 
@@ -87,7 +87,7 @@ namespace lib {
     auto& operator*() { return _value; }
 
     TP<TN U0>
-    auto& operator=( U0 value_new ) { 
+    auto& operator=( U0 value_new ) noexcept { 
       
       _value = move( value_new );
 

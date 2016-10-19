@@ -3,7 +3,7 @@
 
 Flower Engine is an experimental code base to try new code style and design decisions.
 
-##Code Style
+##Design Phylosophy
 
 ###Naming
 
@@ -28,9 +28,9 @@ For actions the order is conventional.
 
 ###Designing Classes
 
-###Handling Errors
+###Errors and noexcept
 
-###Exceptions and Assertions
+###Exceptions or Assertions
 
 ###Object Creation
 
@@ -44,9 +44,11 @@ For actions the order is conventional.
 
 ###Primitive Types
 
-###Move Semantics
+###Moving or Consuming
 
 ###Object Sharing
+
+###Constexpr
 
 ##License
 

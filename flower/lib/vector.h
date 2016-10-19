@@ -63,7 +63,7 @@ namespace lib {
     vector( vector&& other ) : 
       _data{ move( other._data ) }, 
       _capacity{ move( other._capacity ) },
-      _index{ move( other._index ) } { }
+      _index{ move( other._index ) } noexcept { }
 
     TP<TN... UU>
     explicit vector( UU&&... args ) { 
