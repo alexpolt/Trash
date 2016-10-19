@@ -9,7 +9,7 @@ struct car : object {
 
   $interface( car );
 
-  void virtual update( int ) = 0; 
+  void virtual update() = 0;
 
   uint virtual get_counter() = 0;
 
@@ -34,7 +34,7 @@ struct lada : car {
 
   $object( lada, car_ai_basic< lada > );
 
-  void update( int ) override {
+  void update() override {
     $clobber();
     ++*_angle;
   }
@@ -53,7 +53,7 @@ struct lada : car {
 };
 
 struct mazda : lada {
-   void update( int ) override {
+   void update() override {
      $clobber();
     *_angle+=1;
   }
@@ -87,8 +87,6 @@ void measure1();
 int main() {
 
   try {
-
-    const int car_size = 256;
 
     auto c0 = owner< car >::create< lada >();
     c0 = owner< car >::create< lada >();
@@ -133,20 +131,20 @@ void measure0() {
   auto begin = std::chrono::high_resolution_clock::now();
 
 
-  for( auto i : range{ 0, 5'000 } ) {
+  range{ 0, 1'000 } $do {
 
     v << owner< car >::create< mazda >();
 
-    for( auto i : range{ 0, 1024 } ) v << owner< car >::create< lada >();
+    range{ 0, 3777 } $do { v << owner< car >::create< lada >(); };
 
     $escape( &v );
 
-    for( auto& e : v ) e->update( i );
+    for( auto& e : v ) e->update();
 
     $clobber();
 
     v.clear();
-  }
+  };
 
 
   auto end = std::chrono::high_resolution_clock::now();
@@ -164,20 +162,20 @@ void measure1() {
   auto begin = std::chrono::high_resolution_clock::now();
 
 
-  for( auto i : range{ 0, 5'000 } ) {
+  range{ 0, 1'000 } $do {
 
     v << lib::make_owner< mazda >();
 
-    for( auto i : range{ 0, 1024 } ) v << lib::make_owner< lada >(); 
+    range{ 0, 3777 } $do { v << lib::make_owner< lada >(); };
 
     $escape( &v );
 
-    for( auto& e : v ) e->update( i );    
+    for( auto& e : v ) e->update();    
 
     $clobber();
 
     v.clear();
-  }
+  };
 
 
   auto end = std::chrono::high_resolution_clock::now();

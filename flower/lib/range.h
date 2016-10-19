@@ -14,7 +14,10 @@ namespace lib {
     };
 
     iterator begin() const { return iterator{ _begin }; }
+
     iterator end() const { return iterator{ _end }; }
+
+    T0 size() const { return _end - _begin; }
 
     T0 _begin;
     T0 _end;
@@ -22,6 +25,16 @@ namespace lib {
   };
 
   using range = range_t< ssize_t >;
+
+  TP<TN T0, TN T1>
+  int operator+( range_t< T0 > rng, T1 fn ) {
+
+    for( ssize_t i = rng.begin(), end = rng.end(); i != end; i++ ) fn();
+
+    return 0;
+  }
+
+  #define $do + [&]()
 
 }
 
