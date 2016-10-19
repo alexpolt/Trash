@@ -58,12 +58,12 @@ namespace lib {
 
   inline cstr object::to_string() const {
     auto& buffer = global::get_buffer< char >();
-    snprintf( buffer, $length( buffer ), "%s(%#X)", get_interface_name(), (uintptr_t) this );
+    snprintf( buffer, $length( buffer ), "%s(%#X)", get_interface_name(), (ssize_t) this );
     return buffer;
   }
 
 
-  inline value< object > object::get_copy() const { throw $error_not_implemented(); };
+  inline value< object > object::get_copy() const { $throw $error_not_implemented(); return value< object >{}; };
 
   TP<TN T0>
   inline value< T0 > object::get_copy() const { return static_cast< value< T0 > >( get_copy( ) ); }
@@ -117,8 +117,9 @@ namespace lib {
         ++counter;
       }
 
-      throw $error_object( iid, owner.to_string() );
+      $throw $error_object( iid, owner.to_string() );
 
+      return value< object >{};
     }
 
   };

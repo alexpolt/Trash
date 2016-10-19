@@ -8,6 +8,8 @@ namespace lib {
 
   struct error {
 
+    error( ) : _file_line{} { }
+
     error( cstr msg ) {
 
         snprintf( _file_line, $size( _file_line ), "%s", msg );

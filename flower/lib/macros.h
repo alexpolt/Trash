@@ -1,5 +1,7 @@
 #pragma once
 
+#include "config.h"
+
 #define $paste_( $0, $1 ) $0##$1
 #define $paste( $0, $1 ) $paste_( $0, $1 )
 
@@ -18,6 +20,16 @@ $empty( __COUNTER__ )
 #define $this (*this)
 
 #define $size( $0 ) int( sizeof( $0 ) )
+
+#ifdef $CONFIG_NO_EXCEPT
+  #define $throw (void)
+  #define $try
+  #define $catch( $0 ) for( lib::error e{}; false; )
+#else
+  #define $try try
+  #define $catch( $0 ) catch( $0 )
+  #define $throw throw
+#endif
 
 #define TN typename
 #define TP template

@@ -164,29 +164,36 @@ namespace lib {
 
 
   TP<TN T0, TN = enable_if_t< is_ref_v< T0 > >> 
-  no_ref_t< T0 >&& move( T0&& value ) { 
+  no_ref_t< T0 >&& move( T0&& value ) noexcept { 
 
     return static_cast< no_ref_t< T0 >&& > ( value ); 
   }
 
   TP<TN T0> 
-  T0* move( T0*& ptr ) { 
+  T0* move( T0*& ptr ) noexcept { 
     
     auto ptr_orig = ptr; ptr = nullptr; return ptr_orig; 
   }
 
+  TP<TN T0>
+  T0& swap( T0& left, T0& right ) noexcept {
+    auto tmp = move( left );
+    left = move( right );
+    right = move( tmp );
+    return left; 
+  }
+
   TP<TN U0, TN U1> 
-  U0 type_cast( U1&& value ) { 
+  U0 type_cast( U1&& value ) noexcept { 
 
     char* from = (char*) &value;
 
     return *(no_cref_t< U0 >*) from;
   }
 
-
   TP<TN T0> 
   typename select< is_ref_v< T0 >, T0, T0&& >::type 
-  forward( no_ref_t< T0 >& value ) { 
+  forward( no_ref_t< T0 >& value ) noexcept { 
 
     return static_cast< typename select< is_ref_v< T0 >, T0, T0&& >::type >( value ); 
   } 

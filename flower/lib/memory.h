@@ -86,7 +86,7 @@ namespace lib {
 
       log::memory, "stat = ", (ssize_t) stats.alloc, log::endl;
 
-      if( ! ptr ) throw error_memory{ "malloc failed" };
+      if( ! ptr ) $throw error_memory{ "malloc failed" };
 
       return ptr; 
     }

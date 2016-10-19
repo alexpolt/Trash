@@ -1,29 +1,77 @@
 #pragma once
 
-#include <atomic>
+#include "macros.h"
+#include "types.h"
+
+#ifndef $CONFIG_NO_ATOMIC
+
+  #include <atomic>
+
+#endif
 
 namespace lib {
 
-  TP< TN U0 >
-  struct atomic {
+  #ifndef $CONFIG_NO_ATOMIC
 
-    U0 add( U0 value, std::memory_order order = std::memory_order_relaxed ) { return _data.fetch_add( value, order ); }
-    U0 sub( U0 value, std::memory_order order = std::memory_order_relaxed ) { return _data.fetch_sub( value, order ); }
+    TP< TN U0 >
+    struct atomic {
 
-    void store( U0 value, std::memory_order order = std::memory_order_relaxed ) { _data.store( value, order ); }
-    U0 load( std::memory_order order = std::memory_order_relaxed ) const { return _data.load( order ); }
+      U0 add( U0 value, std::memory_order order = std::memory_order_relaxed ) { return _data.fetch_add( value, order ); }
+      U0 sub( U0 value, std::memory_order order = std::memory_order_relaxed ) { return _data.fetch_sub( value, order ); }
 
-    U0 exchange( U0 desired, std::memory_order order = std::memory_order_relaxed ) { return _data.exchange( desired, order ); }
+      void store( U0 value, std::memory_order order = std::memory_order_relaxed ) { _data.store( value, order ); }
+      U0 load( std::memory_order order = std::memory_order_relaxed ) const { return _data.load( order ); }
 
-    bool compare_exchange_weak( U0& expected, U0 desired, std::memory_order order = std::memory_order_relaxed ) {
-      return _data.compare_exchange_weak( expected, desired, order );
-    }
+      U0 exchange( U0 desired, std::memory_order order = std::memory_order_relaxed ) { return _data.exchange( desired, order ); }
 
-    void operator=( U0 value ) { store( value ); }
-    operator U0() { return load(); }
+      bool compare_exchange_weak( U0& expected, U0 desired, std::memory_order order = std::memory_order_relaxed ) {
+        return _data.compare_exchange_weak( expected, desired, order );
+      }
 
-    std::atomic< U0 > _data;
-  };
+      void operator=( U0 value ) { store( value ); }
+      operator U0() { return load(); }
+
+      std::atomic< U0 > _data;
+    };
+
+  #else
+
+    TP< TN U0 >
+    struct atomic {
+
+      U0 add( U0 value ) { return _data++; }
+      U0 sub( U0 value ) { return _data--; }
+
+      void store( U0 value ) { _data = value; }
+
+      U0 load( ) const { return _data; }
+
+      U0 exchange( U0 desired ) { return swap( _data, desired ); }
+
+      bool compare_exchange_weak( U0& expected, U0 desired ) {
+
+        if( _data == expected ) {
+
+          swap( _data, desired );
+
+          return true;
+
+        } else {
+
+          expected = _data;
+
+          return false;
+        }
+      }
+
+      auto& operator=( U0 value ) { _data = value; return $this; }
+
+      operator U0() { return _data; }
+
+      U0 _data;
+    };
+
+  #endif
 
 }
 

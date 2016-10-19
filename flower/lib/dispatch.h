@@ -50,7 +50,7 @@ namespace lib {
           
           return e.dispatcher( fn, a, b );
 
-      throw $error_dispatch( a->to_string().data(), b->to_string().data() );
+      $throw $error_dispatch( a->to_string().data(), b->to_string().data() );
     }
 
     TP<TN U0, TN U1>

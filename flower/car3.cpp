@@ -86,7 +86,7 @@ void measure1();
 
 int main() {
 
-  try {
+  $try {
 
     auto c0 = owner< car >::create< lada >();
 
@@ -97,7 +97,6 @@ int main() {
     info, "log: ", c0, endl;
 
     auto car_ai0 = car0->get_object( car_ai::tag );
-    auto car_copy0 = car0->get_copy();
     auto car_object0 = car0->get_object();
 
     printf("car %s steer %s\n", car0->to_string(), car0->get_counter() == car_ai::left ? "left":"right");
@@ -117,7 +116,7 @@ int main() {
     measure1();
 
 
-  } catch( lib::error& e ) {
+  } $catch( lib::error& e ) {
 
     printf( "%s\n", e.what() );
 
