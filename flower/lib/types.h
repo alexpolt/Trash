@@ -180,7 +180,7 @@ namespace lib {
     auto tmp = move( left );
     left = move( right );
     right = move( tmp );
-    return left; 
+    return right;
   }
 
   TP<TN U0, TN U1> 
@@ -222,7 +222,23 @@ namespace lib {
   TP<TN T0>
   using template_arg_t = TN is_template< T0 >::type;
 
+  TP<ssize_t... NN> struct index_list { };
+
+  TP<ssize_t N0, ssize_t N0_ = N0, TN T0 = index_list<>> 
+  struct make_index_list;
+
+  TP<ssize_t N0, ssize_t N0_, ssize_t... NN> 
+  struct make_index_list< N0, N0_, index_list< NN...> > : 
+          make_index_list< N0 - 1, N0_, index_list< NN..., N0_ - N0> > { };
+
+  TP<ssize_t N0_, ssize_t... NN> 
+  struct make_index_list< 0, N0_, index_list< NN...> > { using type = index_list< NN... >; };
+
+  TP<ssize_t N0>
+  using index_list_t = typename make_index_list< N0 >::type;
 
 }
+
+
 
 

@@ -111,7 +111,7 @@ int main() {
 
     printf("value<car> size = %d\n", $size( car0 ) );
 
-    log::memory.on();
+    lib::log::memory.on();
 
     info, endl, "-- measure0 --", endl;
     measure0();

@@ -6,7 +6,7 @@
 
 namespace lib {
 
-  inline namespace global {
+  namespace global {
 
     TP<TN T0 = char, ssize_t N0 = 256 > 
     auto& get_buffer() { 

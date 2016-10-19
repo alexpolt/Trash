@@ -7,124 +7,128 @@
 #include "value.h"
 #include "to-string.h"
 
-namespace log {
+namespace lib {
 
-  using namespace lib;
+  namespace log {
 
-  constexpr struct endl_t { constexpr endl_t() { } } endl;
+    using namespace lib;
 
-
-  struct logger {
-
-    virtual ~logger() { }
-    virtual void log( cstr ) = 0;
-    virtual void log( endl_t ) = 0;
-  };
+    constexpr struct endl_t { constexpr endl_t() { } } endl;
 
 
-  struct log_display : logger {
+    struct logger {
 
-    void log( cstr str ) override { printf( "%s", str ); }
-    void log( endl_t endl ) override { printf( "\n" ); }
-  };
-
-
-  enum class log_type { info, error, debug, memory }; 
-
-  TP<log_type T0>   
-  struct log_t {
-
-    log_t( bool is_on = false ) { get_flag() = is_on; get_logger() = new log_display{}; }
-
-    void on() { get_flag() = true; }
-    void off() { get_flag() = false; }
-
-    void log( cstr str ) { if( get_flag() ) get_logger()->log( str ); }
-    void log( endl_t endl ) { if( get_flag() ) get_logger()->log( endl ); }
-
-    void set_logger( owner_ptr< logger > logger ) { get_logger() = move( logger ); }
-
-    auto& get_flag() const { static bool flag; return flag; }
-    auto& get_logger() const { static owner_ptr< logger > logger; return logger; }
-
-  };
+      virtual ~logger() { }
+      virtual void log( cstr ) = 0;
+      virtual void log( endl_t ) = 0;
+    };
 
 
-  namespace { 
+    struct log_display : logger {
 
-    log_t< log_type::info > info{ true };
-    log_t< log_type::error > error;
-    log_t< log_type::debug > debug;
-    log_t< log_type::memory > memory;
-  }
+      void log( cstr str ) override { printf( "%s", str ); }
+      void log( endl_t endl ) override { printf( "\n" ); }
+    };
 
 
-  TP<log_type T0, TN... TT> log_t< T0 > operator,( log_t< T0 >, TT... ) = delete;
-  
-  TP<log_type T0, TN T1, TN = enable_if_t< is_container_v< T1 > >>
-  auto operator,( log_t< T0 > logger, T1 const& data ) { 
+    enum class log_type { info, error, debug, memory }; 
 
-    for( auto& e : data ) logger, e, ", ";
+    TP<log_type T0>   
+    struct log_t {
 
-    return logger; 
-  }
+      log_t( bool is_on = false ) { get_flag() = is_on; get_logger() = new log_display{}; }
 
-  TP<log_type T0>
-  auto operator,( log_t< T0 > logger, endl_t endl ) { 
+      void on() { get_flag() = true; }
+      void off() { get_flag() = false; }
 
-    logger.log( endl );
+      void log( cstr str ) { if( get_flag() ) get_logger()->log( str ); }
+      void log( endl_t endl ) { if( get_flag() ) get_logger()->log( endl ); }
 
-    return logger; 
-  }
+      void set_logger( owner_ptr< logger > logger ) { get_logger() = move( logger ); }
 
-  TP<log_type T0>
-  auto operator,( log_t< T0 > logger, cstr data ) { 
+      auto& get_flag() const { static bool flag; return flag; }
+      auto& get_logger() const { static owner_ptr< logger > logger; return logger; }
 
-    logger.log( data );
+    };
 
-    return logger;
-  }
 
-  TP<log_type T0>
-  auto operator,( log_t< T0 > logger, char* data ) { 
+    namespace { 
 
-    logger.log( data );
+      log_t< log_type::info > info{ true };
+      log_t< log_type::error > error;
+      log_t< log_type::debug > debug;
+      log_t< log_type::memory > memory;
+    }
 
-    return logger;
-  }
 
-  TP<log_type T0, TN T1>
-  auto operator,( log_t< T0 > logger, T1* data ) { 
-
-    logger.log( to_string( (void*) data ) );
-
-    return logger;
-  }
-
-  TP<log_type T0, TN T1, char = str_format< T1 >::format[0]>
-  auto operator,( log_t< T0 > logger, T1 const& data ) { 
+    TP<log_type T0, TN... TT> log_t< T0 > operator,( log_t< T0 >, TT... ) = delete;
     
-    logger.log( to_string( data ) ); 
+    TP<log_type T0, TN T1, TN = enable_if_t< is_container_v< T1 > >>
+    auto operator,( log_t< T0 > logger, T1 const& data ) { 
 
-    return logger;
+      for( auto& e : data ) logger, e, ", ";
+
+      return logger; 
+    }
+
+    TP<log_type T0>
+    auto operator,( log_t< T0 > logger, endl_t endl ) { 
+
+      logger.log( endl );
+
+      return logger; 
+    }
+
+    TP<log_type T0>
+    auto operator,( log_t< T0 > logger, cstr data ) { 
+
+      logger.log( data );
+
+      return logger;
+    }
+
+    TP<log_type T0>
+    auto operator,( log_t< T0 > logger, char* data ) { 
+
+      logger.log( data );
+
+      return logger;
+    }
+
+    TP<log_type T0, TN T1>
+    auto operator,( log_t< T0 > logger, T1* data ) { 
+
+      logger.log( to_string( (void*) data ) );
+
+      return logger;
+    }
+
+    TP<log_type T0, TN T1, char = str_format< T1 >::format[0]>
+    auto operator,( log_t< T0 > logger, T1 const& data ) { 
+      
+      logger.log( to_string( data ) ); 
+
+      return logger;
+    }
+
+    TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::to_string>
+    auto operator,( log_t< T0 > logger, T1 const& data ) { 
+
+      logger.log( data.to_string() ); 
+
+      return logger;
+    }
+
+    TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::operator(), TN = void>
+    auto operator,( log_t< T0 > logger, T1 const& data ) { 
+
+      logger.log( data() ); 
+
+      return logger;
+    }
+
+
   }
-
-  TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::to_string>
-  auto operator,( log_t< T0 > logger, T1 const& data ) { 
-
-    logger.log( data.to_string() ); 
-
-    return logger;
-  }
-
-  TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::operator(), TN = void>
-  auto operator,( log_t< T0 > logger, T1 const& data ) { 
-
-    logger.log( data() ); 
-
-    return logger;
-  }
-
 
 }
 

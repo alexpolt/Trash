@@ -57,8 +57,11 @@ namespace lib {
   inline oid_t object::get_object_id() const { return get_interface_id();  }
 
   inline cstr object::to_string() const {
+
     auto& buffer = global::get_buffer< char >();
+
     snprintf( buffer, $length( buffer ), "%s(%#X)", get_interface_name(), (ssize_t) this );
+    
     return buffer;
   }
 

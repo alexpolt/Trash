@@ -39,8 +39,8 @@ namespace lib {
     TP< TN U0 >
     struct atomic {
 
-      U0 add( U0 value ) { return _data++; }
-      U0 sub( U0 value ) { return _data--; }
+      U0 add( U0 value ) { auto tmp = _data; _data+=value; return tmp; }
+      U0 sub( U0 value ) { auto tmp = _data; _data-=value; return tmp; }
 
       void store( U0 value ) { _data = value; }
 

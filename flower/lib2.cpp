@@ -25,7 +25,9 @@ struct alex : human {
 
   void say_hello() const override {
 
-    info, "Alex: ", data->data(), endl;
+    info, "Alex: ", data->data(), ", throw error!", endl;
+
+    $throw $error( "This is a test error thrown by Alex." );
   }
 
   owner_ptr< string > data;
@@ -34,7 +36,7 @@ struct alex : human {
 
 int main() {
 
-  log::memory.on();
+  lib::log::memory.on();
 
   info, "compilation date = ", lib::config::compilation_date, endl,
         "program name = ", lib::config::program_name, endl,
@@ -47,6 +49,15 @@ int main() {
   auto o0 = alex0->get_object();
 
   auto human0 = o0->get_object( human::tag );
+
+  $try {
+
+    human0->say_hello();
+
+  } $catch( lib::error& e ) {
+
+    info, "caught esception: ", e, endl;
+  }
 
   auto alex1 = move( alex0 );
 

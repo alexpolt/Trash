@@ -22,13 +22,17 @@ $empty( __COUNTER__ )
 #define $size( $0 ) int( sizeof( $0 ) )
 
 #ifdef $CONFIG_NO_EXCEPT
-  #define $throw (void)
+
+  #define $throw $assert( false, "Unexpected exception!" ), (void)
   #define $try
   #define $catch( $0 ) for( lib::error e{}; false; )
+
 #else
+
   #define $try try
   #define $catch( $0 ) catch( $0 )
   #define $throw throw
+
 #endif
 
 #define TN typename
