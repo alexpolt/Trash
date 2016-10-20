@@ -1,7 +1,13 @@
 #pragma once
 
 #include <cmath>
-#include "common.h"
+
+#include "../lib/macros.h"
+#include "../lib/assert.h"
+#include "../lib/types.h"
+
+#include "types.h"
+#include "constant.h"
 
 
 namespace lib {
@@ -86,6 +92,12 @@ namespace lib {
     constexpr auto operator*( vec_t< T0, NN... > left, mat_t< T0, NN... > right ) {
       return vec_t< T0, NN... >{ add( vec_t< T0, NN... >{ left[ NN ] } * right[ NN ] ... ) };
     }
+
+    
+    TP<ssize_t A0>
+    constexpr mat3f rotz{ vec3f{ cosf( radians< float >( A0 ) ), -sinf( radians< float >( A0 ) ), 0.f }, 
+                vec3f{ sinf( radians< float >( A0 ) ),  cosf( radians< float >( A0 ) ), 0.f }, 
+                vec3f{ 0.f, 0.f, 1.f } };
 
 
 

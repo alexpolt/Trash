@@ -1,6 +1,10 @@
 #pragma once
 
-#include "common.h"
+#include "../lib/macros.h"
+#include "../lib/assert.h"
+#include "../lib/types.h"
+
+#include "constant.h"
 
 
 namespace lib {
@@ -27,8 +31,6 @@ namespace lib {
       constexpr auto& data() const { return _data; }
       constexpr auto  size() const { return _size; }
 
-      constexpr auto length() const { sqrt( dot( $this, $this ) ); }
-
       constexpr void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
 
 
@@ -47,6 +49,10 @@ namespace lib {
 
     TP<ssize_t N0>
     using vecf = typename define_vector_t< float, lib::index_list_t< N0 > >::type;
+
+    using vec2f = typename define_vector_t< float, lib::index_list_t< 2 > >::type;
+    using vec3f = typename define_vector_t< float, lib::index_list_t< 3 > >::type;
+    using vec4f = typename define_vector_t< float, lib::index_list_t< 4 > >::type;
 
     TP<ssize_t N0>
     using vecd = typename define_vector_t< double, lib::index_list_t< N0 > >::type;
@@ -92,6 +98,10 @@ namespace lib {
 
     TP<ssize_t N0>
     using matf = typename define_mat_t< float, lib::index_list_t< N0 > >::type;
+
+    using mat2f = typename define_mat_t< float, lib::index_list_t< 2 > >::type;
+    using mat3f = typename define_mat_t< float, lib::index_list_t< 3 > >::type;
+    using mat4f = typename define_mat_t< float, lib::index_list_t< 4 > >::type;
 
     TP<ssize_t N0>
     using matd = typename define_mat_t< double, lib::index_list_t< N0 > >::type;
