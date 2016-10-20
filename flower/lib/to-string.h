@@ -28,7 +28,8 @@ namespace lib {
 
     auto& buffer = global::get_buffer< char >();
 
-    snprintf( buffer, $length( buffer ), str_format< T0 >::format, arg ); 
+    snprintf( buffer, $length( buffer ), 
+      str_format< select_t< is_ptr_v< T0 >, void*, no_const_t< T0 > > >::format, arg ); 
 
     return buffer; 
   }

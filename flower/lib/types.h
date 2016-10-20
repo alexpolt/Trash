@@ -42,6 +42,16 @@ namespace lib {
   TP<TN T0> struct identity { using type = T0; };
 
 
+  TP<TN T0, TN T1>
+  struct is_same : type_false { };
+
+  TP<TN T0>
+  struct is_same< T0, T0 > : type_true { };
+
+  TP<TN T0, TN T1>
+  constexpr bool is_same_v = is_same< T0, T1 >::value;
+
+
   TP<bool N0, TN T1, TN T2>
   struct select { using type = T2; };
 
@@ -105,6 +115,9 @@ namespace lib {
 
   TP<TN T0>
   using no_cref_t = no_const_t< no_ref_t< T0 > >;
+
+  TP<TN T0>
+  using no_cptr_t = no_const_t< no_ptr_t< T0 > >;
 
   TP<TN T0> struct is_const : type_false { };
   TP<TN T0> struct is_const< const T0 > : type_true { };

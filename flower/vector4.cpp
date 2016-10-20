@@ -100,7 +100,7 @@ void measure2( T0& v0 ) {
       $clobber();
   }
 
-  log::memory.off();
+  lib::log::memory.off();
 
   info, "v0.size = ", v1.size(), ", v0.capacity = ", v1.capacity(), ", bytes = ", ( v1.capacity() ) * $size(v1), endl;
 

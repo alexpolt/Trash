@@ -79,12 +79,12 @@ namespace lib {
   inline value< T0 > object::get_object( type_tag<T0> ) { return static_cast< value<T0> >( get_object( T0::interface_id ) ); }
 
 
-  value< lib::object > object::get_owner() const { return get_object(); }
+  inline value< lib::object > object::get_owner() const { return get_object(); }
 
   TP<TN U0>
-  value< lib::object > object::get_object( U0& object ) { return lib::type_cast< value< lib::object >& >( object ); }
+  inline value< lib::object > object::get_object( U0& object ) { return lib::type_cast< value< lib::object >& >( object ); }
 
-  value< lib::object > object::get_object() const { return lib::type_cast< value< lib::object >& >( $this ); }
+  inline value< lib::object > object::get_object() const { return lib::type_cast< value< lib::object >& >( $this ); }
 
 
 

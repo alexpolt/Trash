@@ -226,8 +226,8 @@ namespace lib {
     auto const& operator[]( ssize_t index ) const { $assert( index < size(), "out of bounds" ); return _data[ index ]; }
 
 
-    TP<TN U0, TN = TN enable_if< is_string and $size( U0 ) >::type >
-    auto& operator<<( U0 const* other ) { 
+    TP<TN U0 = char, TN = enable_if_t< is_string and $size( U0 )>>
+    auto& operator<<( value_type const* other ) { 
 
       if( size() > 0 ) pop_back();
 
@@ -238,22 +238,31 @@ namespace lib {
       return $this;
     }
 
-    TP<TN U0, TN = enable_if_t< is_string and not is_ptr_v< U0 > >>
-    auto& operator<<( U0 other ) { 
+    TP<TN U0, char = str_format< select_t< is_ptr_v< U0 >, void*, U0 > >::format[ 0 ], 
+              TN = enable_if_t< is_string and not is_same_v< U0, value_type* > >>
+    auto& operator<<( U0 other ) {
       
-      if( size() > 0 ) pop_back(); 
-      
-      push_back( move( other ) );
-
-      push_back( '\0' );
+      $this << to_string( other );
 
       return $this; 
     }
 
-    auto& operator<<( value_type other ) { push_back( move( other ) ); return $this; }
+
+    TP<TN U0 = char, TN = enable_if_t< not is_string and $size( U0 )>>
+    auto& operator<<( value_type other ) { 
+
+      push_back( move( other ) ); 
+
+      return $this; 
+    }
 
     TP<TN U0, TN = enable_if_t< not is_string and not is_container_v< U0 > >, TN = void>
-    auto& operator<<( U0 other ) { push_back( move( other ) ); return $this; }
+    auto& operator<<( U0 other ) { 
+      
+      push_back( move( other ) ); 
+      
+      return $this; 
+    }
 
     TP<TN U0, TN = enable_if_t< not is_string and 
                                 is_container_v< no_cref_t< U0 > > and 

@@ -103,7 +103,7 @@ namespace lib {
       return logger;
     }
 
-    TP<log_type T0, TN T1, char = str_format< T1 >::format[0]>
+    TP<log_type T0, TN T1, char = str_format< T1 >::format[ 0 ]>
     auto operator,( log_t< T0 > logger, T1 const& data ) { 
       
       logger.log( to_string( data ) ); 
