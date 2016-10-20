@@ -8,16 +8,16 @@ namespace lib {
   TP<TN T0> struct range_t {
   
     struct iterator {
-      operator T0&() { return _index; }
-      T0& operator *() { return _index; }
+      constexpr operator T0&() { return _index; }
+      constexpr T0& operator *() { return _index; }
       T0 _index;
     };
 
-    iterator begin() const { return iterator{ _begin }; }
+    constexpr iterator begin() const { return iterator{ _begin }; }
 
-    iterator end() const { return iterator{ _end }; }
+    constexpr iterator end() const { return iterator{ _end }; }
 
-    T0 size() const { return _end - _begin; }
+    constexpr T0 size() const { return _end - _begin; }
 
     T0 _begin;
     T0 _end;

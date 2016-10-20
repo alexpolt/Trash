@@ -20,16 +20,16 @@ namespace lib {
       TP<TN... UU>
       constexpr explicit vec_t( UU... args ) : _data{ args... } { }
 
-      auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
-      auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
+      constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
+      constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
 
-      auto& data() { return _data; }
-      auto& data() const { return _data; }
-      auto  size() const { return _size; }
+      constexpr auto& data() { return _data; }
+      constexpr auto& data() const { return _data; }
+      constexpr auto  size() const { return _size; }
 
-      auto length() const { sqrt( dot( $this, $this ) ); }
+      constexpr auto length() const { sqrt( dot( $this, $this ) ); }
 
-      void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
+      constexpr void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
 
 
       T0 _data[ _size ];
@@ -51,6 +51,9 @@ namespace lib {
     TP<ssize_t N0>
     using vecd = typename define_vector_t< double, lib::index_list_t< N0 > >::type;
 
+    TP<ssize_t N0>
+    using veci = typename define_vector_t< ssize_t, lib::index_list_t< N0 > >::type;
+
 
 
     TP<TN T0, ssize_t... NN>
@@ -64,14 +67,14 @@ namespace lib {
       TP<TN... UU>
       constexpr explicit mat_t( UU... args ) : _data{ args... } { }
 
-      auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
-      auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
+      constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
+      constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
 
-      auto& data() { return _data; }
-      auto& data() const { return _data; }
-      auto  size() const { return _size; }
+      constexpr auto& data() { return _data; }
+      constexpr auto& data() const { return _data; }
+      constexpr auto  size() const { return _size; }
 
-      void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
+      constexpr void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
 
 
       vec< T0, _size > _data[ _size ];
@@ -92,6 +95,9 @@ namespace lib {
 
     TP<ssize_t N0>
     using matd = typename define_mat_t< double, lib::index_list_t< N0 > >::type;
+
+    TP<ssize_t N0>
+    using mati = typename define_mat_t< ssize_t, lib::index_list_t< N0 > >::type;
 
 
   }
