@@ -15,14 +15,16 @@ namespace lib {
 
     TP<TN T0, ssize_t... NN>
     struct vec_t {
+    
+      using value_type = T0;
 
       static constexpr ssize_t _size = sizeof...( NN );
 
       TP<TN U0>
-      constexpr explicit vec_t( U0 arg ) : _data{ ( (void)NN, arg )... } { }
+      constexpr explicit vec_t( U0 arg ) : _data{ ( (void)NN, value_type( arg ) )... } { }
 
       TP<TN... UU>
-      constexpr explicit vec_t( UU... args ) : _data{ args... } { }
+      constexpr explicit vec_t( UU... args ) : _data{ value_type( args )... } { }
 
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
@@ -34,7 +36,7 @@ namespace lib {
       constexpr void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
 
 
-      T0 _data[ _size ];
+      value_type _data[ _size ];
     };
 
 
@@ -67,11 +69,13 @@ namespace lib {
 
       static constexpr ssize_t _size = sizeof...( NN );
 
+      using value_type = vec< T0, _size >;
+
       TP<TN U0>
-      constexpr explicit mat_t( U0 arg ) : _data{ ( (void)NN, vec< T0, _size >{ arg } )... } { }
+      constexpr explicit mat_t( U0 arg ) : _data{ ( (void)NN, value_type{ arg } )... } { }
 
       TP<TN... UU>
-      constexpr explicit mat_t( UU... args ) : _data{ args... } { }
+      constexpr explicit mat_t( UU... args ) : _data{ { args }... } { }
 
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
@@ -83,7 +87,7 @@ namespace lib {
       constexpr void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
 
 
-      vec< T0, _size > _data[ _size ];
+      value_type _data[ _size ];
     };
 
 
