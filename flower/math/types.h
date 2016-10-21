@@ -59,8 +59,17 @@ namespace lib {
     TP<ssize_t N0>
     using vecd = typename define_vector_t< double, lib::index_list_t< N0 > >::type;
 
+    using vec2d = typename define_vector_t< double, lib::index_list_t< 2 > >::type;
+    using vec3d = typename define_vector_t< double, lib::index_list_t< 3 > >::type;
+    using vec4d = typename define_vector_t< double, lib::index_list_t< 4 > >::type;
+
+
     TP<ssize_t N0>
-    using veci = typename define_vector_t< ssize_t, lib::index_list_t< N0 > >::type;
+    using veci = typename define_vector_t< int, lib::index_list_t< N0 > >::type;
+
+    using vec2i = typename define_vector_t< int, lib::index_list_t< 2 > >::type;
+    using vec3i = typename define_vector_t< int, lib::index_list_t< 3 > >::type;
+    using vec4i = typename define_vector_t< int, lib::index_list_t< 4 > >::type;
 
 
 
@@ -110,8 +119,17 @@ namespace lib {
     TP<ssize_t N0>
     using matd = typename define_mat_t< double, lib::index_list_t< N0 > >::type;
 
+    using mat2d = typename define_mat_t< double, lib::index_list_t< 2 > >::type;
+    using mat3d = typename define_mat_t< double, lib::index_list_t< 3 > >::type;
+    using mat4d = typename define_mat_t< double, lib::index_list_t< 4 > >::type;
+
+
     TP<ssize_t N0>
-    using mati = typename define_mat_t< ssize_t, lib::index_list_t< N0 > >::type;
+    using mati = typename define_mat_t< int, lib::index_list_t< N0 > >::type;
+
+    using mat2i = typename define_mat_t< int, lib::index_list_t< 2 > >::type;
+    using mat3i = typename define_mat_t< int, lib::index_list_t< 3 > >::type;
+    using mat4i = typename define_mat_t< int, lib::index_list_t< 4 > >::type;
 
 
   }

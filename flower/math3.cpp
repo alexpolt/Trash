@@ -28,7 +28,7 @@ constexpr double print( double d ) { return print( d ); }
 //constexpr auto cos265 = cos_cexpr( radians< double >( 265 ) );
 //constexpr auto cos350 = cos_cexpr( radians< double >( 350 ) );
 
-constexpr auto s1 = sin_cexpr( radians< double >( 1 ) );
+//constexpr auto s1 = sin_cexpr( radians< double >( 1 ) );
 //constexpr auto s100 = sin_cexpr( radians< double >( 100 ) );
 //constexpr auto s265 = sin_cexpr( radians< double >( 265 ) );
 //constexpr auto s710 = sin_cexpr( radians< double >( 710 ) );
@@ -39,7 +39,7 @@ constexpr auto s1 = sin_cexpr( radians< double >( 1 ) );
 //$static_print( cos265 );    
 //$static_print( cos350 );
 
-$static_print( s1 );
+//$static_print( s1 );
 //$static_print( s100 );
 //$static_print( s265 );    
 //$static_print( s710 );
@@ -49,5 +49,8 @@ $static_print( s1 );
 
 //$static_print( rot< 36 >( 5, vec3f{ 1.f, 0.f, 0.f } )[0] );
 
+
+//$static_print( (  ( vec3f{1, 1, 1} )[0] ) );
+$static_print( ( normalize_cexpr( vec3d{ 1, 1, 1 } )[0] ) );
 
 

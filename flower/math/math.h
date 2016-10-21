@@ -103,7 +103,7 @@ namespace lib {
 
       if( value == .0 ) return .0;
       if( abs( guess * guess - value ) < 0.000000000005 ) return guess;
-      if( n > 20 ) return guess;
+      if( n > 17 ) return guess;
       
       return value > .0 ? sqrt_cexpr( value, 0.5 * ( guess + value / guess ), ++n ) : throw "negative value";
     }
