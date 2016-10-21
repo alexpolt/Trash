@@ -238,7 +238,7 @@ namespace lib {
       return $this;
     }
 
-    TP<TN U0, char = str_format< select_t< is_ptr_v< U0 >, void*, U0 > >::format[ 0 ], 
+    TP<TN U0, cstr (*)( U0 const& ) = to_string, 
               TN = enable_if_t< is_string and not is_same_v< U0, value_type* > >>
     auto& operator<<( U0 other ) {
       

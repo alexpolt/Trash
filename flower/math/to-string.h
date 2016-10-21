@@ -8,22 +8,48 @@
 
 namespace lib {
 
-  TP<TN T0, ssize_t... NN > 
-  cstr to_string( m::vec_t< T0, NN... > value ) {
 
-    //info, "v0 = "; for( auto i : v0.data() ) info, i, ", "; info, endl, endl;
-    $throw $error_not_implemented();
-  }
+  TP< TN T0, ssize_t... NN>
+  struct string_format< m::vec_t< T0, NN... > > {
 
+    static cstr format( m::vec_t< T0, NN... > const& v ) {
 
+      auto& buffer = global::get_buffer< char >();
+      char* ptr = buffer;
 
-  TP<TN T0, ssize_t... NN > 
-  cstr to_string( m::mat_t< T0, NN... > value ) {
-    //info, "mat.v0 = "; for( auto i : m0[0].data() ) info, i, ", "; info, endl;
-    //info, "mat.v1 = "; for( auto i : m0[1].data() ) info, i, ", "; info, endl;
-    //info, "mat.v2 = "; for( auto i : m0[2].data() ) info, i, ", "; info, endl;
-    $throw $error_not_implemented();
-  }
+      for( auto i : range{ 0, v.size() - 1 } )
+        ptr += snprintf( ptr, $length( buffer ), "%.5f, ", v[ i ] );
+
+      snprintf( ptr, $length( buffer ), "%.5f", v[ v.size() - 1 ] );
+
+      return buffer; 
+    }
+
+  };
+
+  TP< TN T0, ssize_t... NN>
+  struct string_format< m::mat_t< T0, NN... > > {
+
+    static cstr format( m::mat_t< T0, NN... > const& m ) {
+
+      auto& buffer = global::get_buffer< char >();
+
+      char* ptr = buffer;
+
+      for( auto& v : m.data() ) {
+
+        for( auto i : range{ 0, v.size() - 1 } )
+          ptr += snprintf( ptr, $length( buffer ), "%.5f, ", v[ i ] );
+
+        ptr += snprintf( ptr, $length( buffer ), "%.5f\n", v[ v.size() - 1 ] );
+      }
+
+      *(ptr-1) = '\0';
+
+      return buffer; 
+    }
+
+  };
 
 
 }

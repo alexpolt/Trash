@@ -87,31 +87,7 @@ namespace lib {
       return logger;
     }
 
-    TP<log_type T0>
-    auto operator,( log_t< T0 > logger, char* data ) { 
-
-      logger.log( data );
-
-      return logger;
-    }
-
-    TP<log_type T0, TN T1>
-    auto operator,( log_t< T0 > logger, T1* data ) { 
-
-      logger.log( to_string( (void*) data ) );
-
-      return logger;
-    }
-
-    TP<log_type T0, TN T1, char = str_format< T1 >::format[ 0 ]>
-    auto operator,( log_t< T0 > logger, T1 const& data ) { 
-      
-      logger.log( to_string( data ) ); 
-
-      return logger;
-    }
-
-    TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::to_string>
+    TP<log_type T0, TN T1, cstr (T1::*)() const = T1::to_string>
     auto operator,( log_t< T0 > logger, T1 const& data ) { 
 
       logger.log( data.to_string() ); 
@@ -119,7 +95,15 @@ namespace lib {
       return logger;
     }
 
-    TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::operator(), TN = void>
+    TP<log_type T0, TN T1, cstr (*)( T1 const& ) = to_string>
+    auto operator,( log_t< T0 > logger, T1 const& data ) { 
+
+      logger.log( to_string( data ) ); 
+
+      return logger;
+    }
+
+    TP<log_type T0, TN T1, cstr (T1::*)() const = T1::operator(), TN = void>
     auto operator,( log_t< T0 > logger, T1 const& data ) { 
 
       logger.log( data() ); 
