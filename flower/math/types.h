@@ -49,28 +49,22 @@ namespace lib {
     TP<TN T0, ssize_t N0>
     using vec = typename define_vector_t< T0, lib::index_list_t< N0 > >::type;
 
-    TP<ssize_t N0>
-    using vecf = typename define_vector_t< float, lib::index_list_t< N0 > >::type;
+    #define $vec( $0, $1, $2 ) \
+    using $paste( vec, $paste( $0, $1 ) ) = typename define_vector_t< $2, lib::index_list_t< $0 > >::type;
 
-    using vec2f = typename define_vector_t< float, lib::index_list_t< 2 > >::type;
-    using vec3f = typename define_vector_t< float, lib::index_list_t< 3 > >::type;
-    using vec4f = typename define_vector_t< float, lib::index_list_t< 4 > >::type;
+    // vec2f, vec3f, vec4f, vec2d, vec3d, vec4d, vec2i, vec3i, vec4i
 
-    TP<ssize_t N0>
-    using vecd = typename define_vector_t< double, lib::index_list_t< N0 > >::type;
+    $vec( 2, f, float )
+    $vec( 3, f, float )
+    $vec( 4, f, float )
 
-    using vec2d = typename define_vector_t< double, lib::index_list_t< 2 > >::type;
-    using vec3d = typename define_vector_t< double, lib::index_list_t< 3 > >::type;
-    using vec4d = typename define_vector_t< double, lib::index_list_t< 4 > >::type;
+    $vec( 2, d, double )
+    $vec( 3, d, double )
+    $vec( 4, d, double )
 
-
-    TP<ssize_t N0>
-    using veci = typename define_vector_t< int, lib::index_list_t< N0 > >::type;
-
-    using vec2i = typename define_vector_t< int, lib::index_list_t< 2 > >::type;
-    using vec3i = typename define_vector_t< int, lib::index_list_t< 3 > >::type;
-    using vec4i = typename define_vector_t< int, lib::index_list_t< 4 > >::type;
-
+    $vec( 2, i, int )
+    $vec( 3, i, int )
+    $vec( 4, i, int )
 
 
     TP<TN T0, ssize_t... NN>
@@ -84,7 +78,7 @@ namespace lib {
       constexpr explicit mat_t( U0 arg ) : _data{ ( (void)NN, value_type{ arg } )... } { }
 
       TP<TN... UU>
-      constexpr explicit mat_t( UU... args ) : _data{ { args }... } { }
+      constexpr explicit mat_t( UU... args ) : _data{ value_type{ args }... } { }
 
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
@@ -109,27 +103,22 @@ namespace lib {
     TP<TN T0, ssize_t N0>
     using mat = typename define_mat_t< T0, lib::index_list_t< N0 > >::type;
 
-    TP<ssize_t N0>
-    using matf = typename define_mat_t< float, lib::index_list_t< N0 > >::type;
+    #define $mat( $0, $1, $2 ) \
+    using $paste( mat, $paste( $0, $1 ) ) = typename define_mat_t< $2, lib::index_list_t< $0 > >::type;
 
-    using mat2f = typename define_mat_t< float, lib::index_list_t< 2 > >::type;
-    using mat3f = typename define_mat_t< float, lib::index_list_t< 3 > >::type;
-    using mat4f = typename define_mat_t< float, lib::index_list_t< 4 > >::type;
+    // mat2f, mat3f, mat4f, mat2d, mat3d, mat4d, mat2i, mat3i, mat4i
 
-    TP<ssize_t N0>
-    using matd = typename define_mat_t< double, lib::index_list_t< N0 > >::type;
+    $mat( 2, f, float )
+    $mat( 3, f, float )
+    $mat( 4, f, float )
 
-    using mat2d = typename define_mat_t< double, lib::index_list_t< 2 > >::type;
-    using mat3d = typename define_mat_t< double, lib::index_list_t< 3 > >::type;
-    using mat4d = typename define_mat_t< double, lib::index_list_t< 4 > >::type;
+    $mat( 2, d, double )
+    $mat( 3, d, double )
+    $mat( 4, d, double )
 
-
-    TP<ssize_t N0>
-    using mati = typename define_mat_t< int, lib::index_list_t< N0 > >::type;
-
-    using mat2i = typename define_mat_t< int, lib::index_list_t< 2 > >::type;
-    using mat3i = typename define_mat_t< int, lib::index_list_t< 3 > >::type;
-    using mat4i = typename define_mat_t< int, lib::index_list_t< 4 > >::type;
+    $mat( 2, i, int )
+    $mat( 3, i, int )
+    $mat( 4, i, int )
 
 
   }

@@ -23,18 +23,18 @@ constexpr double print( double d ) { return print( d ); }
   constexpr static int data2 = { $0 }; \
 };
 
-//constexpr auto cos89 = cos_cexpr( radians< double >( 89 ) );
+constexpr auto cos89 = cos_cexpr( radians< double >( -89 ) );
 //constexpr auto cos179 = cos_cexpr( radians< double >( 179 ) );
 //constexpr auto cos265 = cos_cexpr( radians< double >( 265 ) );
 //constexpr auto cos350 = cos_cexpr( radians< double >( 350 ) );
 
-//constexpr auto s1 = sin_cexpr( radians< double >( 1 ) );
+constexpr auto s1 = sin_cexpr( radians< double >( -1 ) );
 //constexpr auto s100 = sin_cexpr( radians< double >( 100 ) );
 //constexpr auto s265 = sin_cexpr( radians< double >( 265 ) );
 //constexpr auto s710 = sin_cexpr( radians< double >( 710 ) );
 
 
-//$static_print( cos89 );
+$static_print( cos89 );
 //$static_print( coi179 );
 //$static_print( cos265 );    
 //$static_print( cos350 );
@@ -51,6 +51,6 @@ constexpr double print( double d ) { return print( d ); }
 
 
 //$static_print( (  ( vec3f{1, 1, 1} )[0] ) );
-$static_print( ( normalize_cexpr( vec3d{ 1, 1, 1 } )[0] ) );
+//$static_print( ( normalize_cexpr( vec3d{ 1, 1, 1 } )[0] ) );
 
 

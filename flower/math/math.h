@@ -26,15 +26,15 @@ namespace lib {
         return $0( left, right ); \
       }
     
-    $vec_fn( add, + );
-    $vec_fn( sub, - );
-    $vec_fn( mul, * );
-    $vec_fn( div, / );
+    $vec_fn( add, + )
+    $vec_fn( sub, - )
+    $vec_fn( mul, * )
+    $vec_fn( div, / )
 
-    $vec_op( add, + );
-    $vec_op( sub, - );
-    $vec_op( mul, * );
-    $vec_op( div, / );
+    $vec_op( add, + )
+    $vec_op( sub, - )
+    $vec_op( mul, * )
+    $vec_op( div, / )
 
 
     TP< TN T0 >
@@ -72,15 +72,15 @@ namespace lib {
         return $0( left, right ); \
       }
     
-    $mat_fn( add, + );
-    $mat_fn( sub, - );
-    $mat_fn( mul, * );
-    $mat_fn( div, / );
+    $mat_fn( add, + )
+    $mat_fn( sub, - )
+    $mat_fn( mul, * )
+    $mat_fn( div, / )
 
-    $mat_op( add, + );
-    $mat_op( sub, - );
-    $mat_op( mul, * );
-    $mat_op( div, / );
+    $mat_op( add, + )
+    $mat_op( sub, - )
+    $mat_op( mul, * )
+    $mat_op( div, / )
 
 
     TP< TN T0, ssize_t... NN > 
@@ -99,6 +99,12 @@ namespace lib {
     TP< TN T0, ssize_t... NN > 
     constexpr auto abs( vec_t< T0, NN... > value ) { return vec_t< T0, NN... >{ abs( value[ NN ] )... }; }
 
+    TP<TN T0>
+    constexpr auto sign( T0 a ) { return a < 0 ? T0( -1.0 ) : T0( 1.0 ); }
+
+    TP< TN T0, ssize_t... NN > 
+    constexpr auto sign( vec_t< T0, NN... > value ) { return vec_t< T0, NN... >{ sign( value[ NN ] )... }; }
+
     constexpr auto sqrt_cexpr( double value, double guess = 1.0, double n = 0 ) {
 
       if( value == .0 ) return .0;
@@ -106,6 +112,27 @@ namespace lib {
       if( n > 17 ) return guess;
       
       return value > .0 ? sqrt_cexpr( value, 0.5 * ( guess + value / guess ), ++n ) : throw "negative value";
+    }
+
+    TP<ssize_t... NN > 
+    constexpr auto sqrt_cexpr( vec_t< double, NN... > value ) {
+      
+      return vec_t< double, NN... >{ sqrt_cexpr( value[ NN ] )... };
+    }
+
+    constexpr auto angle_adjust( double &angle, bool cos ) {
+
+      double s = cos ? 1.0 : sign( angle );
+
+      angle = abs( angle );
+
+      while( angle > pi2< double > ) angle -= pi2< double >;
+
+      if( angle > pi34< double > ) { angle = pi2< double > - angle; if( not cos ) s = -1.0 * s; }
+      else if( angle > pi< double > ) { angle -= pi< double >; s = -1.0 * s; }
+      else if( angle > pi_half< double > ) { angle = pi< double > - angle; if( cos ) s = -1.0 * s; }
+
+      return s;
     }
 
     constexpr auto cos_cexpr_( double angle, double x, double sign, double fact, double n ) { 
@@ -118,19 +145,6 @@ namespace lib {
 
       return sign2 * x2 / fact2 + cos_cexpr_( angle, x2, sign2, fact2, n + 2 );
     };
-
-    constexpr auto angle_adjust( double &angle, bool cos ) {
-
-      double sign = 1.0;
-
-      while( angle > pi2< double > ) angle -= pi2< double >;
-
-      if( angle > pi34< double > ) { angle = pi2< double > - angle; if( not cos ) sign = -1.0; }
-      else if( angle > pi< double > ) { angle -= pi< double >; sign = -1.0; }
-      else if( angle > pi_half< double > ) { angle = pi< double > - angle; if( cos ) sign = -1.0; }
-
-      return sign;
-     }
 
     constexpr auto cos_cexpr( double angle ) { 
 
