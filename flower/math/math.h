@@ -37,28 +37,6 @@ namespace lib {
     $vec_op( div, / )
 
 
-    TP< TN T0 >
-    constexpr auto add( T0 left ) { return left; }
-
-    TP< TN T0, TN... TT >
-    constexpr auto add( T0 left, TT... args ) { return left + add( args... ); }
-
-
-    TP< TN T0, ssize_t... NN > 
-    constexpr auto dot( vec_t< T0, NN...> left, vec_t< T0, NN... > right ) { 
-
-        return add( left[ NN ] * right[ NN ]... );
-    }
-
-    TP< TN T0, ssize_t... NN > 
-    constexpr T0 length( vec_t< T0, NN... > v ) { return sqrt( dot( v, v ) ); }
-
-    TP< TN T0, ssize_t... NN > 
-    constexpr auto normalize( vec_t< T0, NN...> v ) { 
-
-        return v / vec_t< T0, NN... >{ length( v ) };
-    }
-
 
     #define $mat_fn( $0, $1 ) \
       TP< TN T0, ssize_t... NN > \
@@ -82,6 +60,19 @@ namespace lib {
     $mat_op( mul, * )
     $mat_op( div, / )
 
+
+    TP< TN T0 >
+    constexpr auto add( T0 left ) { return left; }
+
+    TP< TN T0, TN... TT >
+    constexpr auto add( T0 left, TT... args ) { return left + add( args... ); }
+
+
+    TP< TN T0, ssize_t... NN > 
+    constexpr auto dot( vec_t< T0, NN...> left, vec_t< T0, NN... > right ) { 
+
+        return add( left[ NN ] * right[ NN ]... );
+    }
 
     TP< TN T0, ssize_t... NN > 
     constexpr auto operator*( mat_t< T0, NN... > left, vec_t< T0, NN... > right ) {
@@ -120,6 +111,8 @@ namespace lib {
       return vec_t< double, NN... >{ sqrt_cexpr( value[ NN ] )... };
     }
 
+    #define $sqrt( ... ) sqrt_cexpr( __VA_ARGS__ );
+
     constexpr auto angle_adjust( double &angle, bool cos ) {
 
       double s = cos ? 1.0 : sign( angle );
@@ -130,7 +123,7 @@ namespace lib {
 
       if( angle > pi34< double > ) { angle = pi2< double > - angle; if( not cos ) s = -1.0 * s; }
       else if( angle > pi< double > ) { angle -= pi< double >; s = -1.0 * s; }
-      else if( angle > pi_half< double > ) { angle = pi< double > - angle; if( cos ) s = -1.0 * s; }
+      else if( angle > pi12< double > ) { angle = pi< double > - angle; if( cos ) s = -1.0 * s; }
 
       return s;
     }
@@ -153,6 +146,8 @@ namespace lib {
       return sign * ( 1 + cos_cexpr_( angle, 1.0, 1.0, 1.0, 1.0 ) );
     };
 
+    #define $cos( ... ) cos_cexpr( __VA_ARGS__ );
+
     constexpr auto sin_cexpr( double angle ) {
 
       double sign = angle_adjust( angle, false );
@@ -160,8 +155,21 @@ namespace lib {
       return sign * ( sqrt_cexpr( 1.0 - cos_cexpr( angle ) * cos_cexpr( angle ) ) );
     }
 
+    #define $sin( ... ) sin_cexpr( __VA_ARGS__ );
+
+    TP< TN T0, ssize_t... NN > 
+    constexpr T0 length( vec_t< T0, NN... > v ) { return sqrt( dot( v, v ) ); }
+
+    TP< TN T0, ssize_t... NN > 
+    constexpr auto normalize( vec_t< T0, NN...> v ) { 
+
+        return v / vec_t< T0, NN... >{ length( v ) };
+    }
+
     TP< TN T0, ssize_t... NN > 
     constexpr T0 length_cexpr( vec_t< T0, NN... > v ) { return sqrt_cexpr( dot( v, v ) ); }
+
+    #define $vector_length( ... ) length_cexpr( __VA_ARGS__ );
 
     TP< TN T0, ssize_t... NN > 
     constexpr auto normalize_cexpr( vec_t< T0, NN...> v ) { 
@@ -169,12 +177,7 @@ namespace lib {
         return v / vec_t< T0, NN... >{ length_cexpr( v ) };
     }
 
-
-    TP<ssize_t A0>
-    constexpr mat3f rotz{ vec3f{ cosf( radians< float >( A0 ) ), -sinf( radians< float >( A0 ) ), 0.f }, 
-                          vec3f{ sinf( radians< float >( A0 ) ),  cosf( radians< float >( A0 ) ), 0.f }, 
-                          vec3f{ 0.f, 0.f, 1.f } };
-
+    #define $normalize( ... ) normalize_cexpr( __VA_ARGS__ );
 
 
   }

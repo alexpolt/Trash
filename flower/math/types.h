@@ -49,22 +49,22 @@ namespace lib {
     TP<TN T0, ssize_t N0>
     using vec = typename define_vector_t< T0, lib::index_list_t< N0 > >::type;
 
-    #define $vec( $0, $1, $2 ) \
+    #define $define_vec( $0, $1, $2 ) \
     using $paste( vec, $paste( $0, $1 ) ) = typename define_vector_t< $2, lib::index_list_t< $0 > >::type;
 
     // vec2f, vec3f, vec4f, vec2d, vec3d, vec4d, vec2i, vec3i, vec4i
 
-    $vec( 2, f, float )
-    $vec( 3, f, float )
-    $vec( 4, f, float )
+    $define_vec( 2, f, float )
+    $define_vec( 3, f, float )
+    $define_vec( 4, f, float )
 
-    $vec( 2, d, double )
-    $vec( 3, d, double )
-    $vec( 4, d, double )
+    $define_vec( 2, d, double )
+    $define_vec( 3, d, double )
+    $define_vec( 4, d, double )
 
-    $vec( 2, i, int )
-    $vec( 3, i, int )
-    $vec( 4, i, int )
+    $define_vec( 2, i, int )
+    $define_vec( 3, i, int )
+    $define_vec( 4, i, int )
 
 
     TP<TN T0, ssize_t... NN>
@@ -103,22 +103,22 @@ namespace lib {
     TP<TN T0, ssize_t N0>
     using mat = typename define_mat_t< T0, lib::index_list_t< N0 > >::type;
 
-    #define $mat( $0, $1, $2 ) \
+    #define $define_mat( $0, $1, $2 ) \
     using $paste( mat, $paste( $0, $1 ) ) = typename define_mat_t< $2, lib::index_list_t< $0 > >::type;
 
     // mat2f, mat3f, mat4f, mat2d, mat3d, mat4d, mat2i, mat3i, mat4i
 
-    $mat( 2, f, float )
-    $mat( 3, f, float )
-    $mat( 4, f, float )
+    $define_mat( 2, f, float )
+    $define_mat( 3, f, float )
+    $define_mat( 4, f, float )
 
-    $mat( 2, d, double )
-    $mat( 3, d, double )
-    $mat( 4, d, double )
+    $define_mat( 2, d, double )
+    $define_mat( 3, d, double )
+    $define_mat( 4, d, double )
 
-    $mat( 2, i, int )
-    $mat( 3, i, int )
-    $mat( 4, i, int )
+    $define_mat( 2, i, int )
+    $define_mat( 3, i, int )
+    $define_mat( 4, i, int )
 
 
   }

@@ -93,7 +93,7 @@ namespace lib {
 
   };
 
-  #define $error_not_implemented( $0 ) lib::error_not_implemented{ __FILE__, __LINE__, __func__, $0 }
+  #define $error_not_implemented() lib::error_not_implemented{ __FILE__, __LINE__, __func__, "not implemented" }
 
 
 }

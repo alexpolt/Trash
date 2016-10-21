@@ -9,6 +9,8 @@
 #include "constant.h"
 #include "types.h"
 #include "math.h"
+#include "variable.h"
+#include "to-string.h"
 
 namespace libm = lib::m;
 

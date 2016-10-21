@@ -12,10 +12,10 @@ namespace lib {
     constexpr T0 pi = T0( 3.14159265358979 );
 
     TP<TN T0>
-    constexpr T0 pi_half = T0( .5 ) * pi< T0 >;
+    constexpr T0 pi12 = T0( .5 ) * pi< T0 >;
 
     TP<TN T0>
-    constexpr T0 pi34 = pi< T0 > + pi_half< T0 >;
+    constexpr T0 pi34 = pi< T0 > + pi12< T0 >;
 
     TP<TN T0>
     constexpr T0 pi2 = pi< T0 > + pi< T0 >;
