@@ -5,7 +5,7 @@
 
 int main() {
 
-  lib::log::memory.on();
+  liblog::memory.on();
 
   libm::vec3f v0{ 1, 2, 3 };
   libm::vec3f v1{ 1, 1, 1 };

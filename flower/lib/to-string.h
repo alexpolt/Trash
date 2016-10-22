@@ -13,8 +13,8 @@ namespace lib {
 
   TP<> struct str_printf_format< char > { constexpr static cstr format = "%c"; };
   TP<> struct str_printf_format< cstr > { constexpr static cstr format = "%s"; };
-  TP<> struct str_printf_format< char* > { constexpr static cstr format = "%s"; };
-  TP<> struct str_printf_format< bool > { constexpr static cstr format = "%d"; };
+  //TP<> struct str_printf_format< char* > { constexpr static cstr format = "%s"; };
+  //TP<> struct str_printf_format< bool > { constexpr static cstr format = "%d"; };
   TP<> struct str_printf_format< uint > { constexpr static cstr format = "%u"; };
   TP<> struct str_printf_format< long long > { constexpr static cstr format = "%lli"; };
   TP<> struct str_printf_format< long > { constexpr static cstr format = "%li"; };
@@ -41,7 +41,7 @@ namespace lib {
   };
 
 
-  TP<TN T0, cstr (*)( T0 const& ) = string_format< T0 >::format>
+  TP<TN T0, cstr (*)( T0 const& ) = &string_format< T0 >::format>
   cstr to_string( T0 const& arg ) { 
 
     return string_format< T0 >::format( arg );

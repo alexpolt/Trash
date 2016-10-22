@@ -12,8 +12,8 @@
 #include "variable.h"
 #include "to-string.h"
 
-namespace libm = lib::m;
 
+using libm::operator ""_rad;
 
 
 

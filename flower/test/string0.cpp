@@ -21,7 +21,7 @@ int main () {
   string s3{ move( s2 ) };
   s3 = move( s0 );
 
-  lib::log::memory.on();
+  liblog::memory.on();
 
   char h[]={'1','3','\0','5','6'};
 

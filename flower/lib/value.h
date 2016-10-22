@@ -5,6 +5,7 @@
 #include <new>
 #include "macros.h"
 #include "types.h"
+#include "algo.h"
 
 namespace lib {
   
@@ -13,13 +14,13 @@ namespace lib {
 
     static constexpr bool is_primitive = not is_owner;
 
-    static constexpr ssize_t value_size = $size( void*[2] );
+    static constexpr ssize_t value_size = max( $size( T0 ), $size( void*[2] ) );
 
 
     TP<TN U0, TN... TT> 
     static value create( TT&&... args ) {
 
-      static_assert( $size( U0 ) <= $size( data_ptr ), "The data size is too big for a value<...>.");
+      static_assert( $size( U0 ) <= value_size, "The data size is too big for a value<...>.");
 
       static_assert( alignof( T0 ) == alignof( U0 ), "Alignment is wrong." );
 

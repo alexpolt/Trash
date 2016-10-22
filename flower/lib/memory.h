@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include "macros.h"
+#include "assert.h"
 #include "error.h"
 #include "types.h"
 #include "ptr.h"
@@ -37,9 +38,9 @@ namespace lib {
 
             get_stats().alloc.sub( _size[ i ] );
 
-            log::memory, "object ", _owner[ i ], ", free( ", _size[ i ], 
+            liblog::memory, "object ", _owner[ i ], ", free( ", _size[ i ], 
 
-                        " ), stat = ", (ssize_t) get_stats().alloc, log::endl;
+                        " ), stat = ", (ssize_t) get_stats().alloc, liblog::endl;
 
             ::free( _ptr[ i ] ); 
 
@@ -65,7 +66,7 @@ namespace lib {
 
       auto& stats = get_stats();
 
-      log::memory, "object ", object, " alloc( ", size, " ) ", log::endl;
+      liblog::memory, "object ", object, " alloc( ", size, " ) ", liblog::endl;
 
       auto& cache = get_cache();
       
@@ -84,7 +85,7 @@ namespace lib {
 
       stats.alloc.add( size );
 
-      log::memory, "stat = ", (ssize_t) stats.alloc, log::endl;
+      liblog::memory, "stat = ", (ssize_t) stats.alloc, liblog::endl;
 
       if( ! ptr ) $throw error_memory{ "malloc failed" };
 
@@ -104,7 +105,7 @@ namespace lib {
 
         stats.alloc.sub( size );
 
-        log::memory, "object ", owner, ", free1( ", size, " ), stat = ", (ssize_t) stats.alloc, log::endl;
+        liblog::memory, "object ", owner, ", free1( ", size, " ), stat = ", (ssize_t) stats.alloc, liblog::endl;
 
         ::free( ptr.get() ); 
 
@@ -127,9 +128,9 @@ namespace lib {
 
         stats.alloc.sub( cache._size[ idx ] );
 
-        log::memory, "object ", cache._owner[ idx ], ", free2( ", cache._size[ idx ], 
+        liblog::memory, "object ", cache._owner[ idx ], ", free2( ", cache._size[ idx ], 
 
-                     " ), stat = ", (ssize_t) stats.alloc, log::endl;
+                     " ), stat = ", (ssize_t) stats.alloc, liblog::endl;
 
         ::free( cache._ptr[ idx ] ); 
 

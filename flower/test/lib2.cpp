@@ -36,7 +36,7 @@ struct alex : human {
 
 int main() {
 
-  lib::log::memory.on();
+  liblog::memory.on();
 
   info, "compilation date = ", lib::config::compilation_date, endl,
         "program name = ", lib::config::program_name, endl,

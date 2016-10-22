@@ -132,7 +132,7 @@ namespace lib {
     
   TP<TN T0, TN... TT>
     typename object_factory< T0, TT... >::create_f 
-      object_factory< T0, TT... >::_create_list[] = { T0::get_object, TT::create... };
+      object_factory< T0, TT... >::_create_list[] = { &T0::get_object, &TT::create... };
 
   /*
     Usage:

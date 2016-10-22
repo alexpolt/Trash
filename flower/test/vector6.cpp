@@ -25,7 +25,7 @@ int main() {
   info, "is_array: ", lib::is_array_v<decltype(a0)>, lib::is_array_v<decltype(a1)>, endl;
 
 
-  lib::log::memory.on();
+  liblog::memory.on();
 
   std::vector< test > v0{};
   lib::vector< test > v1{};

@@ -266,7 +266,7 @@ namespace lib {
 
     TP<TN U0, TN = enable_if_t< not is_string and 
                                 is_container_v< no_cref_t< U0 > > and 
-                                not is_vector< no_cref_t< U0 > >::value>, TN = void>
+                                not is_vector< no_cref_t< U0 > >::value >, TN = void>
     auto& operator<<( U0&& other_ ) { 
       
       auto &other = const_cast< no_cref_t< U0 >& >( other_ );

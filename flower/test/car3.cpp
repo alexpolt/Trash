@@ -84,6 +84,8 @@ TP<TN T0> struct car_ai_basic : car_ai {
 void measure0();
 void measure1();
 
+owner< car >& create_lada();
+
 int main() {
 
   info, "compilation date = ", lib::config::compilation_date, endl,
@@ -92,9 +94,10 @@ int main() {
 
   $try {
 
-    auto c0 = owner< car >::create< lada >();
+    //owner< car > c0 = create_lada();
 
-    c0 = owner< car >::create< lada >();
+    owner< car > c1{ owner< car >::create< lada >() };
+    owner< car > c0{ move(c1) };
 
     owner<car> car0 = owner< car >::create< mazda >();
 
@@ -111,7 +114,7 @@ int main() {
 
     printf("value<car> size = %d\n", $size( car0 ) );
 
-    lib::log::memory.on();
+    liblog::memory.on();
 
     info, endl, "-- measure0 --", endl;
     measure0();
