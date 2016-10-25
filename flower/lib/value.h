@@ -1,21 +1,26 @@
 #pragma once
 
-#include <cstring>
-#include <cstdio>
 #include <new>
+#include <cstddef>
 #include "macros.h"
 #include "types.h"
 #include "algo.h"
+#include "to-string-selector.h"
 
 namespace lib {
   
-  TP<TN T0, bool is_owner = false> 
-  struct value : select_t< is_owner, nocopy, empty_struct > {
-
-    static constexpr bool is_primitive = not is_owner;
+  TP<TN T0> 
+  struct value : nocopy {
 
     static constexpr ssize_t value_size = max( $size( T0 ), $size( void*[2] ) );
 
+    value() { }
+
+    ~value() { if( *type_cast< ptrdiff_t* >( &_data ) ) $this->~T0(); }
+
+    value( value&& other ) : _data{ move( other._data ) } { }
+
+    auto& operator=( value&& other ) { _data = move( other._data ); return $this; }
 
     TP<TN U0, TN... TT> 
     static value create( TT&&... args ) {
@@ -32,7 +37,7 @@ namespace lib {
 
     }
 
-    cstr to_string() const { return $this->to_string(); }
+    cstr to_string() const { return to_string_selector< T0 >::to_string( &$this ); }
 
     TP<TN... TT>
     auto operator()( TT... args ) const -> decltype( declval< T0& >()( forward< TT >( declval< TT >() )... ) ) { 
@@ -52,60 +57,15 @@ namespace lib {
     auto operator->() const { return type_cast< T0 const* >( & _data ); }
     auto& operator*() const { return type_cast< T0 const& >( _data ); }
 
+    struct data_t {
 
-    struct data_ptr { 
+      static constexpr bool is_primitive = true;
 
-      data_ptr() : _ptr{} { }
+      char data[ value_size ]; 
 
-      ~data_ptr() { 
-
-        auto ptr = type_cast< ssize_t* >( & _ptr );
-
-        if( is_owner and *ptr != 0 ) 
-
-            type_cast< T0* >( & _ptr )->~T0(); 
-      }
-
-      data_ptr( data_ptr const& other ) noexcept { 
-
-        memcpy( _ptr, other._ptr, value_size ); 
-      }
-
-      data_ptr( data_ptr&& other ) noexcept { 
-
-        memcpy( _ptr, other._ptr, value_size ); 
-        memset( other._ptr, 0, value_size );
-      }
-
-      auto& operator=( data_ptr const& other ) noexcept {
-
-        memcpy( _ptr, other._ptr, value_size ); 
-
-        return $this;
-      }
-
-      auto& operator=( data_ptr&& other ) noexcept {
-
-        memcpy( _ptr, other._ptr, value_size ); 
-        memset( other._ptr, 0, value_size );
-
-        return $this;
-      }
-
-      char* get() { return _ptr; }
-
-      char const* get() const { return _ptr; }
-      
-      char _ptr[ value_size ]; 
-    };
-
-
-    alignas( alignof( T0 ) ) data_ptr _data;
-
+    } _data{};
   };
 
-  TP<TN T0> 
-  using owner = value< T0, true >;
 
 }
 

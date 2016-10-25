@@ -1,40 +1,41 @@
 #pragma once
 
+#include <cstring>
 #include <cstdio>
 #include "macros.h"
 #include "types.h"
+#include "buffer.h"
 
 namespace lib {
 
   struct error {
 
-    error( ) : _file_line{} { }
+    static constexpr ssize_t buffer_size = 256;
 
-    error( cstr msg ) {
+    error( ) : _buffer{ global::get_buffer< error, buffer_size >() } { }
 
-        snprintf( _file_line, $length( _file_line ), "%s", msg );
+    error( cstr msg ) : error() {
+
+      snprintf( _buffer, $length( _buffer ), "%s", msg );
     }
 
-    error( cstr file, int line, cstr func ) { 
+    error( cstr file, int line, cstr func ) : error() { 
 
-        snprintf( _file_line, $length( _file_line ), "%s:%d::%s() -> ", file, line, func );
-
+      snprintf( _buffer, $length( _buffer ), "%s:%d::%s() -> ", file, line, func );
     }
 
-    error( cstr file, int line, cstr func, cstr msg ) { 
+    error( cstr file, int line, cstr func, cstr msg ) : error() { 
 
-        snprintf( _file_line, $length( _file_line ), "%s:%d::%s() -> %s", file, line, func, msg );
-
+      snprintf( _buffer, $length( _buffer ), "%s:%d::%s() -> %s", file, line, func, msg );
     }
 
     virtual ~error() {}
 
-    virtual cstr what() const { return _file_line; }
+    virtual cstr what() const { return _buffer; }
 
     cstr to_string() const { return what(); }
 
-    char _file_line[512];
-
+    char ( &_buffer )[ buffer_size ]; 
   };
 
   #define $error( $0 ) lib::error{ __FILE__, __LINE__, __func__, $0 }
@@ -42,18 +43,14 @@ namespace lib {
 
   struct error_object : error {
 
-    error_object( cstr file, int line, cstr func, iid_t iid, cstr msg ) :
-      error{ file, line, func } {
+    error_object( cstr file, int line, cstr func, iid_t iid, cstr msg ) : error{ file, line, func } {
 
-      snprintf( _buf, $length( _buf ), 
-        "%s: object %d not found in object( %s )", error::what(), iid, msg );
+      auto l = strlen( error::_buffer );
 
-    }
+      auto ptr = error::_buffer + l;
 
-    cstr what() const override { return _buf; }
-
-    char _buf[1024];
-
+      snprintf( ptr, $length( error::_buffer ) - l, ": object %d not found in object( %s )", iid, msg );
+    } 
   };
 
   #define $error_object( $0, $1 ) lib::error_object{ __FILE__, __LINE__, __func__, $0, $1 }
@@ -61,18 +58,14 @@ namespace lib {
 
   struct error_dispatch : error {
 
-    error_dispatch( cstr file, int line, cstr func, cstr msg_a, cstr msg_b ) : 
-      error{ file, line, func } {
+    error_dispatch( cstr file, int line, cstr func, cstr msg_a, cstr msg_b ) : error{ file, line, func } {
         
-      snprintf( _buf, $length( _buf ), 
-        "%s: dispatch failed for object( %s ) and object( %s )", error::what(), msg_a, msg_b );
+      auto l = strlen( error::_buffer );
 
+      auto ptr = error::_buffer + l;
+
+      snprintf( ptr, $length( error::_buffer ) - l, ": dispatch failed for ( %s ) and ( %s )", msg_a, msg_b );
     }
-
-    cstr what() const override { return _buf; }
-
-    char _buf[1024];
- 
   };
 
   #define $error_dispatch( $0, $1 ) lib::error_dispatch{ __FILE__, __LINE__, __func__, $0, $1 }

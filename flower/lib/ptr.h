@@ -4,49 +4,72 @@
 
 #include "macros.h"
 #include "types.h"
+#include "locker.h"
 
 
 namespace lib {
 
 
-  TP<TN T0>
-  struct owner_ptr;
-
-
-  TP<TN T0, TN... TT>
-  auto make_owner( TT&&... args ) { return owner_ptr< T0 >{ new T0{ forward< T0 >( args )... } }; }
-
-
-  TP<TN T0>
+  TP<TN T0, bool is_shared = false>
   struct owner_ptr : nocopy {
 
-    owner_ptr() : _ptr{} { }
+    static constexpr bool is_primitive = not is_shared;
 
-    explicit owner_ptr( T0* ptr ) : _ptr{ ptr } { }
+    using deleter_t = locker_t::deleter_t;
 
-    owner_ptr( owner_ptr&& other ) noexcept : _ptr { other.release() } { }
+    owner_ptr() { }
+
+    explicit owner_ptr( T0* ptr ) : _ptr{ ptr } { 
+
+      if( is_shared )
+
+        global::locker< owner_ptr >.lock( _ptr, []( void* ptr ){ delete (T0*) ptr; } );
+    }
+
+    TP<TN = enable_if_t< $size( T0 ) and is_shared >>
+    explicit owner_ptr( T0* ptr, deleter_t deleter ) : _ptr{ ptr } { 
+
+      global::locker< owner_ptr >.lock( _ptr, deleter );
+    }
+
+    owner_ptr( owner_ptr&& other ) noexcept : _ptr { move( other._ptr ) } { }
 
     TP<TN U0>
-    owner_ptr( owner_ptr< U0 >&& other ) noexcept : _ptr { other.release() } { }
+    owner_ptr( owner_ptr< U0 >&& other ) noexcept : _ptr { move( other._ptr ) } { }
 
     TP<TN U0>
     auto& operator=( owner_ptr< U0 >&& other ) noexcept {
-      destroy();
-      _ptr = other.release();
-      return $this;
-    }
 
-    auto& operator=( T0* ptr ) noexcept {
       destroy();
-      _ptr = ptr;
+
+      _ptr = move( other._ptr );
+
       return $this;
     }
 
     ~owner_ptr() { destroy(); }
 
-    void destroy() { delete _ptr; }
+    void destroy() { 
 
-    auto release() { return move( _ptr ); }
+      if( is_shared ) global::locker< owner_ptr >.unlock( _ptr );
+
+      else delete _ptr; 
+    }
+
+    TP<TN U0, TN = enable_if_t< $size( U0 ) and is_shared >>
+    auto lock() { 
+     
+      $assert( _ptr, "link called on nullptr in shared_ptr" );
+
+      global::locker< owner_ptr >.lock( _ptr );
+
+      return owner_ptr{ _ptr };
+    }
+
+    auto release() {       
+
+      return move( _ptr ); 
+    }
 
     auto get() const { return _ptr; }
 
@@ -58,7 +81,7 @@ namespace lib {
 
     auto const& operator*() const { return *_ptr; }
 
-    T0* _ptr;
+    T0* _ptr{};
 
   };
 
@@ -69,38 +92,13 @@ namespace lib {
   };
 
 
-  TP<TN T0>
-  struct out_ref {
+  TP<TN T0, TN... TT>
+  auto make_owner( TT&&... args ) { return owner_ptr< T0 >{ new T0{ forward< T0 >( args )... } }; }
 
-    explicit out_ref( T0& value ) : _value{ value } { }
-
-    TP<TN U0>
-    out_ref( out_ref< U0 >& other ) noexcept : _value { other._value } { }
-
-    TP<TN U0>
-    out_ref( out_ref< U0 >&& other ) noexcept : out_ref{ other } { }
-
-    auto& get() { return _value; }
-
-    auto operator->() { return &_value; }
-
-    auto& operator*() { return _value; }
-
-    TP<TN U0>
-    auto& operator=( U0 value_new ) noexcept { 
-      
-      _value = move( value_new );
-
-      return $this;
-    }
-
-    T0& _value;
-  };
 
   TP<TN T0>
-  auto make_out( T0& value ) { return out_ref< T0 >{ value }; }
+  using shared_ptr = owner_ptr< T0, true >;
 
-  #define $out( $0 ) make_out( $0 )
 
 }
 

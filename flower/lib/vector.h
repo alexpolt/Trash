@@ -6,19 +6,18 @@
 #include "assert.h"
 #include "macros.h"
 #include "types.h"
-#include "ptr.h"
 #include "range.h"
 #include "memory.h"
 #include "algo.h"
+#include "iterator.h"
+#include "to-string.h"
+#include "out-ref.h"
 
 namespace lib {
 
 
-  TP<TN T0>
-  struct vector_iterator;
-
   TP<TN T0, ssize_t N0>
-  auto make_vector( T0 ( &data)[ N0 ] ); 
+  inline auto make_vector( T0 ( &data)[ N0 ] ); 
 
 
   TP<TN T0, ssize_t N0 = 0, bool is_string = false>
@@ -33,8 +32,10 @@ namespace lib {
     using iterator = vector_iterator< vector >;
     using const_iterator = vector_iterator< vector const >;
 
-    TP<TN U0>
-    struct is_vector;
+    TP<TN> struct is_vector : type_false { };
+
+    TP<TN U0, ssize_t M0, bool is_str>
+    struct is_vector< vector< U0, M0, is_str > > : type_true { };
 
     TP<TN U0>
     static constexpr bool is_vector_v = is_vector< U0 >::value;
@@ -98,9 +99,9 @@ namespace lib {
     }
 
     void clear() {
-      
-      if( not is_primitive_v< value_type > ) {
-        
+
+      if( size() and not is_primitive_v< value_type > ) {
+
         if( size() >= 4 ) {
 
           for( auto i : range{ 0, size()/4 } ) {
@@ -123,7 +124,6 @@ namespace lib {
     }
 
     void reserve( ssize_t size_new = 0 ) {
-
       if( N0 > 0 ) return;
 
       size_new = max( 8, size_new );
@@ -143,9 +143,10 @@ namespace lib {
 
       value_type* data_new = (value_type*) $alloc( this, size_new_bytes );
 
-      if( not is_primitive_v< value_type > ) {
+      if( size() and not is_primitive_v< value_type > ) {
 
         if( size() >= 4 )
+          
           for( auto i : range{ 0, size()/4 } ) {
 
             auto index = i * 4;
@@ -162,9 +163,10 @@ namespace lib {
 
           new( &data_new[ i ] ) value_type{ move( _data[ i ] ) };
         
-      } else
+      } else if( size() ) {
 
         memcpy( data_new, data(), bytes() );
+      }
 
       free();
 
@@ -264,77 +266,56 @@ namespace lib {
       return $this; 
     }
 
-    TP<TN U0, TN = enable_if_t< not is_string and 
-                                is_container_v< no_cref_t< U0 > > and 
-                                not is_vector< no_cref_t< U0 > >::value >, TN = void>
-    auto& operator<<( U0&& other_ ) { 
-      
-      auto &other = const_cast< no_cref_t< U0 >& >( other_ );
+    TP<TN U0, 
+       TN U1 = select_t< not is_const_v< no_ref_t< U0 > > and not is_ref_v< U0 >, move_t, copy_t >,
+       TN = enable_if_t< not is_string and 
+                              is_container_v< no_cref_t< U0 > > and 
+                                not is_vector_v< no_cref_t< U0 > > >, TN = void>
+    auto& operator<<( U0&& other ) { 
 
-      for( auto& e : other ) {
+      for( auto& e : other )
 
-        if( not is_const_v< no_ref_t< U0 > > and not is_ref_v< U0 > )
-
-          push_back( move( e ) );
-        else
-          
-          push_back( e );
-
-      }
+          push_back( U1::copymove( e ) );
 
       return $this;
     }
 
-    TP< TN U0, 
-        TN = enable_if_t< not is_string and is_vector< no_cref_t< U0 > >::value and
-                          ( not  is_primitive_v< typename no_cref_t< U0 >::value_type >  or 
-                              ( is_primitive_v< typename no_cref_t< U0 >::value_type >  and 
-                              value_size not_eq no_cref_t< U0 >::value_size )
-                           ) >>
+    TP<TN U0,
+       TN U1 = select_t< not is_const_v< no_ref_t< U0 > > and not is_ref_v< U0 >, move_t, copy_t >,
+       TN = enable_if_t< not is_string and is_vector_v< no_cref_t< U0 > > and
+                         ( not is_primitive_v< typename no_cref_t< U0 >::value_type > or 
+                                  ( is_primitive_v< typename no_cref_t< U0 >::value_type > and 
+                                    value_size not_eq no_cref_t< U0 >::value_size )
+                         ) >>
 
-    auto& operator<<( U0&& other_ ) { 
-
-      auto &other = const_cast< no_cref_t< U0 >& >( other_ );
+    auto& operator<<( U0&& other ) {
 
       ssize_t size = other.size();
 
+      if( not size ) return $this;
+
       reserve( size );
 
-      constexpr bool can_move = not is_const_v< no_ref_t< U0 > > and not is_ref_v< U0 >;
+      if( size >= 4 ) {
 
-      if( size >= 4 ) 
         for( auto i : range{ 0, size/4 } ) {
 
           auto index = i * 4;
 
-          if( can_move ) { 
-
-            push_back( move( other[ index + 0 ] ) ); 
-            push_back( move( other[ index + 1 ] ) ); 
-            push_back( move( other[ index + 2 ] ) ); 
-            push_back( move( other[ index + 3 ] ) ); 
-            
-          } else {
-
-            push_back( other[ index + 0 ] ); 
-            push_back( other[ index + 1 ] ); 
-            push_back( other[ index + 2 ] ); 
-            push_back( other[ index + 3 ] ); 
-
-          }
-      } 
+          push_back( U1::copymove( other[ index + 0 ] ) );
+          push_back( U1::copymove( other[ index + 1 ] ) );
+          push_back( U1::copymove( other[ index + 2 ] ) );
+          push_back( U1::copymove( other[ index + 3 ] ) );
+        } 
+      }
 
       auto rest = size % 4;
 
       for( auto index : range{ size - rest, size } ) 
 
-        if( can_move ) 
+         push_back( U1::copymove( other[ index ] ) );
 
-            push_back( move( other[ index ] ) ); 
-        else
-            push_back( other[ index ] ); 
-
-      if( is_vector_v< U0 > and can_move ) other._index = 0;
+      if( not is_const_v< no_ref_t< U0 > > and not is_ref_v< U0 > ) other._index = 0;
 
       return $this; 
     }
@@ -343,6 +324,8 @@ namespace lib {
     auto& operator<<( vector< U0, M0, is_str > const& other ) { 
 
       auto size_other = other.size();
+
+      if( not size_other ) return;
 
       reserve( size_other );
       
@@ -396,58 +379,9 @@ namespace lib {
   };
 
 
-  TP<TN T0, ssize_t N0, bool is_string>
-  TP<TN U0>
-  struct vector< T0, N0, is_string >::is_vector : type_false { };
-
-  TP<TN T0, ssize_t N0, bool is_string>
-  TP<TN U0, ssize_t M0, bool is_str>
-  struct vector< T0, N0, is_string >::is_vector< vector< U0, M0, is_str > > : type_true { };
-
-
-
-  TP<TN T0>
-  struct vector_iterator {
-
-    using iterator = vector_iterator;
-
-    auto operator=( iterator other ) { 
-      
-      $assert( &_object == &other._object, "iterators from different objects" );
-
-      _index = other._index; 
-
-      return $this; 
-    }
-
-    auto operator->() { return &_object[ _index ]; }
-    auto& operator[]( ssize_t index ) { return _object[ _index + index ]; }
-    auto& operator*() { return _object[ _index ]; }
-
-    auto operator==( iterator other ) { return _index == other._index; }
-    auto operator!=( iterator other ) { return _index != other._index; }
-    auto operator<( iterator other ) { return _index < other._index; }
-
-    auto operator+( ssize_t index ) { return iterator{ _object, _index + index }; }
-    auto operator-( ssize_t index ) { return iterator{ _object, _index - index }; }
-
-    auto operator+=( ssize_t index ) { return iterator{ _object, _index + index }; }
-    auto operator-=( ssize_t index ) { return iterator{ _object, _index - index }; }
-
-    auto operator++(int) { return iterator{ _object, _index++ }; }
-    auto operator--(int) { return iterator{ _object, _index-- }; }
-
-    auto operator++() { return iterator{ _object, ++_index }; }
-    auto operator--() { return iterator{ _object, --_index }; }
-
-    operator vector_iterator< T0 const >() { return vector_iterator< T0 const >{ _object, _index }; }
-
-    T0& _object;
-    ssize_t _index;
-  };
 
   TP<TN T0, ssize_t N0>
-  auto make_vector( T0 ( &data)[ N0 ] ) { return vector< T0, N0 >{ data };  }
+  inline auto make_vector( T0 ( &data)[ N0 ] ) { return vector< T0, N0 >{ data };  }
 
 
 }

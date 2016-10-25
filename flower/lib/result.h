@@ -4,45 +4,44 @@
 #include "value.h"
 
 
-namespace libr {
-
-  using namespace lib;
-
-  TP<TN T0>
-  struct result;
-
-  TP<TN T0, TN... TT>
-  auto make_result( TT&&... args ) { return result< T0 >{ forward< T0 >( args )... }; }
+namespace lib {
 
 
-  enum error {
+  enum class result {
 
     failed, success
   };
 
 
   TP<TN T0>
-  struct result {
+  struct optional;
+
+  TP<TN T0, TN... TT>
+  auto make_optional( TT&&... args ) { return optional< T0 >{ forward< T0 >( args )... }; }
+
+
+  TP<TN T0>
+  struct optional {
     
     using value_type = T0;
 
-    result() : _error{ failed } { }
+    optional() : _error{ result::failed } { }
 
-    result( error e ) : _error{ e  } { }
+    optional( result e ) : _error{ e  } { }
 
-    result( value_type&& value ) {
+    optional( value_type&& value ) {
         
-      _object = owner< T0 >::template create< T0 >( move( value ) );
+//      _object = value< T0 >::template create< T0 >( move( value ) );
 
-      _error = success;
+      _error = result::success;
     }
 
     TP<TN... TT>
-    explicit result( TT... args ) {
+    explicit optional( TT... args ) {
         
-      _object = owner< T0 >::template create< T0 >( forward< TT >( args )... );
+//      _object = value< T0 >::template create< T0 >( forward< TT >( args )... );
 
-      _error = success;
+      _error = result::success;
     }
 
     auto& operator*() { return *_object; }
@@ -50,10 +49,10 @@ namespace libr {
     auto  operator->() { return *_object; }
     auto  operator->() const { return *_object; }
 
-    explicit operator bool() { return _error == success; }
+    explicit operator bool() { return _error == result::success; }
 
-    owner< T0 > _object;
-    error _error;
+    value< T0 > _object;
+    result _error;
   };
 
 

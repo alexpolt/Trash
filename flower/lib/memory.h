@@ -5,13 +5,13 @@
 #include "assert.h"
 #include "error.h"
 #include "types.h"
-#include "ptr.h"
+#include "out-ref.h"
 #include "log.h"
 #include "atomic.h"
 
 namespace lib {
 
-  namespace alloc {
+  namespace memory {
 
     struct error_memory : error { using error::error; };
 
@@ -38,9 +38,9 @@ namespace lib {
 
             get_stats().alloc.sub( _size[ i ] );
 
-            liblog::memory, "object ", _owner[ i ], ", free( ", _size[ i ], 
+            log::memory, "object ", _owner[ i ], ", free( ", _size[ i ], 
 
-                        " ), stat = ", (ssize_t) get_stats().alloc, liblog::endl;
+                        " ), memsize = ", (ssize_t) get_stats().alloc, log::endl;
 
             ::free( _ptr[ i ] ); 
 
@@ -50,7 +50,7 @@ namespace lib {
         destroyed = true;
       }
 
-      bool destroyed = false;
+      volatile bool destroyed = false;
 
       void* _ptr[ size ]; 
       void* _owner[ size ];
@@ -66,7 +66,7 @@ namespace lib {
 
       auto& stats = get_stats();
 
-      liblog::memory, "object ", object, " alloc( ", size, " ) ", liblog::endl;
+      log::memory, "object ", object, " alloc( ", size, " ) ", log::endl;
 
       auto& cache = get_cache();
       
@@ -85,7 +85,7 @@ namespace lib {
 
       stats.alloc.add( size );
 
-      liblog::memory, "stat = ", (ssize_t) stats.alloc, liblog::endl;
+      log::memory, "memsize = ", (ssize_t) stats.alloc, log::endl;
 
       if( ! ptr ) $throw error_memory{ "malloc failed" };
 
@@ -99,13 +99,11 @@ namespace lib {
       auto& stats = get_stats();
       auto& cache = get_cache();
 
-      $assert( not cache.destroyed, "free failed, memory cache was destroyed" );
-
-      if( size > cache.size_max ) {
+      if( cache.destroyed or size > cache.size_max ) {
 
         stats.alloc.sub( size );
 
-        liblog::memory, "object ", owner, ", free1( ", size, " ), stat = ", (ssize_t) stats.alloc, liblog::endl;
+        log::memory, "object ", owner, ", free( ", size, " ), memsize = ", (ssize_t) stats.alloc, log::endl;
 
         ::free( ptr.get() ); 
 
@@ -128,9 +126,9 @@ namespace lib {
 
         stats.alloc.sub( cache._size[ idx ] );
 
-        liblog::memory, "object ", cache._owner[ idx ], ", free2( ", cache._size[ idx ], 
+        log::memory, "object ", cache._owner[ idx ], ", free cache( ", cache._size[ idx ], 
 
-                     " ), stat = ", (ssize_t) stats.alloc, liblog::endl;
+                     " ), memsize = ", (ssize_t) stats.alloc, log::endl;
 
         ::free( cache._ptr[ idx ] ); 
 
@@ -147,8 +145,9 @@ namespace lib {
   }
 
 
-  #define $alloc( $0, $1 ) lib::alloc::alloc( (void*)$0, $1, __FILE__ ":" $str( __LINE__ ) )
-  #define $free( $0, $1, $2 ) lib::alloc::free( (void*)$0, $1, $2, __FILE__ ":" $str( __LINE__ ) )
+  #define $alloc( $0, $1 ) lib::memory::alloc( (void*)$0, $1, __FILE__ ":" $str( __LINE__ ) )
+  
+  #define $free( $0, $1, $2 ) lib::memory::free( (void*)$0, $1, $2, __FILE__ ":" $str( __LINE__ ) )
 
 
 }

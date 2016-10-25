@@ -24,7 +24,7 @@ namespace lib {
   };
 
 
-  auto make_test() { return new test{}; } 
+  inline auto make_test() { return new test{}; } 
 
 }
 

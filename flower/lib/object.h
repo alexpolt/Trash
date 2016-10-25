@@ -3,89 +3,67 @@
 #include "macros.h"
 #include "types.h"
 #include "value.h"
-#include "global.h"
+#include "to-string.h"
+#include "../task/result.h"
+
 
 namespace lib {
+
+  TP<TN, bool> struct shared_ptr;
+
+  TP<TN T0>
+  using weak_ptr = shared_ptr< T0, true >;
 
 
   struct object {
 
     virtual ~object() {}
 
-    // basic interface
-
-    virtual iid_t get_interface_id() const = 0;
-
-    virtual cstr get_interface_name() const = 0;
 
     virtual oid_t get_object_id() const;
 
     virtual cstr to_string() const; 
 
-    // copying
+    virtual task::result operator()(); 
 
-    virtual value< object > get_copy() const;
-
-    TP<TN T0>
-    value< T0 > get_copy() const; 
-
-    // getting the primary object
-
-    virtual value< object > get_owner() const;
-
-    value< object > get_object() const;
-
-    TP<TN U0>
-    static value< object > get_object( U0& );
-
-    // dealing components
 
     virtual bool has_object( iid_t ) const = 0;
 
-    TP<TN T0> 
-    bool has_object( type_tag<T0> ) const;
-
     virtual value< object > get_object( iid_t ) = 0;
 
-    TP<TN T0> 
-    value< T0 > get_object( type_tag<T0> );
+    TP<TN T0> bool has_object( type_tag<T0> ) const;
+
+    TP<TN T0> value< T0 > get_object( type_tag<T0> );
   };
 
 
-  inline cstr object::get_interface_name() const { return "object"; }
+  struct interface : object {
 
-  inline oid_t object::get_object_id() const { return get_interface_id();  }
+    virtual iid_t get_interface_id() const = 0;
 
-  inline cstr object::to_string() const {
+    virtual cstr get_interface_name() const = 0;
 
-    auto& buffer = global::get_buffer< char >();
-
-    snprintf( buffer, $length( buffer ), "%s(%#X)", get_interface_name(), (ssize_t) this );
-    
-    return buffer;
-  }
+  };
 
 
-  inline value< object > object::get_copy() const { $throw $error_not_implemented(); return value< object >{}; };
+  struct component : interface {
 
-  TP<TN T0>
-  inline value< T0 > object::get_copy() const { return static_cast< value< T0 > >( get_copy( ) ); }
+    virtual lib::weak_ptr< lib::object > get_owner() = 0;
+  };
 
 
+
+  inline oid_t object::get_object_id() const { return ( oid_t ) this; }
+
+  inline cstr object::to_string() const { return lib::to_string( "object( 0x%p )", this ); }
+
+  inline task::result object::operator()() { $assert( false, "not implemented" ); return task::result::done; }
+ 
   TP<TN T0> 
   inline bool object::has_object( type_tag<T0> ) const { return has_object( T0::interface_id ); }
   
   TP<TN T0> 
-  inline value< T0 > object::get_object( type_tag<T0> ) { return static_cast< value<T0> >( get_object( T0::interface_id ) ); }
-
-
-  inline value< lib::object > object::get_owner() const { return get_object(); }
-
-  TP<TN U0>
-  inline value< lib::object > object::get_object( U0& object ) { return lib::type_cast< value< lib::object >& >( object ); }
-
-  inline value< lib::object > object::get_object() const { return lib::type_cast< value< lib::object >& >( $this ); }
-
+  inline value< T0 > object::get_object( type_tag<T0> ) { return type_cast< value< T0 >&& >( get_object( T0::interface_id ) ); }
 
 
 
@@ -93,10 +71,11 @@ namespace lib {
 
   TP<TN T0, TN... TT> struct object_factory {
 
-    using create_f = value< object > (*)( T0& );
+    using create_f = value< object > (*)( lib::weak_ptr< T0 > );
 
     static create_f _create_list[];
     static iid_t _iid_list[];
+
 
     static bool has_object( iid_t iid ) {
 
@@ -105,22 +84,21 @@ namespace lib {
         if( i == iid ) return true;
 
       return false;
-
     }
 
-    static value< object > get_object( iid_t iid, T0& owner ) {
+    static value< object > get_object( iid_t iid, T0* ptr ) {
 
       ssize_t counter{};
 
       for( auto i : _iid_list ) {
 
         if( iid == i ) 
-          return _create_list[ counter ]( owner );
+          return _create_list[ counter ]( lib::weak_ptr< T0>{ ptr } );
 
         ++counter;
       }
 
-      $throw $error_object( iid, owner.to_string() );
+      $throw $error_object( iid, ptr->to_string() );
 
       return value< object >{};
     }
@@ -128,11 +106,11 @@ namespace lib {
   };
 
   TP<TN T0, TN... TT>
-    iid_t object_factory< T0, TT... >::_iid_list[] = { T0::interface_id, TT::interface_id... };
+    iid_t object_factory< T0, TT... >::_iid_list[] = { TT::interface_id... };
     
   TP<TN T0, TN... TT>
     typename object_factory< T0, TT... >::create_f 
-      object_factory< T0, TT... >::_create_list[] = { &T0::get_object, &TT::create... };
+      object_factory< T0, TT... >::_create_list[] = { &TT::create... };
 
   /*
     Usage:
@@ -142,7 +120,6 @@ namespace lib {
   */
 
   #define $interface( $0 )  constexpr static lib::iid_t interface_id = __COUNTER__; \
-                            using object_type = $0; \
                             constexpr static lib::type_tag< $0 > tag{}; \
                             lib::iid_t get_interface_id() const override { return interface_id; } \
                             cstr get_interface_name() const override { return #$0; } 
@@ -161,14 +138,10 @@ namespace lib {
                         using object::has_object; \
                         using object::get_object; \
                         value< lib::object > get_object( lib::iid_t id ) override { \
-                          return object_factory::get_object( id, $this ); \
+                          return object_factory::get_object( id, this ); \
                         } \
                         bool has_object( lib::iid_t id ) const override { \
                           return object_factory::has_object( id ); \
-                        } \
-                       /* create factory method */ \
-                        TP<TN... UU> static value< lib::object > create( UU&&... args ) { \
-                          return value< lib::object >::create< $args_first( __VA_ARGS__) >( forward< UU >( args )... ); \
                         }
 
   /*
@@ -180,23 +153,24 @@ namespace lib {
   */
 
   #define $component( $0 ) \
-                        /* getting the primary object */ \
-                        value< lib::object > get_owner() const override { \
-                          return _owner.get_object(); \
-                        } \
                         value< lib::object > get_object( lib::iid_t id ) override { \
-                          return _owner.get_object( id ); \
+                          return _owner->get_object( id ); \
                         } \
                         bool has_object( lib::iid_t id ) const override { \
-                          return _owner.has_object( id ); \
+                          return _owner->has_object( id ); \
                         } \
-                        TP<TN U0> $0( U0& owner ) : _owner{ owner } { } \
-                        /* create factory method */ \
-                        TP<TN U0> static auto create( U0& owner ) { \
-                          return value< lib::object >::create< $0 >( owner ); \
+                        TP<TN U0> static auto create( lib::weak_ptr< U0 > owner ) { \
+                          return value< lib::object >::create< $0 >( move( owner ) ); \
+                        }
+
+  #define $component_template( $0 ) \
+                        $component( $0 ) \
+                        lib::weak_ptr< lib::object > get_owner() override { \
+                          return _owner.lock(); \
                         } \
-                        /* data member */ \
-                        lib::template_arg_t< $0 >& _owner;
+                        $0( lib::weak_ptr< lib::template_arg_t< $0 > > owner ) : _owner{ move( owner ) } { } \
+                        lib::weak_ptr< lib::template_arg_t< $0 > > _owner;
+
 
 }
 

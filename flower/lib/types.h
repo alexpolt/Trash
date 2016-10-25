@@ -51,6 +51,9 @@ namespace lib {
   TP<TN T0, TN T1>
   constexpr bool is_same_v = is_same< T0, T1 >::value;
 
+  TP<TN T0>
+  constexpr bool is_void_v = is_same< T0, void >::value;
+
 
   TP<bool N0, TN T1, TN T2>
   struct select { using type = T2; };
@@ -164,29 +167,41 @@ namespace lib {
   TP<TN T0, ssize_t N0> T0  end  ( T0 ( &data)[ N0 ] ) { return &data[ N0 ]; }
 
   TP<TN T0> 
-  auto& begin( T0& data ) { return data.begin(); }
+  auto begin( T0& data ) { return data.begin(); }
 
   TP<TN T0> 
-  auto& end  ( T0& data ) { return data.end(); }
+  auto end  ( T0& data ) { return data.end(); }
 
   TP<TN T0> 
-  auto& begin( T0 const& data ) { return data.begin(); }
+  auto begin( T0 const& data ) { return data.begin(); }
 
   TP<TN T0> 
-  auto& end  ( T0 const& data ) { return data.end(); }
+  auto end  ( T0 const& data ) { return data.end(); }
 
 
-  TP<TN T0, TN = enable_if_t< is_ref_v< T0 > >> 
+  TP<TN T0, TN = enable_if_t< not is_primitive_v< no_ref_t< T0 > > and is_ref_v< T0 > >> 
   no_ref_t< T0 >&& move( T0&& value ) noexcept { 
 
     return static_cast< no_ref_t< T0 >&& > ( value ); 
   }
 
-  TP<TN T0> 
-  T0* move( T0*& ptr ) noexcept { 
+  TP<TN T0, TN = enable_if_t< is_primitive_v< no_ref_t< T0 > > >> 
+  T0 move( T0& value ) noexcept { 
     
-    auto ptr_orig = ptr; ptr = nullptr; return ptr_orig; 
+    auto value2 = value; value = T0{}; return value2; 
   }
+
+  struct move_t {
+
+    TP<TN T0> 
+    static T0 copymove( T0& value ) noexcept { return lib::move( value ); }
+  };
+
+  struct copy_t {
+
+    TP<TN T0> 
+    static T0& copymove( T0& value ) noexcept { return value; }
+  };
 
   TP<TN T0>
   T0& swap( T0& left, T0& right ) noexcept {
@@ -196,20 +211,20 @@ namespace lib {
     return right;
   }
 
+
+  TP<TN T0> 
+  select_t< is_ref_v< T0 >, T0, T0&& > forward( no_ref_t< T0 >& value ) noexcept { 
+
+    return static_cast< select_t< is_ref_v< T0 >, T0, T0&& > >( value ); 
+  } 
+
   TP<TN U0, TN U1> 
   U0 type_cast( U1&& value ) noexcept { 
 
     char* from = (char*) &value;
 
-    return *(no_cref_t< U0 >*) from;
+    return static_cast< U0 >( *(no_cref_t< U0 >*) from );
   }
-
-  TP<TN T0> 
-  typename select< is_ref_v< T0 >, T0, T0&& >::type 
-  forward( no_ref_t< T0 >& value ) noexcept { 
-
-    return static_cast< typename select< is_ref_v< T0 >, T0, T0&& >::type >( value ); 
-  } 
 
 
   TP<TN T0, TN = void, TN = void, TN = void, TN = void>
