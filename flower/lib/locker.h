@@ -52,7 +52,7 @@ namespace lib {
       log::lock, ", size2 = ", _lock_map.size(), log::endl;
     }
 
-    void unlock( void* ptr, bool destruct = true ) {
+    void unlock( void* ptr, bool is_weak = false ) {
 
       log::lock, "unlock( ", ptr, ", destruct = ", destruct, " ), size1 = ", _lock_map.size();
 
@@ -64,7 +64,7 @@ namespace lib {
 
       if( prev == 1 ) {
         
-        if( destruct ) it->deleter( ptr );
+        if( not is_weak ) it->deleter( ptr );
 
         _lock_map.erase( it );
       }

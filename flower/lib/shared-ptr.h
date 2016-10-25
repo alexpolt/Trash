@@ -50,7 +50,7 @@ namespace lib {
 
       if( _ptr )
         
-        get_locker().unlock( _ptr, not is_weak );
+        get_locker().unlock( _ptr, is_weak );
     }
 
     static auto& get_locker() { return global::locker< lock_ptr >; }
