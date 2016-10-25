@@ -45,6 +45,8 @@ namespace lib {
 
       tid_t get_id() const override { return _desc.id; }
 
+      oid_t get_object_id() const override { return get_id(); }
+
       cstr to_string() const override { return lib::to_string( "task #%d: %s", _desc.id, _desc.desc ); }
 
       T0 _fn;

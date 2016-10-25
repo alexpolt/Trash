@@ -9,7 +9,7 @@ namespace lib {
   namespace task {
 
 
-    enum class result {
+    enum result {
 
       done, retry
 

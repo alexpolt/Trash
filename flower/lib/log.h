@@ -106,15 +106,7 @@ namespace lib {
       return logger;
     }
 
-    TP<log_type T0, TN T1, cstr (T1::*)() const = &T1::to_string>
-    inline auto& operator,( log_t< T0 > &logger, T1 const& data ) { 
-
-      logger.log( data.to_string() ); 
-
-      return logger;
-    }
-
-    TP<log_type T0, TN T1, cstr (object::*)() const = &T1::to_string>
+    TP<log_type T0, TN T1, decltype( &T1::to_string ) = &T1::to_string>
     inline auto& operator,( log_t< T0 > &logger, T1 const& data ) { 
 
       logger.log( data.to_string() ); 
