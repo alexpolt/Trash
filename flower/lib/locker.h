@@ -54,7 +54,7 @@ namespace lib {
 
     void unlock( void* ptr, bool is_weak = false ) {
 
-      log::lock, "unlock( ", ptr, ", destruct = ", destruct, " ), size1 = ", _lock_map.size();
+      log::lock, "unlock( ", ptr, ", is_weak = ", is_weak, " ), size1 = ", _lock_map.size();
 
       auto it = find( _lock_map, ptr );
 

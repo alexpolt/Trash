@@ -15,8 +15,8 @@ namespace lib {
 
   constexpr struct sc_return_t { constexpr sc_return_t() { } } sc_return_tag;
 
-  TP<TN T0> sc_guard< T0 > 
-  operator+( sc_return_t, T0 fn ) { return sc_guard< T0 >{ (T0&&) fn }; }
+  TP<TN T0> 
+  constexpr auto operator+( sc_return_t, T0 fn ) { return sc_guard< T0 >{ (T0&&) fn }; }
   
 
 }

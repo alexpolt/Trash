@@ -54,6 +54,9 @@ auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
 #define $args_size( ... ) $args_size_( 0, ##__VA_ARGS__ )
 
 #define $args_first( $0, ... ) $0
+#define $args_second_1( $0 )
+#define $args_second_2( $0, $1 ) $1
+#define $args_second( ... ) $apply( $paste( $args_second_, $args_size( __VA_ARGS__ ) ), __VA_ARGS__ )
 
 #define $apply1( $macro, $1 ) $macro( $1 );
 #define $apply2( $macro, $1, $2 ) $apply1( $macro, $1 ) $apply1( $macro, $2 )

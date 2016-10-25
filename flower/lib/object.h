@@ -2,6 +2,7 @@
 
 #include "macros.h"
 #include "types.h"
+#include "assert.h"
 #include "value.h"
 #include "to-string.h"
 #include "../task/result.h"

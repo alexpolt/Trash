@@ -30,7 +30,7 @@ namespace lib {
     };
 
 
-    enum class log_type { info, error, debug, memory, lock };
+    enum class log_type { info, error, debug, memory, lock, task };
 
     TP<log_type T0>   
     struct log_t {
@@ -58,6 +58,7 @@ namespace lib {
       log_t< log_type::debug > debug;
       log_t< log_type::memory > memory;
       log_t< log_type::lock > lock;
+      log_t< log_type::lock > task;
     }
 
     

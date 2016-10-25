@@ -14,14 +14,16 @@ namespace lib {
   };
 
   TP<TN T0 = oid_t>
-  inline auto& get_oid_source() { 
+  atomic_sequence id_source{};
 
-    static atomic_sequence oid_source{};
+  namespace global {
 
-    return oid_source;
+    inline oid_t gen_object_id() { return id_source<>.next(); }
+
+    TP<TN T0>
+    inline oid_t gen_id() { return id_source< T0 >.next(); }
+
   }
-
-  inline oid_t gen_object_id() { return get_oid_source().next(); }
 
 }
 

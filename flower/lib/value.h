@@ -12,8 +12,6 @@ namespace lib {
   TP<TN T0> 
   struct value : nocopy {
 
-    static constexpr ssize_t value_size = max( $size( T0 ), $size( void*[2] ) );
-
     value() { }
 
     ~value() { if( *type_cast< ptrdiff_t* >( &_data ) ) $this->~T0(); }
@@ -37,7 +35,13 @@ namespace lib {
 
     }
 
-    cstr to_string() const { return to_string_selector< T0 >::to_string( &$this ); }
+    cstr to_string() const { return to_string_selector< T0 >::to_string( &**this ); }
+
+    TP<TN... TT>
+    auto operator()( TT... args ) -> decltype( declval< T0& >()( forward< TT >( declval< TT >() )... ) ) { 
+
+      return $this->operator()( forward< TT > ( args )... ); 
+    }
 
     TP<TN... TT>
     auto operator()( TT... args ) const -> decltype( declval< T0& >()( forward< TT >( declval< TT >() )... ) ) { 
@@ -56,6 +60,18 @@ namespace lib {
 
     auto operator->() const { return type_cast< T0 const* >( & _data ); }
     auto& operator*() const { return type_cast< T0 const& >( _data ); }
+
+
+    TP<TN U0, TN = void>
+    struct type_size { static constexpr ssize_t value = max( $size( U0 ), $size( void*[2] ) ); };
+
+    TP<TN U0>
+    struct type_size< U0, void_v< U0::type_size > > { static constexpr ssize_t value = U0::type_size; };
+
+    TP<TN U0>
+    static constexpr ssize_t type_size_v = type_size< U0 >::value;
+
+    static constexpr ssize_t value_size = type_size_v< T0 >;
 
     struct data_t {
 
