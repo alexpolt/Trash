@@ -9,9 +9,9 @@ namespace lib {
 
 
   TP< TN T0, ssize_t... NN>
-  struct string_format< libm::vec_t< T0, NN... > > {
+  struct string_format< lib::math::vec_t< T0, NN... > > {
 
-    static cstr format( libm::vec_t< T0, NN... > const& v ) {
+    static cstr format( lib::math::vec_t< T0, NN... > const& v ) {
 
       auto& buffer = global::get_buffer< char >();
       char* ptr = buffer;
@@ -27,9 +27,9 @@ namespace lib {
   };
 
   TP< TN T0, ssize_t... NN>
-  struct string_format< libm::mat_t< T0, NN... > > {
+  struct string_format< lib::math::mat_t< T0, NN... > > {
 
-    static cstr format( libm::mat_t< T0, NN... > const& m ) {
+    static cstr format( lib::math::mat_t< T0, NN... > const& m ) {
 
       auto& buffer = global::get_buffer< char >();
 

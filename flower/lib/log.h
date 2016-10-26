@@ -90,18 +90,12 @@ namespace lib {
       return logger; 
     }
 
-    TP<log_type T0>
-    inline auto& operator,( log_t< T0 > &logger, char* data ) { 
+    TP<log_type T0, TN T1, TN = enable_if_t< is_same_v< no_const_t< T1 >, char > or 
+                                             is_same_v< no_const_t< T1 >, byte > 
+                                           >>
+    inline auto& operator,( log_t< T0 > &logger, T1* data ) { 
 
-      logger.log( data );
-
-      return logger;
-    }
-
-    TP<log_type T0>
-    inline auto& operator,( log_t< T0 > &logger, cstr data ) { 
-
-      logger.log( data );
+      logger.log( (cstr) data );
 
       return logger;
     }

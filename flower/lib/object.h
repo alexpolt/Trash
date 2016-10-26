@@ -67,6 +67,21 @@ namespace lib {
   inline value< T0 > object::get_object( type_tag<T0> ) { return type_cast< value< T0 >&& >( get_object( T0::interface_id ) ); }
 
 
+  struct error_object : error {
+
+    error_object( cstr file, int line, cstr func, iid_t iid, cstr msg ) : error{ file, line, func } {
+
+      auto l = strlen( error::get_buffer() );
+
+      auto ptr = error::get_buffer() + l;
+
+      snprintf( ptr, $length( error::get_buffer() ) - l, ": object %d not found in object( %s )", iid, msg );
+    } 
+  };
+
+  #define $error_object( $0, $1 ) error_object{ __FILE__, __LINE__, __func__, $0, $1 }
+
+
 
   /* Helper template used by a primary object to ask for components. */
 

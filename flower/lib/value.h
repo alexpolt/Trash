@@ -1,7 +1,6 @@
 #pragma once
 
-#include <new>
-#include <cstddef>
+#include "new.h"
 #include "macros.h"
 #include "types.h"
 #include "algo.h"
@@ -14,7 +13,7 @@ namespace lib {
 
     value() { }
 
-    ~value() { if( *type_cast< ptrdiff_t* >( &_data ) ) $this->~T0(); }
+    ~value() { if( *type_cast< void** >( &_data ) ) $this->~T0(); }
 
     value( value&& other ) : _data{ move( other._data ) } { }
 
@@ -61,6 +60,7 @@ namespace lib {
     auto operator->() const { return type_cast< T0 const* >( & _data ); }
     auto& operator*() const { return type_cast< T0 const& >( _data ); }
 
+    explicit operator bool() const { return *type_cast< void** >( &_data ) != 0; }
 
     TP<TN U0, TN = void>
     struct type_size { static constexpr ssize_t value = max( $size( U0 ), $size( void*[2] ) ); };

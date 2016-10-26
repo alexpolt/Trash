@@ -5,6 +5,7 @@
 #include "lib/error.h"
 #include "lib/value.h"
 #include "lib/log.h"
+#include "lib/sequence.h"
 
 #include "task.h"
 #include "result.h"

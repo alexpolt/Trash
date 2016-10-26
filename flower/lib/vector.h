@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstring>
-#include <new>
 
+#include "new.h"
 #include "assert.h"
 #include "macros.h"
 #include "types.h"
@@ -21,6 +21,16 @@ namespace lib {
 
 
   TP<TN T0, ssize_t N0 = 0, bool is_string = false>
+  struct vector;
+
+
+  using vector_b = vector< byte >;
+  using vector_i = vector< int >;
+  using vector_f = vector< float >;
+  using vector_d = vector< double >;
+
+
+  TP<TN T0, ssize_t N0, bool is_string>
   struct vector {
 
     static constexpr ssize_t value_size = $size( T0 );
@@ -43,12 +53,16 @@ namespace lib {
 
     vector( ) { if( N0 > 0 ) reserve( N0 ); }
 
-    explicit vector( ssize_t size, value_type value = value_type{} ) { 
+    explicit vector( ssize_t size ) {
+      
+      reserve( size ); 
+    }
+
+    explicit vector( ssize_t size, value_type value ) {
       
       reserve( size ); 
 
-      for( auto i : range{ 0, size } ) emplace_back( value ), (void)i;
-
+      range{ 0, size } $do { push_back( value ); };
     }
 
     explicit vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
@@ -124,9 +138,10 @@ namespace lib {
     }
 
     void reserve( ssize_t size_new = 0 ) {
+
       if( N0 > 0 ) return;
 
-      size_new = max( 8, size_new );
+      size_new = max( 4, size_new );
 
       if( size_new <= available() ) return;
 
@@ -137,8 +152,6 @@ namespace lib {
         size_new = max( size_new, size_calc );
       }
       
-      size_new = ( size_new + 3 ) & ~0b11;
-
       auto size_new_bytes = value_size * size_new;
 
       value_type* data_new = (value_type*) $alloc( this, size_new_bytes );
@@ -364,6 +377,8 @@ namespace lib {
 
     const_iterator cbegin() const { return vector_iterator< vector const >{ $this, 0 }; }
     const_iterator cend() const { return vector_iterator< vector const >{ $this, size() }; }
+
+    auto set_size( size_type size ) { _index = size; }
 
     auto data() const { return _data; }
     auto size() const { return _index; }

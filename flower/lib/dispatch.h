@@ -5,6 +5,10 @@
 
 namespace lib {
 
+
+  struct error_dispatch;
+  
+
   TP<TN T0, TN... TT>
   struct dispatch {
 
@@ -81,6 +85,20 @@ namespace lib {
       dispatch< T0, TT... >::_dispatch_table[ sizeof...( TT) * sizeof...( TT ) ];
 
  
+  struct error_dispatch : error {
+
+    error_dispatch( cstr file, int line, cstr func, cstr msg_a, cstr msg_b ) : error{ file, line, func } {
+        
+      auto l = strlen( error::_buffer );
+
+      auto ptr = error::get_buffer() + l;
+
+      snprintf( ptr, $length( error::get_buffer() ) - l, ": dispatch failed for ( %s ) and ( %s )", msg_a, msg_b );
+    }
+  };
+
+  #define $error_dispatch( $0, $1 ) error_dispatch{ __FILE__, __LINE__, __func__, $0, $1 }
+
 
 
 }

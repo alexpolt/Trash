@@ -17,7 +17,7 @@ namespace lib {
 
     locker_t() {
 
-      _lock_map.reserve( 8 );
+      _lock_map.reserve( 4 );
     }
 
     ~locker_t() {
@@ -27,49 +27,65 @@ namespace lib {
 
     void lock( void* ptr, deleter_t deleter ) {
 
-      log::lock, "lock( ", ptr, " ), size1 = ", _lock_map.size();
+      log::lock, "lock( ", ptr;
 
       auto it = find( _lock_map, ptr );
 
-      if( it )
-        it->counter.add( 1 );
-      else
-        _lock_map.push_back( { ptr, {1}, deleter } );
+      int counter = 1;
 
-      log::lock, ", size2 = ", _lock_map.size(), log::endl;
+      if( it )
+
+        counter = it->counter.add( 1 ) + 1;
+
+      else
+
+        _lock_map.push_back( { ptr, { counter }, deleter } );
+
+      log::lock, ", ", counter, " )", log::endl;
     }
 
     void lock( void* ptr ) {
 
-      log::lock, "lock( ", ptr, " ), size1 = ", _lock_map.size();
+      log::lock, "lock( ", ptr;
 
       auto it = find( _lock_map, ptr );
 
       $assert( it, "lock not found" ); 
 
-      it->counter.add( 1 );
+      auto counter = it->counter.add( 1 ) + 1;
 
-      log::lock, ", size2 = ", _lock_map.size(), log::endl;
+      log::lock, ", ", counter, " )", log::endl;
     }
 
-    void unlock( void* ptr, bool is_weak = false ) {
-
-      log::lock, "unlock( ", ptr, ", is_weak = ", is_weak, " ), size1 = ", _lock_map.size();
+    bool unlock( void* ptr, bool is_weak = false ) {
 
       auto it = find( _lock_map, ptr );
 
       $assert( it, "lock not found" );
 
-      auto prev = it->counter.sub( 1 );
+      auto counter = it->counter.sub( 1 );
 
-      if( prev == 1 ) {
+      log::lock, "unlock( ", ptr, ", is_weak = ", is_weak, ", ", counter, " )", log::endl;
+
+      if( counter == 1 ) {
         
         if( not is_weak ) it->deleter( ptr );
 
         _lock_map.erase( it );
+
+        return true;
       }
 
-      log::lock, ", size2 = ", _lock_map.size(), log::endl;
+      return false;
+    }
+
+    int use_count( void* ptr ) { 
+
+      auto it = find( _lock_map, ptr );
+
+      if( not it ) return 0;
+
+      return it->counter.load();
     }
 
     struct lock_node {

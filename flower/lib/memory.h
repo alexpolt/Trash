@@ -26,6 +26,7 @@ namespace lib {
 
     struct cache_t { 
 
+      static constexpr bool enabled = true;
       static constexpr ssize_t cache_size = 16;
       static constexpr ssize_t size = cache_size;
       static constexpr ssize_t size_max = 512;
@@ -72,7 +73,7 @@ namespace lib {
       
       $assert( not cache.destroyed, "alloc failed, memory cache was destroyed" );
 
-      if( size <= cache.size_max )
+      if( cache.enabled and size <= cache.size_max )
 
         for( auto i : range{ 0, cache.size } ) {
 
@@ -99,7 +100,7 @@ namespace lib {
       auto& stats = get_stats();
       auto& cache = get_cache();
 
-      if( cache.destroyed or size > cache.size_max ) {
+      if( not cache.enabled or cache.destroyed or size > cache.size_max ) {
 
         stats.alloc.sub( size );
 

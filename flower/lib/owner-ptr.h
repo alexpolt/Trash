@@ -44,15 +44,9 @@ namespace lib {
 
     ~owner_ptr() { destroy(); }
 
-    void destroy() { 
+    void destroy() { delete _ptr; }
 
-      delete _ptr; 
-    }
-
-    auto release() {       
-
-      return move( _ptr ); 
-    }
+    auto release() { return move( _ptr ); }
 
     cstr to_string() const { return to_string_selector< T0 >::to_string( _ptr ); }
 
@@ -66,8 +60,10 @@ namespace lib {
 
     auto const& operator*() const { return *_ptr; }
 
-    T0* _ptr{};
+    explicit operator bool() const { return _ptr != nullptr; }
 
+
+    T0* _ptr{};
   };
 
   TP<TN T0>

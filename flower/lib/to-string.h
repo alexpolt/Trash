@@ -12,6 +12,7 @@ namespace lib {
   TP<TN T0> struct str_printf_format { };
 
   TP<> struct str_printf_format< char > { constexpr static cstr format = "%c"; };
+  TP<> struct str_printf_format< unsigned char > { constexpr static cstr format = "%.2X"; };
   //TP<> struct str_printf_format< cstr > { constexpr static cstr format = "%s"; };
   //TP<> struct str_printf_format< char* > { constexpr static cstr format = "%s"; };
   TP<> struct str_printf_format< bool > { constexpr static cstr format = "%d"; };

@@ -48,9 +48,12 @@ namespace lib {
 
     void destroy() { 
 
-      if( _ptr )
+      if( _ptr ) {
         
-        get_locker().unlock( _ptr, is_weak );
+        bool deleted = get_locker().unlock( _ptr, is_weak );
+
+        if( deleted ) _ptr = nullptr;
+      }
     }
 
     TP<TN U0, TN = void>
@@ -74,10 +77,9 @@ namespace lib {
       return ptr;
     }
 
-    auto release() {       
+    auto reset() { destroy(); }
 
-      return move( _ptr ); 
-    }
+    int use_count() { return get_locker().use_count( _ptr ); }
 
     cstr to_string() const { return to_string_selector< T0 >::to_string( _ptr ); }
 
@@ -91,8 +93,10 @@ namespace lib {
 
     T0 const& operator*() const { return *_ptr; }
 
-    T0* _ptr{};
+    explicit operator bool() const { return _ptr != nullptr; }
 
+
+    T0* _ptr{};
   };
 
   TP<TN T0>
