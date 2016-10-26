@@ -16,7 +16,21 @@ namespace lib {
 
     struct file {
 
+      using vector = lib::vector< byte >;
+
       file( cstr path ) : _path{ path } { }
+      
+      vector load() const {
+
+        handle< FILE > file0 = fopen( _path, "rb" );
+
+
+
+        while( feof( file0 ) ) {
+          _data << 
+        }
+      }
+
 
       cstr _path;
     };
