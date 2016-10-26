@@ -1,10 +1,5 @@
 #pragma once
 
-#include <cmath>
-
-#include "../lib/macros.h"
-#include "../lib/assert.h"
-#include "../lib/types.h"
 
 #include "constant.h"
 #include "types.h"
@@ -24,4 +19,5 @@ using lib::math::vec2i;
 using lib::math::vec3i;
 using lib::math::vec4i;
 
+namespace math = lib::math;
 

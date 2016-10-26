@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../lib/macros.h"
-#include "../lib/types.h"
-#include "../lib/error.h"
-#include "../lib/value.h"
-#include "../lib/log.h"
+#include "lib/macros.h"
+#include "lib/types.h"
+#include "lib/error.h"
+#include "lib/value.h"
+#include "lib/log.h"
 
 #include "task.h"
 #include "result.h"

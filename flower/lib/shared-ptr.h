@@ -9,7 +9,7 @@
 
 namespace lib {
 
-  struct lock_ptr {};
+  struct locker_default_tag {};
 
 
   TP<TN T0, bool is_weak = false>
@@ -53,7 +53,13 @@ namespace lib {
         get_locker().unlock( _ptr, is_weak );
     }
 
-    static auto& get_locker() { return global::locker< lock_ptr >; }
+    TP<TN U0, TN = void>
+    struct locker_tag { using type = locker_default_tag; };
+
+    TP<TN U0>
+    struct locker_tag< U0, void_t< typename U0::locker_tag > > { using type = typename U0::locker_tag; };
+
+    static auto& get_locker() { return global::locker< typename locker_tag< T0 >::type >; }
 
     auto lock() { 
      

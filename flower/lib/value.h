@@ -31,7 +31,7 @@ namespace lib {
 
       new( type_cast< void* >( & value_new._data ) ) U0{ forward< TT >( args )... };
 
-      return value_new;
+      return move( value_new );
 
     }
 

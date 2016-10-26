@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../lib/macros.h"
-#include "../lib/types.h"
-#include "../lib/error.h"
+#include "lib/macros.h"
+#include "lib/types.h"
 
 #include "types.h"
 

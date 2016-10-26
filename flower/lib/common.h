@@ -2,8 +2,10 @@
 
 #include "config.h"
 #include "macros.h"
+#include "assert.h"
 #include "types.h"
 #include "range.h"
+#include "buffer.h"
 #include "error.h"
 #include "memory.h"
 #include "log.h"

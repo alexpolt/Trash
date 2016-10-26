@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../lib/macros.h"
-#include "../lib/types.h"
+#include "lib/macros.h"
+#include "lib/types.h"
 
 
 namespace lib {

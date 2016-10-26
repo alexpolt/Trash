@@ -5,6 +5,7 @@
 using uint = unsigned;
 using uchar = unsigned char;
 using cstr = char const*;
+using byte = unsigned char;
 using llong = long long;
 using ssize_t = int;
 
