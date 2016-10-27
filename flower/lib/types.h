@@ -151,9 +151,10 @@ namespace lib {
 
   TP<TN T0> struct is_primitive< T0, int > : type_true { };
   TP<TN T0> struct is_primitive< T0, uint > : type_true { };
+  TP<TN T0> struct is_primitive< T0, short > : type_true { };
   TP<TN T0> struct is_primitive< T0, char > : type_true { };
   TP<TN T0> struct is_primitive< T0, bool > : type_true { };
-  TP<TN T0> struct is_primitive< T0, uchar > : type_true { };
+  TP<TN T0> struct is_primitive< T0, byte > : type_true { };
   TP<TN T0> struct is_primitive< T0, float > : type_true { };
   TP<TN T0> struct is_primitive< T0, double > : type_true { };
   TP<TN T0> struct is_primitive< T0, long > : type_true { };

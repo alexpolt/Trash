@@ -8,33 +8,47 @@
 #include "lib/string.h"
 #include "lib/buffer.h"
 #include "lib/shared-ptr.h"
+#include "lib/url.h"
 #include "os/file.h"
 
 #include "config.h"
+#include "error.h"
 
 
 namespace lib {
 
   namespace loader {
 
-    using vector = vector< byte >;
+
 
     struct loader {
 
-      virtual shared_ptr< vector > load() const = 0;
+      virtual shared_ptr< vector_b > load( url ) const = 0;
     };
+
 
     struct loader_file : loader {
 
-      shared_ptr< vector > load( cstr location ) const override {
+      shared_ptr< vector_b > load( url location ) const override {
       
-        auto path = lib::make_string( global::get_buffer() );
+        auto path = lib::make_string( global::get_buffer< char >() );
         
-        path << config::file_path << location;
+        for( auto dir : config::file_dirs ) {
 
-        os::file f{ path.data() };
+          path << dir << location.get_path();
 
-        return lib::make_shared< vector >( move( f.data() ) );
+          os::file f = os::file{ path.data() };
+
+          if( f.exists() )
+
+            return lib::make_shared< vector_b >( f.load() );
+
+          path.clear();
+        }
+
+        $throw $error_loader( location.data() );
+
+        return shared_ptr< vector_b >{ nullptr };
       }
 
     };

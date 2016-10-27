@@ -8,6 +8,8 @@
 #include "lib/assert.h"
 #include "lib/error.h"
 #include "lib/vector.h"
+#include "lib/scope-guard.h"
+#include "lib/handle.h"
 
 #include "error.h"
 
@@ -63,6 +65,16 @@ namespace lib {
         return size;
       }
 
+      bool exists() {
+
+        FILE* f = fopen( _path, "rb" );
+
+        $on_return { if( f ) fclose( f ); };
+
+        return f ? true : false;
+      }
+
+      void close() { _h.~handle_t(); }
 
       void open() {
 

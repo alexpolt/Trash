@@ -6,48 +6,46 @@
 #include "lib/types.h"
 #include "lib/assert.h"
 #include "lib/value.h"
+#include "lib/url.h"
 
 #include "types.h"
-
+#include "error.h"
 
 namespace lib {
 
   namespace loader {
 
 
-    enum class scheme { file, web, db, null };
+    value< loader > get_loader( url );
+    
 
+    shared_ptr< vector_b > load( url location ) {
 
-    scheme get_scheme( cstr location );
+      auto loader = get_loader( location );
 
+      return loader->load( location );
+    }
+    
+    shared_ptr< vector_b > load( cstr path ) {
 
-    value< loader > get_loader( cstr location ) {
+      auto location = lib::url::create( path );
 
-      scheme s = get_scheme( location );
+      return load( location );
+    }
 
-      if( s == schema::file ) {
+    
+    value< loader > get_loader( url location ) {
+
+      if( location.get_scheme() == url::scheme::file ) {
           
         return value< loader >::create< loader_file >();
       }
 
-
       return value< loader >{};
-    }
+    }   
 
-    
-    scheme get_scheme( cstr location ) {
 
-      if( strstr( "file://", location ) == location ) return scheme::file;
-
-      if( strstr( "http://", location ) == location ) return scheme::web;
-
-      if( strstr( "db://", location ) == location ) return scheme::db;
-
-      $assert( "only file, http or db scheme is supported" );
-
-      return scheme::null;
-    }
-    
+   
 
   }
 

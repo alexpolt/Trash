@@ -27,7 +27,7 @@ namespace lib {
       return $this;
     }
 
-    ~handle() { if( _d ) _d( move( _h ) ); }
+    ~handle() { if( _d ) _d( move( _h ) ); _d = nullptr; }
 
     T0& get() { return _h; }
 

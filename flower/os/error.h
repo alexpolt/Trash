@@ -4,7 +4,6 @@
 #include "lib/types.h"
 #include "lib/error.h"
 
-#include "error.h"
 
 namespace lib {
 

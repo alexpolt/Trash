@@ -11,7 +11,7 @@ namespace lib {
     namespace config {
 
 
-      constexpr cstr file_path = "data/";
+      constexpr cstr file_dirs[] = { "data/", "../data/" };
 
     }
 
