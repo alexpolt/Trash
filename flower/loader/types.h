@@ -20,16 +20,9 @@ namespace lib {
   namespace loader {
 
 
+    struct loader_file {
 
-    struct loader {
-
-      virtual shared_ptr< vector_b > load( url ) const = 0;
-    };
-
-
-    struct loader_file : loader {
-
-      shared_ptr< vector_b > load( url location ) const override {
+      static shared_ptr< vector_b > load( url location ) {
       
         auto path = lib::make_string( global::get_buffer< char >() );
         
@@ -52,6 +45,8 @@ namespace lib {
       }
 
     };
+
+
 
   }
 

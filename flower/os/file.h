@@ -52,15 +52,11 @@ namespace lib {
 
         open();
 
-        if( seek( 0, SEEK_END ) != 0 )
-
-          $throw $error_file( _path, strerror( errno ) );
+        seek( 0, SEEK_END );
 
         auto size = tell();
 
-        if( seek( 0, SEEK_SET ) != 0 )
-
-          $throw $error_file( _path, strerror( errno ) );
+        seek( 0, SEEK_SET );
 
         return size;
       }
@@ -89,9 +85,15 @@ namespace lib {
         _h = handle_t{ f, d };
       }
 
-      long seek( ssize_t offset, int whence ) {
+      ssize_t seek( ssize_t offset, int whence ) {
 
-        return fseek( _h, offset, whence );
+        auto r = fseek( _h, offset, whence );
+
+        if( r not_eq 0 )
+
+          $throw $error_file( _path, strerror( errno ) );
+
+        return r;
       }
 
       ssize_t tell() {
