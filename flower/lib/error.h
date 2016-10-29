@@ -19,17 +19,17 @@ namespace lib {
 
     error( cstr msg ) : error() {
 
-      snprintf( _buffer, $length( _buffer ), "%s", msg );
+      snprintf( _buffer, $array_size( _buffer ), "%s", msg );
     }
 
     error( cstr file, int line, cstr func ) : error() { 
 
-      snprintf( _buffer, $length( _buffer ), "%s:%d::%s() -> ", file, line, func );
+      snprintf( _buffer, $array_size( _buffer ), "%s:%d::%s() -> ", file, line, func );
     }
 
     error( cstr file, int line, cstr func, cstr msg ) : error() { 
 
-      snprintf( _buffer, $length( _buffer ), "%s:%d::%s() -> %s", file, line, func, msg );
+      snprintf( _buffer, $array_size( _buffer ), "%s:%d::%s() -> %s", file, line, func, msg );
     }
 
     virtual ~error() {}

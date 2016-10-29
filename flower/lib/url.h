@@ -19,17 +19,17 @@ namespace lib {
 
       if( strstr( path, "file://" ) == path ) {
 
-        return { path, scheme::file, path + $length( "file://" ) - 1 };
+        return { path, scheme::file, path + $array_size( "file://" ) - 1 };
       }
 
       if( strstr( path, "http://" ) == path ) {
 
-        return { path, scheme::file, path + $length( "http://" ) - 1 };
+        return { path, scheme::file, path + $array_size( "http://" ) - 1 };
       }
 
       if( strstr( path, "db://" ) == path ) {
 
-        return { path, scheme::file, path + $length( "db://" ) - 1 };
+        return { path, scheme::file, path + $array_size( "db://" ) - 1 };
       }
 
 

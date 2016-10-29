@@ -93,7 +93,7 @@ namespace lib {
 
       auto ptr = error::get_buffer() + l;
 
-      snprintf( ptr, $length( error::get_buffer() ) - l, ": dispatch failed for ( %s ) and ( %s )", msg_a, msg_b );
+      snprintf( ptr, $array_size( error::get_buffer() ) - l, ": dispatch failed for ( %s ) and ( %s )", msg_a, msg_b );
     }
   };
 

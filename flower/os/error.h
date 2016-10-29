@@ -20,7 +20,7 @@ namespace lib {
 
         auto ptr = error::get_buffer() + l;
 
-        snprintf( ptr, $length( error::get_buffer() ) - l, "\"%s\" %s", path, strerror );
+        snprintf( ptr, $array_size( error::get_buffer() ) - l, "\"%s\" %s", path, strerror );
       }
     };
 

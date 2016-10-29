@@ -65,6 +65,9 @@ namespace lib {
     $define_vec( 3, i, int )
     $define_vec( 4, i, int )
 
+    TP<TN T0>
+    using quat = vec< T0, 4 >;
+
 
     TP<TN T0, ssize_t... NN>
     struct mat_t {

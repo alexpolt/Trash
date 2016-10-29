@@ -75,7 +75,7 @@ namespace lib {
 
       auto ptr = error::get_buffer() + l;
 
-      snprintf( ptr, $length( error::get_buffer() ) - l, ": object %d not found in object( %s )", iid, msg );
+      snprintf( ptr, $array_size( error::get_buffer() ) - l, ": object %d not found in object( %s )", iid, msg );
     } 
   };
 

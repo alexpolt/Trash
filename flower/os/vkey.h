@@ -3,7 +3,30 @@
 namespace lib {
   namespace os {
 
+
     enum class vkey {
+
+      VK_MAP_UP = 256,
+      VK_MAP_DOWN = 257,
+      VK_MAP_LEFT = 258,
+      VK_MAP_RIGHT = 259,
+      VK_MAP_JUMP = 260,
+      VK_MAP_CROUCH = 261,
+      VK_MAP_RUN = 262,
+      VK_MAP_CRAWL = 263,
+      VK_MAP_USE = 264,
+      VK_MAP_DROP = 265,
+      VK_MAP_SCROLL_UP = 266,
+      VK_MAP_SCROLL_DOWN = 267,
+      VK_MAP_ATTACK1 = 268,
+      VK_MAP_ATTACK2 = 269,
+      VK_MAP_ATTACK3 = 270,
+      VK_MAP_ATTACK4 = 271,
+      VK_MAP_ATTACK5 = 272,
+
+      //VK_MAP_ = 256,
+      //VK_MAP_ = 256,
+      //VK_MAP_ = 256,
 
       VK_LBUTTON = 0x01,
       VK_RBUTTON = 0x02,

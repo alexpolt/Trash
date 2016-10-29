@@ -43,7 +43,7 @@ $empty( __COUNTER__ )
 TP<TN T0, unsigned N0> 
 auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
 
-#define $length( $0 ) $size( array_length_function( $0 ) )
+#define $array_size( $0 ) $size( array_length_function( $0 ) )
 
 #define $var $paste( var, __COUNTER__ )
 

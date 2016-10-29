@@ -1,7 +1,11 @@
 #pragma once
 
+#include "vkey.h"
+
+
 namespace lib {
   namespace os {
+
 
     struct vkey_desc_t {
       cstr name;
@@ -267,6 +271,7 @@ namespace lib {
 
           };
 
+    auto& get_vkey_desc( vkey vk ) { return vkey_desc[ vk ]; }
 
   }
 }
