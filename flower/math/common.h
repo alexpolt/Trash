@@ -9,15 +9,19 @@
 
 
 using lib::math::operator ""_rad;
-using lib::math::vec2f;
-using lib::math::vec3f;
-using lib::math::vec4f;
-using lib::math::vec2d;
-using lib::math::vec3d;
-using lib::math::vec4d;
-using lib::math::vec2i;
-using lib::math::vec3i;
-using lib::math::vec4i;
+
+#define $define_using_vec( $0 ) using $paste( lib::math::vec, $0 );
+
+$applyall( $define_using_vec, 2f, 3f, 4f )
+$applyall( $define_using_vec, 2d, 3d, 4d )
+$applyall( $define_using_vec, 2i, 3i, 4i )
+
+#define $define_using_mat( $0 ) using $paste( lib::math::mat, $0 );
+
+$applyall( $define_using_mat, 2f, 3f, 4f )
+$applyall( $define_using_mat, 2d, 3d, 4d )
+$applyall( $define_using_mat, 2i, 3i, 4i )
+
 
 namespace math = lib::math;
 

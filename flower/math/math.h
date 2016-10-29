@@ -100,8 +100,8 @@ namespace lib {
     constexpr auto sqrt_cexpr( double value, double guess = 1.0, double n = 0 ) {
 
       if( value == .0 ) return .0;
-      if( abs( guess * guess - value ) < 0.000000000005 ) return guess;
-      if( n > 17 ) return guess;
+      if( abs( guess * guess - value ) < 0.00000000000001 ) return guess;
+      if( n > 15 ) return guess;
       
       return value > .0 ? sqrt_cexpr( value, 0.5 * ( guess + value / guess ), ++n ) : throw "negative value";
     }
@@ -120,18 +120,18 @@ namespace lib {
 
       angle = abs( angle );
 
-      while( angle > pi2< double > ) angle -= pi2< double >;
+      while( angle > pi2 ) angle -= pi2;
 
-      if( angle > pi34< double > ) { angle = pi2< double > - angle; if( not cos ) s = -1.0 * s; }
-      else if( angle > pi< double > ) { angle -= pi< double >; s = -1.0 * s; }
-      else if( angle > pi12< double > ) { angle = pi< double > - angle; if( cos ) s = -1.0 * s; }
+      if( angle > pi34 ) { angle = pi2 - angle; if( not cos ) s = -1.0 * s; }
+      else if( angle > pi ) { angle -= pi; s = -1.0 * s; }
+      else if( angle > pi12 ) { angle = pi - angle; if( cos ) s = -1.0 * s; }
 
       return s;
     }
 
     constexpr auto cos_cexpr_( double angle, double x, double sign, double fact, double n ) { 
 
-      if( n > 17 ) return .0;
+      if( n > 15 ) return .0;
 
       auto x2 = x * angle * angle;
       auto sign2 = -sign;
@@ -168,6 +168,12 @@ namespace lib {
     }
 
     TP< TN T0, ssize_t... NN > 
+    constexpr auto normalize( mat_t< T0, NN...> m ) { 
+
+        return mat_t< T0, NN... > { m[ NN ] / vec_t< T0, NN... >{ length( m[ NN ] ) }... };
+    }
+
+    TP< TN T0, ssize_t... NN > 
     constexpr T0 length_cexpr( vec_t< T0, NN... > v ) { return sqrt_cexpr( dot( v, v ) ); }
 
     #define $vector_length( ... ) lib::math::length_cexpr( __VA_ARGS__ )
@@ -176,6 +182,12 @@ namespace lib {
     constexpr auto normalize_cexpr( vec_t< T0, NN...> v ) { 
 
         return v / vec_t< T0, NN... >{ length_cexpr( v ) };
+    }
+
+    TP< TN T0, ssize_t... NN > 
+    constexpr auto normalize_cexpr( mat_t< T0, NN...> m ) { 
+
+        return mat_t< T0, NN... > { m[ NN ] / vec_t< T0, NN... >{ length_cexpr( m[ NN ] ) }... };
     }
 
     #define $normalize( ... ) lib::math::normalize_cexpr( __VA_ARGS__ )

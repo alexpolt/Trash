@@ -11,6 +11,9 @@ namespace lib {
 
     enum class scheme { file, web, db, null };
 
+    url( scheme s, cstr p ) : _scheme{ s }, _path{ p } { }
+
+    url( cstr op, scheme s, cstr p ) : _path_orig{ op }, _scheme{ s }, _path{ p } { }
 
     static url create( cstr path ) {
 
@@ -42,9 +45,9 @@ namespace lib {
 
     auto data() const { return _path_orig; }
 
-    cstr _path_orig;
-    scheme _scheme;
-    cstr _path;
+    cstr _path_orig{};
+    scheme _scheme{};
+    cstr _path{};
 
   };
 

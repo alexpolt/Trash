@@ -8,22 +8,21 @@ namespace lib {
 
     namespace math {
 
-    TP<TN T0>
-    constexpr T0 pi = T0( 3.14159265358979 );
+    constexpr double pi = 3.14159265358979;
+    constexpr double pi12 = .5 * pi;
+    constexpr double pi34 = pi + pi12;
+    constexpr double pi2 = pi + pi;
 
-    TP<TN T0>
-    constexpr T0 pi12 = T0( .5 ) * pi< T0 >;
+    constexpr float pif = pi;
+    constexpr float pi12f = pi12;
+    constexpr float pi34f = pi34;
+    constexpr float pi2f = pi2;
 
-    TP<TN T0>
-    constexpr T0 pi34 = pi< T0 > + pi12< T0 >;
+    constexpr double radians( double angle ) { return angle * pi / double( 180 ); }
 
-    TP<TN T0>
-    constexpr T0 pi2 = pi< T0 > + pi< T0 >;
+    constexpr float radiansf( float angle ) { return angle * pif / float( 180 ); }
 
-    TP<TN T0>
-    constexpr T0 radians( T0 angle ) { return angle * pi< T0 > / T0{ 180 }; }
-
-    constexpr auto operator ""_rad( unsigned long long angle ) { return radians< double >( angle ); }
+    constexpr auto operator ""_rad( unsigned long long angle ) { return radians( angle ); }
      
 
   }
