@@ -123,7 +123,7 @@ namespace lib {
     constexpr auto sign( vec_t< T0, NN... > value ) { return vec_t< T0, NN... >{ sign( value[ NN ] )... }; }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto max( vec_t< T0, NN... > value ) { return lib::min( value[ NN ]... ); }
+    constexpr auto max( vec_t< T0, NN... > value ) { return lib::max( value[ NN ]... ); }
 
     TP< TN T0, ssize_t... NN > 
     constexpr auto min( vec_t< T0, NN... > value ) { return lib::min( value[ NN ]... ); }
