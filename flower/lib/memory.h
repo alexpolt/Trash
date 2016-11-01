@@ -67,8 +67,6 @@ namespace lib {
 
       auto& stats = get_stats();
 
-      log::memory, "object ", object, " alloc( ", size, " ) ", log::endl;
-
       auto& cache = get_cache();
       
       $assert( not cache.destroyed, "alloc failed, memory cache was destroyed" );
@@ -77,16 +75,19 @@ namespace lib {
 
         for( auto i : range{ 0, cache.size } ) {
 
-          if( cache._ptr[ i ] and cache._size[ i ] == size ) 
+          if( cache._ptr[ i ] and cache._size[ i ] == size ) {
+
+            log::memory, "object ", object, " cache alloc( ", size, " ) ", log::endl;
 
             return move( cache._ptr[ i ] );
+          }
         }
 
       auto ptr = ::malloc( size );
 
       stats.alloc.add( size );
 
-      log::memory, "memsize = ", (ssize_t) stats.alloc, log::endl;
+      log::memory, "object ", object, " malloc( ", size, " ), memory = ", (ssize_t) stats.alloc, log::endl;
 
       if( ! ptr ) $throw error_memory{ "malloc failed" };
 

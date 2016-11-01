@@ -93,11 +93,27 @@ namespace lib {
     TP<TN U0, ssize_t M0>
     vector( U0 ( &args)[ M0 ] ) { $this << args; }
 
+
+    vector& operator=( vector&& other ) { 
+      
+      clear();
+
+      free();
+
+      _data = move( other._data );
+
+      _capacity = move( other._capacity );
+
+      _index = move( other._index );
+
+      return $this; 
+    }
+
     TP<TN U0>
     vector& operator=( U0&& other ) { clear(); $this << forward< U0 >( other ); return $this; }
 
     TP<TN U0, ssize_t M0>
-    vector& operator=( U0 ( &args)[ M0 ] ) { clear(); $this << args; return $this; }
+    vector& operator=( U0 ( &args)[ M0 ] ) { clear(); reserve( M0 ); $this << args; return $this; }
 
     ~vector() { clear(); free(); }
 
@@ -132,6 +148,10 @@ namespace lib {
         auto rest = size() % 4;
 
         for( auto i : range{ size()-rest, size() } ) _data[ i ].~value_type();
+
+      } else if( size() ) {
+
+        memset( data(), 0, size_bytes() );
       }
 
       _index = 0;
@@ -177,8 +197,8 @@ namespace lib {
           new( &data_new[ i ] ) value_type{ move( _data[ i ] ) };
         
       } else if( size() ) {
-
-        memcpy( data_new, data(), bytes() );
+        
+        memcpy( data_new, data(), size_bytes() );
       }
 
       free();
@@ -187,7 +207,27 @@ namespace lib {
       _capacity = size_new;
     }
 
-    void check_size() const { $assert( size() > 0, "vector us empty" ); }
+    void resize( ssize_t size_new ) {
+
+      if( size_new <= size() ) return;
+
+      if( size_new > capacity() ) reserve( size_new );
+
+      if( not is_primitive_v< value_type > ) {
+
+        for( auto i : range{ size(), size_new } )
+
+          new( &data()[ i ] ) value_type{};
+
+      } else {
+
+        memset( data() + size(), 0, ( size_new - size() ) * value_size );
+      }
+
+      set_size( size_new );
+    }
+
+    void check_size() const { $assert( size() > 0, "vector is empty" ); }
 
     auto& front() { check_size(); return _data[ 0 ]; }
     auto& back() { check_size(); return _data[ _index - 1 ]; }
@@ -244,6 +284,8 @@ namespace lib {
     TP<TN U0 = char, TN = enable_if_t< is_string and $size( U0 )>>
     auto& operator<<( value_type const* other ) { 
 
+      if( not other ) return $this;
+
       if( size() > 0 ) pop_back();
 
       while( *other ) push_back( *other++ );
@@ -285,6 +327,12 @@ namespace lib {
                               is_container_v< no_cref_t< U0 > > and 
                                 not is_vector_v< no_cref_t< U0 > > >, TN = void>
     auto& operator<<( U0&& other ) { 
+
+      ssize_t size = other.size();
+
+      if( not size ) return $this;
+
+      reserve( size );
 
       for( auto& e : other )
 
@@ -338,7 +386,7 @@ namespace lib {
 
       auto size_other = other.size();
 
-      if( not size_other ) return;
+      if( not size_other ) return $this;
 
       reserve( size_other );
       
@@ -353,7 +401,7 @@ namespace lib {
       memcpy( to, from, size_other * value_size );
 
       _index += size_other - null_char;
-
+      
       return $this;
     }
 
@@ -369,14 +417,36 @@ namespace lib {
     }
 
 
-    iterator begin() { return vector_iterator< vector >{ $this, 0 }; }
-    iterator end() { return vector_iterator< vector >{ $this, size() }; }
+    TP<TN U0, ssize_t M0, bool is_str, TN = enable_if_t< is_primitive_v< T0 > and is_primitive_v< U0 > >>
+    bool operator==( vector< U0, M0, is_str > const& right ) const {
 
-    const_iterator begin() const { return vector_iterator< vector const >{ $this, 0 }; }
-    const_iterator end() const { return vector_iterator< vector const >{ $this, size() }; }
+      if( size() != right.size() ) return false;
 
-    const_iterator cbegin() const { return vector_iterator< vector const >{ $this, 0 }; }
-    const_iterator cend() const { return vector_iterator< vector const >{ $this, size() }; }
+      return not memcmp( data(), right.data(), size() );
+    }
+
+
+    TP<TN U0, ssize_t M0, bool is_str, TN = disable_if_t< is_primitive_v< T0 > and is_primitive_v< U0 > >>
+    bool operator==( vector< T0, M0, is_str > const& right )  const {
+
+      if( size() != right.size() ) return false;
+
+      for( auto i : range{ 0, size() } )
+
+        if( $this[ i ] not_eq right[ i ] ) return false;
+
+      return true;
+    }
+
+
+    iterator begin() { return iterator{ $this, 0 }; }
+    iterator end() { return iterator{ $this, size() }; }
+
+    const_iterator begin() const { return const_iterator{ $this, 0 }; }
+    const_iterator end() const { return const_iterator{ $this, size() }; }
+
+    const_iterator cbegin() const { return const_iterator{ $this, 0 }; }
+    const_iterator cend() const { return const_iterator{ $this, size() }; }
 
     auto set_size( size_type size ) { _index = size; }
 
@@ -384,7 +454,7 @@ namespace lib {
     auto size() const { return _index; }
     auto capacity() const { return _capacity; }
     auto available() const { return capacity() - size(); }
-    auto bytes() const { return size() * value_size; }
+    auto size_bytes() const { return size() * value_size; }
     bool empty() const { return size() == 0; }
 
 

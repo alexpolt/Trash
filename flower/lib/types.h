@@ -206,11 +206,10 @@ namespace lib {
   };
 
   TP<TN T0>
-  T0& swap( T0& left, T0& right ) noexcept {
+  void swap( T0& left, T0& right ) noexcept {
     auto tmp = move( left );
     left = move( right );
     right = move( tmp );
-    return right;
   }
 
 

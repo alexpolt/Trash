@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef $CONFIG_STL
+# include <iterator>
+#endif
+
 #include "macros.h"
 #include "types.h"
 
@@ -10,6 +14,9 @@ namespace lib {
   TP<TN T0>
   struct vector_iterator {
 
+    using value_type = typename T0::value_type;
+    using reference = typename T0::reference;
+    using difference_type = typename T0::size_type;
     using iterator = vector_iterator;
     using size_type = typename T0::size_type;
 
@@ -37,6 +44,13 @@ namespace lib {
     auto operator+( ssize_t index ) const { return iterator{ _object, _index + index }; }
     auto operator-( ssize_t index ) const { return iterator{ _object, _index - index }; }
 
+    auto operator-( iterator other ) const { 
+
+      $assert( &_object == &other._object, "iterators from different objects" );
+
+      return _index - other._index;
+    }
+
     auto& operator+=( ssize_t index ) { _index+=index; return $this; }
     auto& operator-=( ssize_t index ) { _index-=index; return $this; }
 
@@ -56,5 +70,21 @@ namespace lib {
   };
 
 }
+
+#ifdef $CONFIG_STL
+
+namespace std {
+
+  TP<TN T>
+  struct iterator_traits< lib::vector_iterator< T > > {
+    using value_type = typename T::value_type;
+    using reference = typename T::reference;
+    using difference_type = typename T::size_type;
+    using iterator_category = random_access_iterator_tag;
+   };
+}
+
+#endif
+
 
 

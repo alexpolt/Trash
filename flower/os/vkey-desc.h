@@ -271,7 +271,7 @@ namespace lib {
 
           };
 
-    auto& get_vkey_desc( vkey vk ) { return vkey_desc[ vk ]; }
+    auto& get_desc( vkey vk ) { return vkey_desc[ vk ]; }
 
   }
 }

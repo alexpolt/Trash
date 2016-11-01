@@ -39,7 +39,7 @@ namespace lib {
 
       else
 
-        _lock_map.push_back( { ptr, { counter }, deleter } );
+        _lock_map.push_back( { ptr, counter, deleter } );
 
       log::lock, ", ", counter, " )", log::endl;
     }
@@ -89,6 +89,26 @@ namespace lib {
     }
 
     struct lock_node {
+
+      lock_node( void* p, int c, deleter_t d ) : ptr{ p }, counter{}, deleter{ d } { 
+
+        counter = c;
+      }
+
+      lock_node( lock_node const& other ) : 
+        ptr{ other.ptr }, counter{}, deleter{ other.deleter } { 
+
+        counter = other.counter.load();
+      }
+
+      lock_node& operator=( lock_node const& other ) {
+
+        ptr = other.ptr;
+        deleter = other.deleter;
+        counter = other.counter.load();
+
+        return $this;
+      }
 
       bool operator==( void* ptr2 ) const { return ptr == ptr2; }
 

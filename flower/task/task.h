@@ -34,9 +34,9 @@ namespace lib {
 
 
     TP<TN T0>
-    struct task_t : task {
+    struct task_basic : task {
 
-      task_t( T0 fn, task_desc desc ) : _fn{ move( fn ) }, _desc{ desc } { }
+      task_basic( T0 fn, task_desc desc ) : _fn{ move( fn ) }, _desc{ desc } { }
 
       result operator()() override { return _fn(); }
 

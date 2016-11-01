@@ -7,6 +7,7 @@
 #include "lib/types.h"
 #include "lib/assert.h"
 #include "lib/error.h"
+#include "lib/buffer.h"
 #include "lib/vector.h"
 #include "lib/scope-guard.h"
 #include "lib/handle.h"
@@ -46,19 +47,25 @@ namespace lib {
         }
 
         return move( data );
-      }
+     }
 
      ssize_t size() {
 
+        if( _size != -1 ) return _size;
+
         open();
+
+        auto pos = tell();
+
+        $on_return { seek( pos, SEEK_SET ); };
 
         seek( 0, SEEK_END );
 
-        auto size = tell();
+        auto _size = tell();
 
         seek( 0, SEEK_SET );
 
-        return size;
+        return _size;
       }
 
       bool exists() {
@@ -76,13 +83,28 @@ namespace lib {
 
         if( _h ) return;
 
-        FILE* f = fopen( _path, "rb" );
+        FILE* f = fopen( _path, "r+b" );
         
         if( not f ) $throw $error_file( _path, strerror( errno ) );
         
         handle_t::deleter_t d = []( FILE* f ) { fclose( f ); };
 
         _h = handle_t{ f, d };
+      }
+
+      string get_line() {
+
+        open();
+
+        auto& buffer = global::get_buffer< char, 4096 >();
+
+        auto ptr = fgets( buffer, $array_size( buffer ), _h );
+
+        if( not ptr and ferror( _h ) )
+
+          $throw $error_file( _path, strerror( errno ) );
+
+        return ptr ? string{ ptr } : string{};
       }
 
       ssize_t seek( ssize_t offset, int whence ) {
@@ -107,8 +129,11 @@ namespace lib {
         return offset;
       }
 
-      handle_t _h;
-      cstr _path;
+      bool eof() { return not _h or feof( _h ); }
+
+      handle_t _h{};
+      cstr _path{};
+      ssize_t _size = -1;
     };
   
 

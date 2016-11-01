@@ -10,9 +10,6 @@ namespace lib {
   namespace os {
 
 
-    using input_t = input_win32;
-
-
   }
 }
 

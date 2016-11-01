@@ -5,7 +5,6 @@
 #include "assert.h"
 #include "value.h"
 #include "to-string.h"
-#include "task/result.h"
 
 
 namespace lib {
@@ -24,8 +23,6 @@ namespace lib {
     virtual oid_t get_object_id() const;
 
     virtual cstr to_string() const; 
-
-    virtual task::result operator()(); 
 
 
     virtual bool has_object( iid_t ) const = 0;
@@ -58,7 +55,6 @@ namespace lib {
 
   inline cstr object::to_string() const { return lib::to_string( "object( 0x%p )", this ); }
 
-  inline task::result object::operator()() { $assert( false, "not implemented" ); return task::result::done; }
  
   TP<TN T0> 
   inline bool object::has_object( type_tag<T0> ) const { return has_object( T0::interface_id ); }

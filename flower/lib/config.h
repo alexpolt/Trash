@@ -16,6 +16,8 @@
 
 #elif defined( _MSC_VER )
 
+  #define WIN32_LEAN_AND_MEAN
+  
   #define $CONFIG_MSC
 
   #ifndef _CPPUNWIND
@@ -36,8 +38,9 @@
 
 //#define $CONFIG_NO_EXCEPT
 
-#define $CONFIG_NO_ATOMIC
+//#define $CONFIG_NO_ATOMIC
 
+//#define $CONFIG_STL
 
 namespace lib {
 

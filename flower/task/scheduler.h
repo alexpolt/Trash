@@ -40,7 +40,7 @@ namespace lib {
       
       auto id = desc.id = global::gen_id< task_tag >();
 
-      auto t = value< task >::create< task_t< T0 > >( move( fn ), desc );
+      auto t = value< task >::create< task_basic< T0 > >( move( fn ), desc );
 
       run( move( t ) );
 

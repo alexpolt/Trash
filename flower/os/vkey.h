@@ -28,6 +28,7 @@ namespace lib {
       //VK_MAP_ = 256,
       //VK_MAP_ = 256,
 
+      VK_NULL = 0x00,
       VK_LBUTTON = 0x01,
       VK_RBUTTON = 0x02,
       VK_CANCEL = 0x03,

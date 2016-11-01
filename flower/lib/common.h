@@ -13,9 +13,10 @@
 #include "scope-guard.h"
 #include "vector.h"
 #include "string.h"
+#include "hash-map.h"
 #include "value.h"
 #include "object.h"
-#include "result.h"
+#include "ret.h"
 #include "optional.h"
 #include "owner-ptr.h"
 #include "shared-ptr.h"
@@ -39,6 +40,7 @@ using lib::vector_i;
 using lib::vector_f;
 using lib::vector_d;
 using lib::string;
+using lib::hash_map;
 using lib::ret_t;
 using lib::optional;
 using lib::owner_ptr;

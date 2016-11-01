@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "constant.h"
 #include "types.h"
+#include "constant.h"
 #include "math.h"
 #include "variable.h"
 #include "to-string.h"
