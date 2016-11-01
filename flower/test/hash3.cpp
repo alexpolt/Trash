@@ -18,7 +18,7 @@ int main() {
 
   //lib::log::memory.on();
 
-  cstr filename = "../data/hitch4.txt";
+  cstr filename = "hitch4.txt";
 
   os::file f0{ filename };
 
@@ -55,7 +55,7 @@ int main() {
 
 void measure1( vector< string >& lines ) {
 
-  hash_map< string, int > map0{7000};
+  hash_map< string, int > map0{};
 
   auto begin = std::chrono::high_resolution_clock::now();
 
@@ -100,7 +100,7 @@ void measure1( vector< string >& lines ) {
 
 void measure2( std::vector< std::string >& lines ) {
 
-  std::unordered_map< std::string, int > map0{7000};
+  std::unordered_map< std::string, int > map0{};
 
   auto begin = std::chrono::high_resolution_clock::now();
 

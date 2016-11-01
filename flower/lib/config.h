@@ -40,7 +40,14 @@
 
 //#define $CONFIG_NO_ATOMIC
 
-//#define $CONFIG_STL
+#define $CONFIG_STL
+
+
+#ifdef $CONFIG_STL
+# include <vector>
+# include <string>
+#endif
+
 
 namespace lib {
 

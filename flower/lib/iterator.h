@@ -64,6 +64,8 @@ namespace lib {
 
     explicit operator bool() const { return _index not_eq _object.size(); }
 
+    size_type get_index() const { return _index; }
+
     T0& _object;
 
     size_type _index;
