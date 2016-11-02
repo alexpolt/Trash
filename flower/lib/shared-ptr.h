@@ -31,10 +31,10 @@ namespace lib {
 
     shared_ptr( shared_ptr&& other ) noexcept : _ptr { move( other._ptr ) } { }
 
-    TP<TN U0, bool weak>
+    TP<TN U0, bool weak, TN = disable_if_t< not is_weak and weak >>
     shared_ptr( shared_ptr< U0, weak >&& other ) noexcept : _ptr { move( other._ptr ) } { }
 
-    TP<TN U0, bool weak>
+    TP<TN U0, bool weak, TN = disable_if_t< not is_weak and weak >>
     auto& operator=( shared_ptr< U0, weak >&& other ) noexcept {
 
       destroy();
@@ -64,7 +64,7 @@ namespace lib {
 
     static auto& get_locker() { return global::locker< typename locker_tag< T0 >::type >; }
 
-    auto lock() { 
+    auto lock() const { 
      
       $assert( _ptr, "lock called on nullptr in shared_ptr" );
 
@@ -74,7 +74,7 @@ namespace lib {
 
       ptr._ptr = _ptr;
 
-      return ptr;
+      return move( ptr );
     }
 
     auto reset() { destroy(); }

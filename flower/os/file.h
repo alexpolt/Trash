@@ -85,14 +85,14 @@ namespace lib {
 
         FILE* f = fopen( _path, "r+b" );
         
-        if( not f ) $throw $error_file( _path, strerror( errno ) );
+        if( f == nullptr ) $throw $error_file( _path, strerror( errno ) );
         
         handle_t::deleter_t d = []( FILE* f ) { fclose( f ); };
 
         _h = handle_t{ f, d };
       }
 
-      string get_line() {
+      string get_line( string str = string{} ) {
 
         open();
 
@@ -100,18 +100,25 @@ namespace lib {
 
         auto ptr = fgets( buffer, $array_size( buffer ), _h );
 
-        if( not ptr and ferror( _h ) )
+        if( ptr == nullptr and ferror( _h ) )
 
           $throw $error_file( _path, strerror( errno ) );
 
-        return ptr ? string{ ptr } : string{};
+        if( ptr ) {
+
+          str.reserve( strlen( ptr ) + 1 );
+
+          str << ptr;
+        }
+
+        return str;
       }
 
       ssize_t seek( ssize_t offset, int whence ) {
 
         auto r = fseek( _h, offset, whence );
 
-        if( r not_eq 0 )
+        if( r != 0 )
 
           $throw $error_file( _path, strerror( errno ) );
 
@@ -129,7 +136,7 @@ namespace lib {
         return offset;
       }
 
-      bool eof() { return not _h or feof( _h ); }
+      bool eof() { return not (bool) _h or feof( _h ); }
 
       handle_t _h{};
       cstr _path{};

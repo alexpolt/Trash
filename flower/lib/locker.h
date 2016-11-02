@@ -4,7 +4,7 @@
 #include "types.h"
 #include "assert.h"
 #include "atomic.h"
-#include "vector.h"
+#include "hash-map.h"
 #include "to-string.h"
 #include "log.h"
 
@@ -17,7 +17,7 @@ namespace lib {
 
     locker_t() {
 
-      _lock_map.reserve( 4 );
+      _lock_map.reserve( 32 );
     }
 
     ~locker_t() {
@@ -29,7 +29,7 @@ namespace lib {
 
       log::lock, "lock( ", ptr;
 
-      auto it = find( _lock_map, ptr );
+      auto it = _lock_map[ ptr ];
 
       int counter = 1;
 
@@ -39,7 +39,7 @@ namespace lib {
 
       else
 
-        _lock_map.push_back( { ptr, counter, deleter } );
+        _lock_map.insert( ptr, lock_node{ ptr, counter, deleter } );
 
       log::lock, ", ", counter, " )", log::endl;
     }
@@ -48,7 +48,7 @@ namespace lib {
 
       log::lock, "lock( ", ptr;
 
-      auto it = find( _lock_map, ptr );
+      auto it = _lock_map[ ptr ];
 
       $assert( it, "lock not found" ); 
 
@@ -59,7 +59,7 @@ namespace lib {
 
     bool unlock( void* ptr, bool is_weak = false ) {
 
-      auto it = find( _lock_map, ptr );
+      auto it = _lock_map[ ptr ];
 
       $assert( it, "lock not found" );
 
@@ -81,48 +81,52 @@ namespace lib {
 
     int use_count( void* ptr ) { 
 
-      auto it = find( _lock_map, ptr );
+      auto it = _lock_map[ ptr ];
 
-      if( not it ) return 0;
+      if( it ) 
 
-      return it->counter.load();
+        it->counter.load();
+
+      return 0;
     }
 
     struct lock_node {
 
-      lock_node( void* p, int c, deleter_t d ) : ptr{ p }, counter{}, deleter{ d } { 
+      lock_node() { }
+
+      lock_node( void* p, int c, deleter_t d ) : counter{}, deleter{ d } { 
 
         counter = c;
       }
 
-      lock_node( lock_node const& other ) : 
-        ptr{ other.ptr }, counter{}, deleter{ other.deleter } { 
+      lock_node( lock_node const& other ) : counter{}, deleter{ other.deleter } { 
 
         counter = other.counter.load();
       }
 
+      lock_node( lock_node&& other ) : counter{}, deleter{ move( other.deleter ) } { 
+
+        counter = other.counter.load();
+        
+        other.counter = 0;
+      }
+
       lock_node& operator=( lock_node const& other ) {
 
-        ptr = other.ptr;
         deleter = other.deleter;
         counter = other.counter.load();
 
         return $this;
       }
 
-      bool operator==( void* ptr2 ) const { return ptr == ptr2; }
+      cstr to_string() const { return lib::to_string( "lock_node( %d )", counter.load() ); }
 
-      bool operator<( void* ptr2 ) const { return less( ptr, ptr2 ); }
-
-      cstr to_string() const { return lib::to_string( "lock( %p, %d )", ptr, counter.load() ); }
-
-      void* ptr;
-      atomic< int > counter;
-      deleter_t deleter;
+      atomic< int > counter{};
+      deleter_t deleter{};
     };
 
 
-    vector< lock_node > _lock_map;
+    hash_map< void*, lock_node > _lock_map;
   };
 
 

@@ -11,7 +11,8 @@
 #include "algo.h"
 #include "iterator.h"
 #include "to-string.h"
-#include "out-ref.h"
+#include "allocator.h"
+#include "value.h"
 
 namespace lib {
 
@@ -41,6 +42,7 @@ namespace lib {
     using reference = T0&;
     using iterator = vector_iterator< vector >;
     using const_iterator = vector_iterator< vector const >;
+    using allocator = value< allocator >;
 
     TP<TN> struct is_vector : type_false { };
 
@@ -51,7 +53,12 @@ namespace lib {
     static constexpr bool is_vector_v = is_vector< U0 >::value;
 
 
-    vector( ) { if( N0 > 0 ) reserve( N0 ); }
+    vector( allocator alloc = allocator{} ) { 
+
+      if( N0 > 0 ) reserve( N0 ); 
+
+      else _alloc = move( alloc );
+    }
 
     explicit vector( ssize_t size ) {
       
@@ -67,18 +74,20 @@ namespace lib {
 
     explicit vector( value_type ( &data)[ N0 ] ) : _data{ data }, _capacity{ N0 } { }
 
-    vector( vector const& other ) { 
+    vector( vector const& other ) {
+      
+      if( other._alloc ) _alloc = other._alloc->get_copy();
 
-      if( other.size() > 0 ) { 
+      clear();
 
-        $this << other;
-      }
+      $this << other;
     }
 
-    vector( vector&& other ) noexcept : 
+    vector( vector&& other ) : 
       _data{ move( other._data ) }, 
       _capacity{ move( other._capacity ) },
-      _index{ move( other._index ) } { }
+      _index{ move( other._index ) },
+      _alloc{ move( other._alloc ) } { }
 
     TP<TN... UU>
     explicit vector( UU&&... args ) { 
@@ -94,7 +103,7 @@ namespace lib {
     vector( U0 ( &args)[ M0 ] ) { $this << args; }
 
 
-    vector& operator=( vector&& other ) { 
+    vector& operator=( vector other ) { 
       
       clear();
 
@@ -106,11 +115,24 @@ namespace lib {
 
       _index = move( other._index );
 
+      _alloc = move( other._alloc );
+
       return $this; 
     }
 
     TP<TN U0>
-    vector& operator=( U0&& other ) { clear(); $this << forward< U0 >( other ); return $this; }
+    vector& operator=( U0&& other ) { 
+      
+      clear(); 
+
+      if( other._alloc ) 
+
+        _alloc = other._alloc->get_copy();
+
+      $this << forward< U0 >( other ); 
+
+      return $this; 
+    }
 
     TP<TN U0, ssize_t M0>
     vector& operator=( U0 ( &args)[ M0 ] ) { clear(); reserve( M0 ); $this << args; return $this; }
@@ -123,7 +145,12 @@ namespace lib {
 
       if( capacity() == 0 ) return;
 
-      $free( this, $out( _data ), value_size * capacity() );
+      if( _alloc ) 
+
+            _alloc->free( move( _data ), value_size * capacity() );
+
+      else  $free( this, move( _data ), value_size * capacity() );
+
 
       _capacity = 0; 
     }
@@ -161,7 +188,7 @@ namespace lib {
 
       if( N0 > 0 ) return;
 
-      size_new = max( 4, size_new );
+      size_new = max( 1, size_new );
 
       if( size_new <= available() ) return;
 
@@ -174,7 +201,14 @@ namespace lib {
       
       auto size_new_bytes = value_size * size_new;
 
-      value_type* data_new = (value_type*) $alloc( this, size_new_bytes );
+      value_type* data_new = nullptr;
+      
+      if( _alloc )
+
+           data_new = (value_type*) _alloc->alloc( size_new_bytes );
+
+      else data_new = (value_type*) $alloc( this, size_new_bytes );
+
 
       if( size() and not is_primitive_v< value_type > ) {
 
@@ -282,9 +316,15 @@ namespace lib {
 
 
     TP<TN U0 = char, TN = enable_if_t< is_string and $size( U0 )>>
+    auto& operator<<( value_type* other ) { 
+
+      return operator<<( ( value_type const* ) other );
+    }
+
+    TP<TN U0 = char, TN = enable_if_t< is_string and $size( U0 )>>
     auto& operator<<( value_type const* other ) { 
 
-      if( not other ) return $this;
+      if( other == nullptr ) return $this;
 
       if( size() > 0 ) pop_back();
 
@@ -330,7 +370,7 @@ namespace lib {
 
       ssize_t size = other.size();
 
-      if( not size ) return $this;
+      if( size == 0 ) return $this;
 
       reserve( size );
 
@@ -353,7 +393,7 @@ namespace lib {
 
       ssize_t size = other.size();
 
-      if( not size ) return $this;
+      if( size == 0 ) return $this;
 
       reserve( size );
 
@@ -386,7 +426,7 @@ namespace lib {
 
       auto size_other = other.size();
 
-      if( not size_other ) return $this;
+      if( size_other == 0 ) return $this;
 
       reserve( size_other );
       
@@ -417,27 +457,6 @@ namespace lib {
     }
 
 
-    TP<TN U0, ssize_t M0, bool is_str, TN = enable_if_t< is_primitive_v< T0 > and is_primitive_v< U0 > >>
-    bool operator==( vector< U0, M0, is_str > const& right ) const {
-
-      if( size() != right.size() ) return false;
-
-      return not memcmp( data(), right.data(), size() );
-    }
-
-
-    TP<TN U0, ssize_t M0, bool is_str, TN = disable_if_t< is_primitive_v< T0 > and is_primitive_v< U0 > >>
-    bool operator==( vector< T0, M0, is_str > const& right )  const {
-
-      if( size() != right.size() ) return false;
-
-      for( auto i : range{ 0, size() } )
-
-        if( $this[ i ] not_eq right[ i ] ) return false;
-
-      return true;
-    }
-
 
     iterator begin() { return iterator{ $this, 0 }; }
     iterator end() { return iterator{ $this, size() }; }
@@ -448,7 +467,10 @@ namespace lib {
     const_iterator cbegin() const { return const_iterator{ $this, 0 }; }
     const_iterator cend() const { return const_iterator{ $this, size() }; }
 
-    auto set_size( size_type size ) { _index = size; }
+    void set_size( size_type size ) { _index = size; }
+
+    void set_allocator( allocator alloc ) { _alloc = move( alloc ); }
+    allocator get_allocator() { return _alloc ? _alloc->get_copy() : allocator{}; }
 
     auto data() const { return _data; }
     auto size() const { return _index; }
@@ -461,12 +483,52 @@ namespace lib {
     pointer _data{};
     size_type _capacity{};
     size_type _index{};
+    allocator _alloc;
   };
-
 
 
   TP<TN T0, ssize_t N0>
   inline auto make_vector( T0 ( &data)[ N0 ] ) { return vector< T0, N0 >{ data };  }
+
+
+  TP<TN T>
+  bool operator==( vector< T, 0, true > const& left, cstr right ) {
+
+    ssize_t size_right = strlen( right ) + 1;
+
+    if( left.size() != size_right ) return false;
+
+    return memcmp( left.data(), right, left.size() ) == 0;
+  }
+
+  TP<TN T>
+  bool operator==( cstr left, vector< T, 0, true > const& right ) {
+  
+    return operator==( right, left );
+  }
+
+  TP<TN T, ssize_t N, bool is_string, TN = enable_if_t< is_primitive_v< T >  >>
+  bool operator==( vector< T, N, is_string > const& left,  vector< T, N, is_string > const& right ) {
+
+    if( left.size() != right.size() ) return false;
+
+    return memcmp( left.data(), right.data(), left.size() ) == 0;
+  }
+
+
+  TP<TN T0, TN T1, ssize_t N0, ssize_t N1, bool is_str0, bool is_str1,
+      TN = disable_if_t< is_same_v< T0, T1 > and is_primitive_v< T0 > and is_primitive_v< T1 > >>
+  bool operator==( vector< T0, N0, is_str0 > const& left, vector< T1, N1, is_str1 > const& right ) {
+
+    if( left.size() != right.size() ) return false;
+
+    for( auto i : range{ 0, left.size() } )
+
+      if( left[ i ] != right[ i ] ) return false;
+
+    return true;
+  }
+
 
 
 }

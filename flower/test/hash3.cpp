@@ -8,7 +8,7 @@
 
 #include "lib/common.h"
 #include "os/common.h"
-
+#include "lib/alloc-chunk.h"
 
 void measure1( vector< string >& lines );
 void measure2( std::vector< std::string >& lines );
@@ -16,6 +16,7 @@ void measure2( std::vector< std::string >& lines );
 
 int main() {
 
+  //lib::log::lock.on();
   //lib::log::memory.on();
 
   cstr filename = "hitch4.txt";
@@ -29,9 +30,17 @@ int main() {
 
   int c = 0;
 
+  string s{ lib::alloc_chunk::create( 4096 ) };
+
   while( true ) {
 
-    auto l = f0.get_line();
+    if( c == 148500 ) {
+
+      //lib::log::lock.on();
+      //lib::log::memory.on();
+    }
+
+    auto l = f0.get_line( s );
 
     if( not l.size() )  break;
 
@@ -40,11 +49,17 @@ int main() {
  
     stdlines.push_back( std::string( l.data() ) );
 
+    //info, c, ": ", l.data(), endl;
+
     lines << move( l );
 
     ++c;
+
     //if( c > 20 ) break;
-  };
+  }
+
+  //lib::log::lock.off();
+  //lib::log::memory.off();
 
   measure1( lines );
   measure2( stdlines );
@@ -132,9 +147,9 @@ void measure2( std::vector< std::string >& lines ) {
 
   info, "bucket count = ", map0.bucket_count(), ", load factor = ", map0.load_factor(), endl;
   
-  int empty = 0, max = 0;
+  uint empty = 0, max = 0;
 
-  for( auto i : range{ 0, map0.bucket_count() } ) { 
+  for( auto i : range{ 0, (int)map0.bucket_count() } ) { 
     if( map0.bucket_size( i ) > max ) max = map0.bucket_size(i);
     if( map0.bucket_size( i ) == 0 ) empty++;
   }

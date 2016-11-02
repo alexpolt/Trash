@@ -13,11 +13,13 @@ namespace lib {
 
     value() { }
 
-    ~value() { if( *type_cast< void** >( &_data ) ) $this->~T0(); }
+    ~value() { destroy(); }
+    
+    void destroy() { if( *type_cast< void** >( &_data ) ) $this->~T0(); }
 
     value( value&& other ) : _data{ move( other._data ) } { }
 
-    auto& operator=( value&& other ) { _data = move( other._data ); return $this; }
+    auto& operator=( value&& other ) { destroy(); _data = move( other._data ); return $this; }
 
     TP<TN U0, TN... TT> 
     static value create( TT&&... args ) {
@@ -54,11 +56,13 @@ namespace lib {
     TP<TN U0> 
     explicit operator U0&() const { return type_cast< U0 const& >( _data ); }
 
-    auto& operator*() { return type_cast< T0& >( _data ); }
-    auto operator->() { return type_cast< T0* >( & _data ); }
+    value get_raw_copy() const { auto v = value{}; v._data = $this._data; return v; }
 
-    auto operator->() const { return type_cast< T0 const* >( & _data ); }
-    auto& operator*() const { return type_cast< T0 const& >( _data ); }
+    T0& operator*() { return type_cast< T0& >( _data ); }
+    T0* operator->() { return type_cast< T0* >( & _data ); }
+
+    T0 const* operator->() const { return type_cast< T0 const* >( & _data ); }
+    T0 const& operator*() const { return type_cast< T0 const& >( _data ); }
 
     explicit operator bool() const { return *type_cast< void** >( &_data ) != 0; }
 

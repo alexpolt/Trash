@@ -39,9 +39,8 @@ namespace lib {
 
             get_stats().alloc.sub( _size[ i ] );
 
-            log::memory, "object ", _owner[ i ], ", free( ", _size[ i ], 
-
-                        " ), memsize = ", (ssize_t) get_stats().alloc, log::endl;
+            log::memory, "object ", _owner[ i ], ", free( ", _size[ i ], ", ", (void*) _ptr[ i ];
+            log::memory, " ); total = ", (ssize_t) get_stats().alloc, log::endl;
 
             ::free( _ptr[ i ] ); 
 
@@ -77,7 +76,8 @@ namespace lib {
 
           if( cache._ptr[ i ] and cache._size[ i ] == size ) {
 
-            log::memory, "object ", object, " cache alloc( ", size, " ) ", log::endl;
+            log::memory, "object ", object, " cache alloc( ", size, " ) = ";
+            log::memory, (void*)cache._ptr[ i ], log::endl;
 
             return move( cache._ptr[ i ] );
           }
@@ -85,18 +85,19 @@ namespace lib {
 
       auto ptr = ::malloc( size );
 
+      if( ! ptr ) $throw error_memory{ "malloc failed" };
+      
       stats.alloc.add( size );
 
-      log::memory, "object ", object, " malloc( ", size, " ), memory = ", (ssize_t) stats.alloc, log::endl;
+      log::memory, "object ", object, " malloc( ", size, " ) = ", (void*)ptr, "; ";
+      log::memory, "total = ", (ssize_t) stats.alloc, log::endl;
 
-      if( ! ptr ) $throw error_memory{ "malloc failed" };
 
       return ptr; 
     }
 
 
-    TP<TN T0>
-    inline void free( void* owner, out_ref< T0* > ptr, ssize_t size, cstr file_line ) { 
+    inline void free( void* owner, void* ptr, ssize_t size, cstr file_line ) { 
     
       auto& stats = get_stats();
       auto& cache = get_cache();
@@ -105,9 +106,10 @@ namespace lib {
 
         stats.alloc.sub( size );
 
-        log::memory, "object ", owner, ", free( ", size, " ), memsize = ", (ssize_t) stats.alloc, log::endl;
+        log::memory, "object ", owner, ", free( ", size, ", ", ptr, " ); ";
+        log::memory, "total = ", (ssize_t) stats.alloc, log::endl;
 
-        ::free( ptr.get() ); 
+        ::free( ptr ); 
 
       } else {
 
@@ -115,10 +117,12 @@ namespace lib {
 
           if( ! cache._ptr[ i ] ) {
 
-            cache._ptr[ i ] = ptr.get();
+            log::memory, "object ", owner, ", free to cache( ", size, ", "; 
+            log::memory, ptr, " ); total = ", (ssize_t) stats.alloc, log::endl;
+
+            cache._ptr[ i ] = ptr;
             cache._size[ i ] = size;
             cache._owner[ i ] = owner;
-            ptr = nullptr; 
 
             return;
           }
@@ -128,19 +132,16 @@ namespace lib {
 
         stats.alloc.sub( cache._size[ idx ] );
 
-        log::memory, "object ", cache._owner[ idx ], ", free cache( ", cache._size[ idx ], 
-
-                     " ), memsize = ", (ssize_t) stats.alloc, log::endl;
+        log::memory, "object ", cache._owner[ idx ], ", free from cache( ", cache._size[ idx ], ", "; 
+        log::memory, cache._ptr[ idx ], " ); total = ", (ssize_t) stats.alloc, log::endl;
 
         ::free( cache._ptr[ idx ] ); 
 
-        cache._ptr[ idx ] = ptr.get();
+        cache._ptr[ idx ] = ptr;
         cache._size[ idx ] = size;
         cache._owner[ idx ] = owner;
 
       }
-
-      ptr = nullptr; 
     }
 
 

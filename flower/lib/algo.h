@@ -30,20 +30,17 @@ namespace lib {
   }
 
 
-  TP<TN T0, TN T1, TN = enable_if_t< not ( is_primitive_v< T0 > or is_primitive_v< T1 > ) >, TN = void> 
+  TP<TN T0, TN T1, TN = enable_if_t< not ( is_primitive_class_v< T0 > or is_primitive_class_v< T1 > ) >, TN = void> 
   constexpr bool equal( T0 const& arg0, T1 const& arg1 ) { return arg0 == arg1; }
-
-  TP<TN T0, TN T1, TN = enable_if_t< is_primitive_v< T0 > and is_primitive_v< T1 > >, TN = void> 
-  constexpr bool equal( T0 const& arg0, T1 const& arg1, ... ) { return arg0 == arg1; }
 
   TP<TN T0, TN T1, TN = enable_if_t< is_primitive_class_v< T0 > and is_primitive_class_v< T1 > >> 
   bool equal( T0 const& arg0, T1 const& arg1 ) {
 
-    return not memcmp( &arg0, &arg1, $size( arg0 ) );
+    return memcmp( &arg0, &arg1, $size( arg0 ) ) == 0;
   }
 
-  bool equal( cstr arg0, cstr arg1 ) { return not strcmp( arg0, arg1 ); }
-  bool equal( char* arg0, char* arg1 ) { return not strcmp( arg0, arg1 ); }
+  bool equal( cstr arg0, cstr arg1 ) { return strcmp( arg0, arg1 ) == 0; }
+  bool equal( char* arg0, char* arg1 ) { return strcmp( arg0, arg1 ) == 0; }
 
 
   TP<TN T0, TN T1> 

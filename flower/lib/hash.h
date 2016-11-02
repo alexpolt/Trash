@@ -32,6 +32,11 @@ namespace lib {
       return MurmurHash2( value.data(), value.size(), seed );
     }
 
+    static auto get_hash( char* value, int seed = 0 ) {
+
+      return MurmurHash2( value, strlen( value ), seed );
+    }
+
     static auto get_hash( cstr value, int seed = 0 ) {
 
       return MurmurHash2( value, strlen( value ), seed );
@@ -59,6 +64,11 @@ namespace lib {
     static auto get_hash( U const& value, int seed = 0 ) {
 
       return MurmurHash64A( value.data(), value.size(), seed );
+    }
+
+    static auto get_hash( char* value, int seed = 0 ) {
+
+      return MurmurHash64A( value, strlen( value ), seed );
     }
 
     static auto get_hash( cstr value, int seed = 0 ) {

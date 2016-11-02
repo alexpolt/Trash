@@ -13,10 +13,10 @@ namespace lib {
     explicit out_ref( T0& value ) : _value{ value } { }
 
     TP<TN U0>
-    out_ref( out_ref< U0 >& other ) noexcept : _value { other._value } { }
+    out_ref( out_ref< U0 >& other ) : _value { other._value } { }
 
     TP<TN U0>
-    out_ref( out_ref< U0 >&& other ) noexcept : out_ref{ other } { }
+    out_ref( out_ref< U0 >&& other ) : _value{ other._value } { }
 
     auto& get() { return _value; }
 
@@ -25,7 +25,7 @@ namespace lib {
     auto& operator*() { return _value; }
 
     TP<TN U0>
-    auto& operator=( U0 value_new ) noexcept { 
+    auto& operator=( U0 value_new ) { 
       
       _value = move( value_new );
 
