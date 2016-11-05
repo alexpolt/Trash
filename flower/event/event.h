@@ -1,0 +1,86 @@
+#pragma once
+
+#include "lib/macros.h"
+#include "lib/types.h"
+#include "lib/to-string.h"
+#include "os/vkey.h"
+
+
+namespace lib {
+
+
+  namespace event {
+
+
+    using eid_t = oid_t;
+
+
+    struct event_data {
+
+      os::vkey key;
+
+      os::vmod mod;
+
+      short x;
+
+      short y;
+    };
+
+
+    struct event_desc {
+
+      cstr name;
+
+      cstr origin;
+
+      eid_t id;
+    };
+
+
+    struct event {
+
+      virtual ~event() { }
+
+      static constexpr ssize_t type_size = $size( event_desc ) + $size( void*[2] );
+
+      virtual bool operator()( event_data& event ) = 0;
+
+      virtual eid_t get_id() const = 0;
+
+      virtual cstr get_name() const = 0;
+
+      virtual cstr get_origin() const = 0;
+
+      virtual cstr to_string() const = 0;
+    };
+
+
+    TP<TN T0>
+    struct event_basic : event {
+
+      event_basic( T0 fn, event_desc desc ) : _fn{ move( fn ) }, _desc{ desc } { }
+
+      bool operator()( event_data& event ) override { return _fn( event ); }
+
+      eid_t get_id() const override { return _desc.id; }
+
+      cstr get_name() const override { return _desc.name; }
+
+      cstr get_origin() const override { return _desc.origin; }
+
+      cstr to_string() const override { 
+
+        return lib::to_string( "event #%d( %s, %s )", _desc.id, _desc.name, _desc.origin ); 
+      }
+
+      T0 _fn;
+      event_desc _desc;
+    };
+
+
+  }
+
+}
+
+
+
