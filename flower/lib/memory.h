@@ -5,7 +5,6 @@
 #include "assert.h"
 #include "error.h"
 #include "types.h"
-#include "out-ref.h"
 #include "log.h"
 #include "atomic.h"
 
@@ -40,7 +39,7 @@ namespace lib {
             get_stats().alloc.sub( _size[ i ] );
 
             log::memory, "object ", _owner[ i ], ", free( ", _size[ i ], ", ", (void*) _ptr[ i ];
-            log::memory, " ); total = ", (ssize_t) get_stats().alloc, log::endl;
+            log::memory, " ); total = ", get_stats().alloc.load(), log::endl;
 
             ::free( _ptr[ i ] ); 
 
@@ -90,7 +89,7 @@ namespace lib {
       stats.alloc.add( size );
 
       log::memory, "object ", object, " malloc( ", size, " ) = ", (void*)ptr, "; ";
-      log::memory, "total = ", (ssize_t) stats.alloc, log::endl;
+      log::memory, "total = ", stats.alloc.load(), log::endl;
 
 
       return ptr; 
@@ -107,7 +106,7 @@ namespace lib {
         stats.alloc.sub( size );
 
         log::memory, "object ", owner, ", free( ", size, ", ", ptr, " ); ";
-        log::memory, "total = ", (ssize_t) stats.alloc, log::endl;
+        log::memory, "total = ", stats.alloc.load(), log::endl;
 
         ::free( ptr ); 
 
@@ -118,7 +117,7 @@ namespace lib {
           if( ! cache._ptr[ i ] ) {
 
             log::memory, "object ", owner, ", free to cache( ", size, ", "; 
-            log::memory, ptr, " ); total = ", (ssize_t) stats.alloc, log::endl;
+            log::memory, ptr, " ); total = ", stats.alloc.load(), log::endl;
 
             cache._ptr[ i ] = ptr;
             cache._size[ i ] = size;
@@ -133,7 +132,7 @@ namespace lib {
         stats.alloc.sub( cache._size[ idx ] );
 
         log::memory, "object ", cache._owner[ idx ], ", free from cache( ", cache._size[ idx ], ", "; 
-        log::memory, cache._ptr[ idx ], " ); total = ", (ssize_t) stats.alloc, log::endl;
+        log::memory, cache._ptr[ idx ], " ); total = ", stats.alloc.load(), log::endl;
 
         ::free( cache._ptr[ idx ] ); 
 

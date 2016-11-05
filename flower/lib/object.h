@@ -3,16 +3,17 @@
 #include "macros.h"
 #include "types.h"
 #include "assert.h"
+#include "ptr.h"
+#include "vector.h"
 #include "value.h"
 #include "to-string.h"
+#include "global.h"
 
 
 namespace lib {
 
-  TP<TN, bool> struct shared_ptr;
 
-  TP<TN T0>
-  using weak_ptr = shared_ptr< T0, true >;
+  using value_o = value< object >;
 
 
   struct object {
@@ -27,12 +28,23 @@ namespace lib {
 
     virtual bool has_object( iid_t ) const = 0;
 
-    virtual value< object > get_object( iid_t ) = 0;
+    virtual value_o get_object( iid_t ) = 0;
 
-    TP<TN T0> bool has_object( type_tag<T0> ) const;
+    TP<TN T> bool has_object( type_tag< T > ) const;
 
-    TP<TN T0> value< T0 > get_object( type_tag<T0> );
+    TP<TN T> value< T > get_object( type_tag< T > );
+
+
+    virtual void child_add( object_wp, bool = false );
+
+    virtual void child_remove( object_wp const&, bool = false );
+
+    virtual vector< object_wp > const& get_children() const;
+
+    virtual vector< object_wp > const& get_parents() const;
   };
+
+
 
 
   struct interface : object {
@@ -46,7 +58,7 @@ namespace lib {
 
   struct component : interface {
 
-    virtual lib::weak_ptr< lib::object > get_owner() = 0;
+    virtual object_wp get_owner() = 0;
   };
 
 
@@ -56,11 +68,33 @@ namespace lib {
   inline cstr object::to_string() const { return lib::to_string( "object( 0x%p )", this ); }
 
  
-  TP<TN T0> 
-  inline bool object::has_object( type_tag<T0> ) const { return has_object( T0::interface_id ); }
+  TP<TN T> 
+  inline bool object::has_object( type_tag< T > ) const { return has_object( T::interface_id ); }
   
-  TP<TN T0> 
-  inline value< T0 > object::get_object( type_tag<T0> ) { return type_cast< value< T0 >&& >( get_object( T0::interface_id ) ); }
+  TP<TN T> 
+  inline value< T > object::get_object( type_tag< T > ) { return type_cast< value< T >&& >( get_object( T::interface_id ) ); }
+
+
+
+  inline void object::child_add( object_wp child, bool ignore_duplicates ) { 
+
+    global::link_map<>.link( object_wp{ this }, move( child ), ignore_duplicates ); 
+  }
+  
+  inline void object::child_remove( object_wp const& child, bool ignore_duplicates ) { 
+
+    global::link_map<>.unlink( this, child, ignore_duplicates ); 
+  }
+
+  inline vector< object_wp > const& object::get_children() const { 
+
+    return global::link_map<>.get_children( this ); 
+  }
+
+  inline vector< object_wp > const& object::get_parents() const { 
+    
+    return global::link_map<>.get_parents( this ); 
+  }
 
 
   struct error_object : error {
@@ -79,11 +113,9 @@ namespace lib {
 
 
 
-  /* Helper template used by a primary object to ask for components. */
-
   TP<TN T0, TN... TT> struct object_factory {
 
-    using create_f = value< object > (*)( lib::weak_ptr< T0 > );
+    using create_f = value_o (*)( lib::weak_ptr< T0 > );
 
     static create_f _create_list[];
     static iid_t _iid_list[];
@@ -98,21 +130,21 @@ namespace lib {
       return false;
     }
 
-    static value< object > get_object( iid_t iid, T0* ptr ) {
+    static value_o get_object( iid_t iid, T0* ptr ) {
 
       ssize_t counter{};
 
       for( auto i : _iid_list ) {
 
         if( iid == i ) 
-          return _create_list[ counter ]( lib::weak_ptr< T0>{ ptr } );
+          return _create_list[ counter ]( lib::weak_ptr< T0 >{ ptr } );
 
         ++counter;
       }
 
       $throw $error_object( iid, ptr->to_string() );
 
-      return value< object >{};
+      return value_o{};
     }
 
   };
@@ -124,28 +156,13 @@ namespace lib {
     typename object_factory< T0, TT... >::create_f 
       object_factory< T0, TT... >::_create_list[] = { &TT::create... };
 
-  /*
-    Usage:
-    interface( interface_type );
-    For example:
-    interface( car );
-  */
 
   #define $interface( $0 )  constexpr static lib::iid_t interface_id = __COUNTER__; \
                             constexpr static lib::type_tag< $0 > tag{}; \
                             lib::iid_t get_interface_id() const override { return interface_id; } \
                             cstr get_interface_name() const override { return #$0; } 
 
-  /*
-    Usage in an primary object type:
-    object( object_type, zero or more component template names );
-
-    For example:
-    object( car, car_physics, car_ai );
-  */
-
   #define $object( ... ) \
-                        /* methods to create components instantiated with the object type */ \
                         using object_factory = lib::object_factory< __VA_ARGS__ >; \
                         using object::has_object; \
                         using object::get_object; \
@@ -156,13 +173,6 @@ namespace lib {
                           return object_factory::has_object( id ); \
                         }
 
-  /*
-    Usage in a component template (with one type parameter for the object type) class:
-    component( component_template_name );
-
-    For example:
-    component( car_physics );
-  */
 
   #define $component( $0 ) \
                         value< lib::object > get_object( lib::iid_t id ) override { \
@@ -174,6 +184,7 @@ namespace lib {
                         TP<TN U0> static auto create( lib::weak_ptr< U0 > owner ) { \
                           return value< lib::object >::create< $0 >( move( owner ) ); \
                         }
+
 
   #define $component_template( $0 ) \
                         $component( $0 ) \

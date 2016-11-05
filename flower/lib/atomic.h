@@ -29,7 +29,6 @@ namespace lib {
       }
 
       void operator=( U0 value ) { store( value ); }
-      operator U0() { return load(); }
 
       std::atomic< U0 > _data;
     };
@@ -65,8 +64,6 @@ namespace lib {
       }
 
       auto& operator=( U0 value ) { _data = value; return $this; }
-
-      operator U0() { return _data; }
 
       U0 _data;
     };

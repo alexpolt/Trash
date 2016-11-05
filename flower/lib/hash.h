@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cstring>
 #include <cstdint>
 
 #include "macros.h"
 #include "types.h"
 #include "murmur-hash.h"
+#include "ptr.h"
 
 
 namespace lib {
@@ -43,6 +43,31 @@ namespace lib {
     }
 
   };
+
+
+  TP<> struct hash32< object_sp > {
+
+    using value_type = oid_t;
+
+    TP<TN T>
+    static auto get_hash( T const& o, int seed = 0 ) {
+
+      return o->get_object_id() + seed;
+    }
+  };
+
+
+  TP<> struct hash32< object_wp > {
+
+    using value_type = oid_t;
+
+    TP<TN T>
+    static auto get_hash( T const& o, int seed = 0 ) {
+
+      return o->get_object_id() + seed;
+    }
+  };
+
 
   TP<TN T>
   struct hash64 {

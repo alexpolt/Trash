@@ -14,6 +14,7 @@
 #include "allocator.h"
 #include "value.h"
 
+
 namespace lib {
 
 
@@ -40,6 +41,8 @@ namespace lib {
     using size_type = ssize_t;
     using pointer = T0*;
     using reference = T0&;
+    using const_pointer = T0 const*;
+    using const_reference = T0 const&;
     using iterator = vector_iterator< vector >;
     using const_iterator = vector_iterator< vector const >;
     using allocator = value< allocator >;
@@ -194,12 +197,16 @@ namespace lib {
 
       if( capacity() > 0 ) {
 
-        auto size_calc = capacity() < ( 1 << 22 ) ? capacity() * 4 : capacity() * 7 / 4;
+        ssize_t size_calc = capacity() < ( 1 << 22 ) ? capacity() * 4 : capacity() * 7 / 4;
+
+        $assert( size_calc > 0, "vector reserve overflow ( capacity )" );
 
         size_new = max( size_new, size_calc );
       }
       
       auto size_new_bytes = value_size * size_new;
+
+      $assert( size_new_bytes > 0, "vector reserve overflow ( bytes )" );
 
       value_type* data_new = nullptr;
       
@@ -208,7 +215,6 @@ namespace lib {
            data_new = (value_type*) _alloc->alloc( size_new_bytes );
 
       else data_new = (value_type*) $alloc( this, size_new_bytes );
-
 
       if( size() and not is_primitive_v< value_type > ) {
 

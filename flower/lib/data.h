@@ -1,6 +1,12 @@
+#pragma once
+
+#include "macros.h"
+#include "types.h"
+
 
 namespace lib{
 
+  TP<ssize_t N>
   struct data_ptr { 
 
       data_ptr() : _ptr{} { }
@@ -44,14 +50,11 @@ namespace lib{
 
       char const* get() const { return _ptr; }
       
-      char _ptr[ value_size ]; 
+      char _ptr[ N ]; 
     };
 
 
-    alignas( alignof( T0 ) ) data_ptr _data;
+  }
 
-  };
-
-}
 
 

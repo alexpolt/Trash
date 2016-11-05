@@ -22,6 +22,7 @@ namespace lib {
   TP<> struct str_printf_format< short > { constexpr static cstr format = "%hi"; };
   TP<> struct str_printf_format< int > { constexpr static cstr format = "%i"; };
   TP<> struct str_printf_format< void* > { constexpr static cstr format = "0x%p"; };
+  TP<> struct str_printf_format< void const* > { constexpr static cstr format = "0x%p"; };
   TP<> struct str_printf_format< float > { constexpr static cstr format = "%+.4f"; };
   TP<> struct str_printf_format< double > { constexpr static cstr format = "%+.4f"; };
 

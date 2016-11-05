@@ -6,8 +6,10 @@
 #include "algo.h"
 #include "to-string-selector.h"
 
+
 namespace lib {
-  
+
+
   TP<TN T0> 
   struct value : nocopy {
 
@@ -15,7 +17,12 @@ namespace lib {
 
     ~value() { destroy(); }
     
-    void destroy() { if( *type_cast< void** >( &_data ) ) $this->~T0(); }
+    void destroy() { 
+      
+      if( $this ) $this->~T0(); 
+
+      _data = data_t{};
+    }
 
     value( value&& other ) : _data{ move( other._data ) } { }
 
@@ -30,53 +37,52 @@ namespace lib {
 
       auto value_new = value{};
 
-      new( type_cast< void* >( & value_new._data ) ) U0{ forward< TT >( args )... };
+      new( value_new._data.data ) U0{ forward< TT >( args )... };
+
+      $clobber(); //get around some strange bug in gcc optimizer that makes value empty
 
       return move( value_new );
-
     }
 
-    cstr to_string() const { return to_string_selector< T0 >::to_string( &**this ); }
+    cstr to_string() const { 
+
+      return to_string_selector< T0 >::to_string( &**this ); 
+    }
 
     TP<TN... TT>
-    auto operator()( TT... args ) -> decltype( declval< T0& >()( forward< TT >( declval< TT >() )... ) ) { 
+    auto operator()( TT&&... args ) -> decltype( declval< T0& >()( forward< TT >( declval< TT& >() )... ) ) { 
 
       return $this->operator()( forward< TT > ( args )... ); 
     }
 
     TP<TN... TT>
-    auto operator()( TT... args ) const -> decltype( declval< T0& >()( forward< TT >( declval< TT >() )... ) ) { 
+    auto operator()( TT&&... args ) const -> decltype( declval< T0& >()( forward< TT >( declval< TT& >() )... ) ) { 
 
       return $this->operator()( forward< TT > ( args )... ); 
     }
-
-    TP<TN U0> 
-    explicit operator U0&() { return type_cast< U0& >( _data ); }
-
-    TP<TN U0> 
-    explicit operator U0&() const { return type_cast< U0 const& >( _data ); }
 
     value get_raw_copy() const { auto v = value{}; v._data = $this._data; return v; }
 
-    T0& operator*() { return type_cast< T0& >( _data ); }
-    T0* operator->() { return type_cast< T0* >( & _data ); }
+    T0& operator*() { return type_cast< T0& >( _data.data ); }
+    T0* operator->() { return type_cast< T0* >( & _data.data ); }
 
-    T0 const* operator->() const { return type_cast< T0 const* >( & _data ); }
-    T0 const& operator*() const { return type_cast< T0 const& >( _data ); }
+    T0 const* operator->() const { return type_cast< T0 const* >( & _data.data ); }
+    T0 const& operator*() const { return type_cast< T0 const& >( _data.data ); }
 
-    explicit operator bool() const { return *type_cast< void** >( &_data ) != 0; }
+    explicit operator bool() const { return * type_cast< void** >( & _data.data ) != nullptr;  }
 
-    TP<TN U0, TN = void>
-    struct type_size { static constexpr ssize_t value = max( $size( U0 ), $size( void*[2] ) ); };
+    TP<TN U, TN = void>
+    struct type_size { static constexpr ssize_t value = $size( void*[2] ); };
 
-    TP<TN U0>
-    struct type_size< U0, void_v< U0::type_size > > { static constexpr ssize_t value = U0::type_size; };
+    TP<TN U>
+    struct type_size< U, void_v< U::type_size > > { static constexpr ssize_t value = U::type_size; };
 
-    TP<TN U0>
-    static constexpr ssize_t type_size_v = type_size< U0 >::value;
+    TP<TN U>
+    static constexpr ssize_t type_size_v = type_size< U >::value;
 
     static constexpr ssize_t value_size = type_size_v< T0 >;
 
+    alignas( alignof( T0 ) )
     struct data_t {
 
       static constexpr bool is_primitive = true;

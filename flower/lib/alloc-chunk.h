@@ -5,7 +5,7 @@
 #include "macros.h"
 #include "types.h"
 #include "memory.h"
-#include "shared-ptr.h"
+#include "strong-ptr.h"
 #include "allocator.h"
 #include "value.h"
 
@@ -59,7 +59,7 @@ namespace lib {
 
     char* alloc( ssize_t sz ) override {
 
-      log::memory, "allocator::alloc( ", sz, " ), chunk size = ", size(), " ( ", size_true(), " ), ";
+      log::memory, "alloc_chunk::alloc( ", sz, " ), chunk size = ", size(), " ( ", size_true(), " ), ";
       log::memory, "available = ", available(), log::endl;
 
       $assert( sz <= size_true(), "size is greater than max size" );
@@ -80,7 +80,7 @@ namespace lib {
 
     void free( void* ptr, ssize_t sz ) override { 
 
-      log::memory, "allocator::free( ", ptr, ", ", sz, " ), chunk size = ", size();
+      log::memory, "alloc)chunk::free( ", ptr, ", ", sz, " ), chunk size = ", size();
       log::memory, " ( ", size_true(), " ), available = ", available(), log::endl;
     }
 
@@ -113,7 +113,7 @@ namespace lib {
       ssize_t offset;
     };
 
-    shared_ptr< chunk > _chunk;
+    strong_ptr< chunk > _chunk;
   };
 
 }

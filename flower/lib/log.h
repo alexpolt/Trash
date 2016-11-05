@@ -4,8 +4,7 @@
 #include "macros.h"
 #include "types.h"
 #include "to-string.h"
-#include "owner-ptr.h"
-#include "object.h"
+
 
 namespace lib {
 
@@ -30,35 +29,84 @@ namespace lib {
     };
 
 
-    enum class log_type { info, error, debug, memory, lock, task };
+    enum class log_type { info, error, warn, debug, memory, lock, task, link, event };
 
-    TP<log_type T0>   
+    constexpr cstr log_type_str[] = { "info: ", "error: ", "warn: ", "debug: ", "memory: ", 
+                                      "lock: ", "task: ", "link: ", "event: " };
+
+    TP<log_type T>
     struct log_t {
 
-      log_t( bool is_on = false ) { get_flag() = is_on; get_logger() = new log_display{}; }
+      log_t( bool is_on = false ) { 
+        
+        _flag = is_on; 
 
-      void on() { get_flag() = true; }
-      void off() { get_flag() = false; }
+        new( _logger ) log_display{};
+      }
 
-      void log( cstr str ) { if( get_flag() ) get_logger()->log( str ); }
-      void log( endl_t endl ) { if( get_flag() ) get_logger()->log( endl ); }
+      ~log_t() { }
 
-      void set_logger( logger* l ) { get_logger() = move( l ); }
+      void on() { _flag = true; }
 
-      auto& get_flag() const { static bool flag; return flag; }
-      auto& get_logger() const { static owner_ptr< logger > l; return l; }
+      void off() { _flag = false; }
 
+      void log( cstr str ) { 
+
+        if( _flag and *type_cast< ssize_t*>( _logger ) ) { 
+
+          if( _endl ) {
+            
+            get_logger()->log( log_type_str[ (int) T ] );
+
+            _endl = false;
+          }
+
+          get_logger()->log( str ); 
+        } 
+      }
+
+      void log( endl_t endl ) { 
+
+        if( _flag and *type_cast< ssize_t*>( _logger ) ) get_logger()->log( endl );
+
+        _endl = true;
+      }
+
+      logger* get_logger() { return type_cast< logger* >( &_logger ); }
+
+      TP<TN U>
+      void set_logger( U l ) { 
+        
+        static_assert( $size( U ) <= $array_size( _logger ), "new logger exceeded available space" );
+
+        new( _logger ) U{ move( l ) }; 
+      }
+
+      alignas( alignof( logger ) )
+      static char _logger[ $size( log_display ) ];
+
+      static bool _flag;
+
+      static bool _endl;
     };
+
+    TP<log_type T> bool log_t< T >::_flag{ false };
+    TP<log_type T> bool log_t< T >::_endl{ true };
+    TP<log_type T> 
+    alignas( alignof( logger ) ) char log_t< T >::_logger[];
 
 
     namespace { 
 
       log_t< log_type::info > info{ true };
-      log_t< log_type::error > error;
+      log_t< log_type::error > error{ true };
+      log_t< log_type::warn > warn{ true };
       log_t< log_type::debug > debug;
       log_t< log_type::memory > memory;
       log_t< log_type::lock > lock;
-      log_t< log_type::lock > task;
+      log_t< log_type::task > task;
+      log_t< log_type::link > link;
+      log_t< log_type::event > event;
     }
 
     

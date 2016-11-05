@@ -11,67 +11,107 @@
 namespace lib {
 
 
-  struct locker_t : nocopy {
+  struct locker : nocopy {
 
     using deleter_t = void (*)( void* );
 
-    locker_t() {
+    locker() { }
 
-      _lock_map.reserve( 32 );
+    ~locker() {
+
+      ssize_t counter_s = 0, counter_w = 0;
+
+      for( auto& e : _lock_map ) {
+        
+        counter_s += e.counter_s.load();
+
+        counter_w += e.counter_w.load();
+      }
+      
+      $assert( counter_s == 0, "some objects are still were not destroyed" );
+
+      if( counter_w )
+
+        log::warn, $file_line "weak counter > 0, total weak increments = ", counter_w, log::endl;
     }
 
-    ~locker_t() {
+    void lock( void* ptr, deleter_t deleter, bool is_weak ) {
 
-      $assert( _lock_map.size() == 0, "lock_map size is not zero");
-    }
+      if( _lock_map.size() == 0 ) 
 
-    void lock( void* ptr, deleter_t deleter ) {
+        _lock_map.reserve( 16 );
 
-      log::lock, "lock( ", ptr;
+      log::lock, "new ";
 
       auto it = _lock_map[ ptr ];
 
-      int counter = 1;
+      if( not it )
 
-      if( it )
+        _lock_map.insert( ptr, lock_node{ 0, 0, deleter } );
 
-        counter = it->counter.add( 1 ) + 1;
+      else if( deleter and it->deleter ) 
 
-      else
+        $assert( false, "deleter is already set" );
 
-        _lock_map.insert( ptr, lock_node{ ptr, counter, deleter } );
-
-      log::lock, ", ", counter, " )", log::endl;
+      lock( ptr, is_weak );
     }
 
-    void lock( void* ptr ) {
+    void lock( void* ptr, bool is_weak ) {
 
-      log::lock, "lock( ", ptr;
+      log::lock, "lock_", ( is_weak ? "w" : "s" ), "( ", ptr;
 
       auto it = _lock_map[ ptr ];
 
       $assert( it, "lock not found" ); 
 
-      auto counter = it->counter.add( 1 ) + 1;
+      int counter_s = not is_weak, counter_w = is_weak;
 
-      log::lock, ", ", counter, " )", log::endl;
+      if( not is_weak ) {
+        
+        counter_s = it->counter_s.add( counter_s ) + counter_s;
+        counter_w = it->counter_w.load();
+
+      } else {
+
+        counter_s = it->counter_s.load();
+        counter_w = it->counter_w.add( counter_w ) + counter_w;
+      }
+
+      log::lock, " ), s = ", counter_s, ", w = ", counter_w, log::endl;
     }
 
-    bool unlock( void* ptr, bool is_weak = false ) {
+    bool unlock( void* ptr, bool is_weak ) {
 
+      log::lock, "unlock_", ( is_weak ? "w" : "s" ), "( ", ptr," ), "; 
+      
       auto it = _lock_map[ ptr ];
 
       $assert( it, "lock not found" );
 
-      auto counter = it->counter.sub( 1 );
+      int counter_s = not is_weak, counter_w = is_weak;
 
-      log::lock, "unlock( ", ptr, ", is_weak = ", is_weak, ", ", counter, " )", log::endl;
-
-      if( counter == 1 ) {
+      if( not is_weak ) {
         
-        if( not is_weak ) it->deleter( ptr );
+        counter_s = it->counter_s.sub( counter_s ) - counter_s;
+        counter_w = it->counter_w.load();
 
-        _lock_map.erase( it );
+      } else {
+
+        counter_s = it->counter_s.load();
+        counter_w = it->counter_w.sub( counter_w ) - counter_w;
+      }
+
+      log::lock, "s = ", counter_s, ", w = ", counter_w, log::endl;
+
+      if( not is_weak and counter_s == 0 ) {
+        
+        if( it->deleter ) it->deleter( ptr );
+        
+        void *ptr = _lock_map.keys()[ it.get_index() ];
+
+        if( counter_w > 0 ) 
+          
+          log::error, "object( ", ptr, " ) is deleted but weak counter = ", counter_w, log::endl;
 
         return true;
       }
@@ -85,43 +125,70 @@ namespace lib {
 
       if( it ) 
 
-        it->counter.load();
+        return it->counter_s.load() + it->counter_w.load();
 
       return 0;
+    }
+
+    bool expired( void* ptr ) { 
+
+      auto it = _lock_map[ ptr ];
+
+      if( it ) 
+
+        return it->counter_s.load() == 0;
+
+      return true;
     }
 
     struct lock_node {
 
       lock_node() { }
 
-      lock_node( void* p, int c, deleter_t d ) : counter{}, deleter{ d } { 
+      lock_node( int s, int w, deleter_t d ) : counter_s{}, counter_w{}, deleter{ d } { 
 
-        counter = c;
+        counter_s = s;
+
+        counter_w = w;
       }
 
-      lock_node( lock_node const& other ) : counter{}, deleter{ other.deleter } { 
+      lock_node( lock_node const& other ) : counter_s{}, counter_w{}, deleter{ other.deleter } { 
 
-        counter = other.counter.load();
+        counter_s = other.counter_s.load();
+
+        counter_w = other.counter_w.load();
       }
 
-      lock_node( lock_node&& other ) : counter{}, deleter{ move( other.deleter ) } { 
+      lock_node( lock_node&& other ) : counter_s{}, counter_w{}, deleter{ move( other.deleter ) } { 
 
-        counter = other.counter.load();
+        counter_s = other.counter_s.load();
+
+        counter_w = other.counter_w.load();
         
-        other.counter = 0;
+        other.counter_s = 0;
+
+        other.counter_w = 0;
       }
 
       lock_node& operator=( lock_node const& other ) {
 
         deleter = other.deleter;
-        counter = other.counter.load();
+
+        counter_s = other.counter_s.load();
+
+        counter_w = other.counter_w.load();
 
         return $this;
       }
 
-      cstr to_string() const { return lib::to_string( "lock_node( %d )", counter.load() ); }
+      cstr to_string() const { 
+        
+        return lib::to_string( "lock_node( s = %d, w = %d, deleter = %p )", 
+                                  counter_s.load(), counter_w.load(), (void*) deleter );
+      }
 
-      atomic< int > counter{};
+      atomic< int > counter_s{};
+      atomic< int > counter_w{};
       deleter_t deleter{};
     };
 
@@ -129,12 +196,6 @@ namespace lib {
     hash_map< void*, lock_node > _lock_map;
   };
 
-
-  namespace global {
-
-    TP<TN T0>
-    locker_t locker{};
-  }
 
 
 }

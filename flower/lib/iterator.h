@@ -15,7 +15,10 @@ namespace lib {
   struct vector_iterator {
 
     using value_type = typename T0::value_type;
-    using reference = typename T0::reference;
+    using pointer = select_t< is_const_v< T0 >, typename T0::const_pointer, typename T0::pointer >;
+    using const_pointer = typename T0::const_pointer;
+    using reference = select_t< is_const_v< T0 >, typename T0::const_reference, typename T0::reference >;
+    using const_reference = typename T0::const_reference;
     using difference_type = typename T0::size_type;
     using iterator = vector_iterator;
     using size_type = typename T0::size_type;
@@ -29,13 +32,13 @@ namespace lib {
       return $this; 
     }
 
-    auto operator->() { return &_object[ _index ]; }
-    auto& operator[]( ssize_t index ) { return _object[ _index + index ]; }
-    auto& operator*() { return _object[ _index ]; }
+    pointer operator->() { return &_object[ _index ]; }
+    reference operator[]( ssize_t index ) { return _object[ _index + index ]; }
+    reference operator*() { return _object[ _index ]; }
 
-    auto operator->() const { return &_object[ _index ]; }
-    auto& operator[]( ssize_t index ) const { return _object[ _index + index ]; }
-    auto& operator*() const { return _object[ _index ]; }
+    const_pointer operator->() const { return &_object[ _index ]; }
+    const_reference operator[]( ssize_t index ) const { return _object[ _index + index ]; }
+    const_reference operator*() const { return _object[ _index ]; }
 
     bool operator==( iterator other ) const { return _index == other._index; }
     bool operator!=( iterator other ) const { return _index != other._index; }

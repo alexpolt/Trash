@@ -18,8 +18,9 @@
 #include "object.h"
 #include "ret.h"
 #include "optional.h"
+#include "ptr.h"
 #include "owner-ptr.h"
-#include "shared-ptr.h"
+#include "strong-ptr.h"
 #include "allocator.h"
 #include "handle.h"
 
@@ -45,9 +46,9 @@ using lib::hash_map;
 using lib::ret_t;
 using lib::optional;
 using lib::owner_ptr;
-using lib::weak_ptr;
 using lib::make_owner;
-using lib::shared_ptr;
-using lib::make_shared;
+using lib::weak_ptr;
+using lib::strong_ptr;
+using lib::make_strong;
 using lib::handle;
 

@@ -29,10 +29,10 @@ namespace lib {
     using iterator = vector_iterator< vector< value_type > >;
     using const_iterator = vector_iterator< vector< value_type > const >;
 
-    static constexpr hash_type size_max = ( is_64bit ? 1ll << 56 : 1 << 24 ) - 2;
-    static constexpr int try_max = 20;
-    static constexpr int reserve_factor = 3;
-    static constexpr ssize_t invalid_index = -1;
+    static constexpr int _try_max = 7;
+    static constexpr int _reserve_factor = 3;
+    static constexpr ssize_t _invalid_index = -1;
+    static constexpr hash_type _size_max = ( is_64bit ? 1ll << 56 : 1 << 28 ) / 3;
 
     hash_map() { }
 
@@ -44,7 +44,7 @@ namespace lib {
     #define $hash_map_init_hash() \
           auto hash1 = ( hash0 + i ) % size_table;          \
           auto hash2 = ( ~hash0 + i ) % size_table;         \
-          auto hash3 = ( ~hash0 * hash0 + i ) % size_table; \
+          auto hash3 = ( hash0 * hash0 + i ) % size_table; \
                                                                       \
           if( hash1 == hash2 or hash1 == hash3 or hash2 == hash3 ) {  \
                                                                       \
@@ -66,7 +66,7 @@ namespace lib {
 
       if( _keys.size() > 0 ) {
 
-        for( auto i : range{ 0, try_max } ) {
+        for( auto i : range{ 0, _try_max } ) {
           
           $hash_map_init_hash();
 
@@ -92,28 +92,30 @@ namespace lib {
       return ( const_cast< hash_map& > ( $this ) )[ key ];
     }
 
-    bool insert( key_type key, value_type value ) {
+    iterator insert( key_type key, value_type value ) {
+
+      if( _keys.size() == _size_max ) 
+
+        $throw $error_hash( "maximum hash table size" );
 
       auto index = get_new_index( key );
 
-      if( index == invalid_index ) return false;
+      if( index == _invalid_index ) return _values.end();
 
       _keys[ index ] = move( key );
         
       _values[ index ] = move( value );
 
-      return true;
+      return _values.begin() + index;
     }
 
-    ssize_t get_new_index( key_type const& key, ssize_t rehash_index = invalid_index ) {
+    ssize_t get_new_index( key_type const& key, ssize_t rehash_index = _invalid_index ) {
 
       auto size_table = _hash_table.size();
 
       auto hash0 = hasher::get_hash( key );
       
-      if( size_table == size_max ) $throw $error_hash( "maximum hash table size" );
-      
-      for( auto i : range{ 0, try_max } ) {
+      for( auto i : range{ 0, _try_max } ) {
 
         if( size_table == 0 ) break;
 
@@ -128,7 +130,7 @@ namespace lib {
 
           if( index >= _keys.size() ) continue;
 
-          if( equal( key, _keys[ index ] ) ) return invalid_index;
+          if( equal( key, _keys[ index ] ) ) return _invalid_index;
         }
 
         hash_node* hash_ptr = nullptr;
@@ -142,9 +144,9 @@ namespace lib {
         hvalue2.set_refcnt( hvalue2.get_refcnt() + 1 );
         hvalue3.set_refcnt( hvalue3.get_refcnt() + 1 );
 
-        ssize_t index = invalid_index;
+        ssize_t index = _invalid_index;
 
-        if( rehash_index != invalid_index ) {
+        if( rehash_index != _invalid_index ) {
 
           index = rehash_index;        
 
@@ -174,16 +176,16 @@ namespace lib {
 
       auto index = get_new_index( key );
 
-      $assert( index != invalid_index, "hash insert unexpectedly failed" );
+      $assert( index != _invalid_index, "hash insert unexpectedly failed" );
 
       return index;
     }
 
-    void rehash( ssize_t rehash_index = invalid_index ) {
+    void rehash( ssize_t rehash_index = _invalid_index ) {
 
       if( _keys.size() == 0 ) return;
 
-      $assert( rehash_index == invalid_index, "no recursive rehashing, try increasing table size or try_max of the hash_map" );
+      $assert( rehash_index == _invalid_index, "no recursive rehashing, try increasing table size or try_max of the hash_map" );
 
       ++_rehashes;
 
@@ -193,7 +195,7 @@ namespace lib {
 
         auto index = get_new_index( _keys[ i ], i );
 
-        result = result and index != invalid_index;
+        result = result and index != _invalid_index;
       }
 
       $assert( result, "rehash failed for some reason" );
@@ -201,7 +203,7 @@ namespace lib {
 
     void reserve( ssize_t size = 0 ) { 
       
-      _hash_table.reserve( reserve_factor * size );
+      _hash_table.reserve( _reserve_factor * size );
       _hash_table.clear();
       _hash_table.resize( _hash_table.capacity() );
 
@@ -210,15 +212,15 @@ namespace lib {
       _values.reserve( size );
     }
 
-    bool erase( key_type const& key ) {
+    iterator erase( key_type const& key ) {
 
-      if( _keys.size() == 0 ) return false;
+      if( _keys.size() == 0 ) return _values.end();
 
       auto size_table = _hash_table.size();
 
       auto hash0 = hasher::get_hash( key );
 
-      for( auto i : range{ 0, try_max } ) {
+      for( auto i : range{ 0, _try_max } ) {
 
         $hash_map_init_hash();
 
@@ -245,13 +247,13 @@ namespace lib {
         
         _erased << index;
 
-        return true;
+        return _values.begin() + index + 1;
       }
       
-      return false;
+      return _values.end();
     }
 
-    bool erase( iterator it ) {
+    iterator erase( iterator it ) {
 
       return erase( _keys[ it.get_index() ] );
     }
@@ -271,7 +273,11 @@ namespace lib {
     auto& values() const { return _values; }
     auto& keys() const { return _keys; }
 
+    auto& key( iterator it ) { return _keys[ it.get_index() ]; }
+    auto& key( iterator it ) const { return _keys[ it.get_index() ]; }
+
     auto size() const { return _values.size() - _erased.size(); }
+    auto size_max() const { return _size_max; }
     auto empty() const { return size() == 0; }
     auto rehashes() const { return _rehashes; }
 
@@ -281,12 +287,21 @@ namespace lib {
       static constexpr bool is_primitive = true;
 
       static constexpr hash_type _mask = is_64bit ? 0x00FF'FFFF'FFFF'FFFF : 0x0FFF'FFFF;
-      static constexpr hash_type _mask_shift = is_64bit ? 56 : 28;
+      static constexpr int _mask_shift = is_64bit ? 56 : 28;
+      static constexpr int _refcnt_max = ~_mask >> _mask_shift;
 
-      auto get_hash() { return _hash & _mask; }
+      auto get_hash() const { return _hash & _mask; }
+      
       void set_hash( hash_type hash ) { _hash = ( _hash & ~_mask ) | ( hash & _mask ); }
-      auto get_refcnt() { return _hash >> _mask_shift; }
-      void set_refcnt( int count ) { _hash = ( _hash & _mask ) | ( count << _mask_shift ); }
+
+      auto get_refcnt() const { return _hash >> _mask_shift; }
+
+      void set_refcnt( int count ) { 
+
+        if( count > _refcnt_max ) count = _refcnt_max;
+
+        _hash = ( _hash & _mask ) | ( count << _mask_shift ); 
+      }
 
       hash_type _hash;
     };
