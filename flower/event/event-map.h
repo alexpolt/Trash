@@ -29,8 +29,8 @@ namespace lib {
     
   }
 
-
   namespace event {
+    
 
     TP<TN = void>
     struct events {
@@ -39,8 +39,12 @@ namespace lib {
 
       using event_map = hash_map< cstr, vector_event >;
 
+      using value_type = vector_event;
+      using event_type = value< event >;
+      using iterator = event_map::iterator;
 
-      eid_t add( event_desc desc, value< event > cb ) {
+
+      eid_t add( event_desc desc, event_type cb ) {
         
         auto it = _event_map[ desc.name ];
 
@@ -48,7 +52,7 @@ namespace lib {
 
         else {
 
-          auto it_e = find( *it, [&desc]( value< event >& e ){ return equal( e->get_origin(), desc.origin ); } );
+          auto it_e = find( *it, [&desc]( event_type& e ){ return equal( e->get_origin(), desc.origin ); } );
 
           if( it_e )
 
@@ -74,7 +78,7 @@ namespace lib {
           return false;
         }
 
-        auto it_e = find( *it, [id]( value< event >& e ){ return e->get_id() == id;} );
+        auto it_e = find( *it, [id]( event_type& e ){ return e->get_id() == id;} );
 
         if( not it_e ) {
 
@@ -102,13 +106,15 @@ namespace lib {
           return false;
         }
 
+        bool result = false;
+
         for( auto& e : *it ) {
 
           log::event, "fire ", e, log::endl;
 
-          bool r = e( event );
+          result = e( event );
 
-          if( not r ) {
+          if( not result ) {
 
             log::event, "event returned false", log::endl;
 
@@ -116,12 +122,45 @@ namespace lib {
           }
         }
 
-        return true;
+        return result;
       }
 
+      event_map::iterator create( cstr name ) {
+
+        auto r = _event_map.insert( name, vector_event{} );
+
+        if( not r ) {
+
+          log::error, $file_line, "event ", name, " already exists", log::endl;
+        }
+ 
+        return r;
+      }
+
+      void dump_events() {
+
+        for( auto& e : _event_map ) log::event, e, endl;
+      }
+      
 
       event_map _event_map;
     };
+
+
+    inline auto remove( cstr name, eid_t id ) {
+
+      return lib::global::event_map<>.remove( name, id ); 
+    }
+
+    inline auto fire( cstr name, event_data& event ) {
+      
+      return lib::global::event_map<>.fire( name, event );
+    }
+
+    inline auto create( cstr name ) {
+
+      return lib::global::event_map<>.create( name ); 
+    }
 
 
     struct event_tag {};
@@ -140,13 +179,9 @@ namespace lib {
     }
 
 
-    #define $event_add( ... ) \
+    #define $event( ... ) \
       lib::event::event_desc{ $args_first( __VA_ARGS__ ), $file_line } + \
         [ $args_second( __VA_ARGS__ ) ]( lib::event::event_data& event ) -> bool
-
-    #define $event_remove( $0, $1 ) lib::global::event_map<>.remove( $0, $1 )
-
-    #define $event_fire( $0, $1 ) lib::global::event_map<>.fire( $0, $1 )
 
 
   }

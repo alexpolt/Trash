@@ -8,12 +8,15 @@
 #include "to-string.h"
 #include "log.h"
 
+
 namespace lib {
 
 
   struct locker : nocopy {
 
+
     using deleter_t = void (*)( void* );
+
 
     locker() { }
 

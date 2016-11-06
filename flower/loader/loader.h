@@ -7,7 +7,7 @@
 #include "lib/assert.h"
 #include "lib/url.h"
 #include "lib/vector.h"
-#include "lib/shared-ptr.h"
+#include "lib/strong-ptr.h"
 
 #include "types.h"
 #include "error.h"
@@ -17,9 +17,8 @@ namespace lib {
 
   namespace loader {
 
-    
 
-    shared_ptr< vector_b > load( url location ) {
+    strong_ptr< vector_b > load( url location ) {
 
       if( location.get_scheme() == url::scheme::file ) {
 
@@ -32,7 +31,7 @@ namespace lib {
     }
 
 
-    shared_ptr< vector_b > load( cstr path ) {
+    strong_ptr< vector_b > load( cstr path ) {
 
       auto location = lib::url::create( path );
 

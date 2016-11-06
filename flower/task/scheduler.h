@@ -8,7 +8,6 @@
 #include "lib/sequence.h"
 
 #include "task.h"
-#include "result.h"
 
 
 namespace lib {
@@ -48,8 +47,8 @@ namespace lib {
     }
    
     #define $task( ... ) \
-      lib::task::task_desc{ $args_first( __VA_ARGS__ ) " ( " __FILE__ ":" $str( __LINE__ ) " )"  } + \
-        [ $args_second( __VA_ARGS__ ) ]()
+      lib::task::task_desc{ $file_line $args_first( __VA_ARGS__ ) } + \
+        [ $args_second( __VA_ARGS__ ) ]() -> task::result 
 
 
 

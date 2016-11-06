@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/error.h"
@@ -24,10 +25,12 @@ namespace lib {
       }
     };
 
+
     #define $error_file( $0, $1 ) error_file{ __FILE__, __LINE__, __func__, $0, $1 }
 
-  }
 
+
+  }
 }
 
 

@@ -4,6 +4,8 @@
 #include "macros.h"
 #include "types.h"
 #include "to-string.h"
+#include "new.h"
+
 
 
 namespace lib {
@@ -29,10 +31,10 @@ namespace lib {
     };
 
 
-    enum class log_type { info, error, warn, debug, memory, lock, task, link, event };
+    enum class log_type { info, error, warn, debug, memory, lock, task, link, event, input };
 
     constexpr cstr log_type_str[] = { "info: ", "error: ", "warn: ", "debug: ", "memory: ", 
-                                      "lock: ", "task: ", "link: ", "event: " };
+                                      "lock: ", "task: ", "link: ", "event: ", "input: " };
 
     TP<log_type T>
     struct log_t {
@@ -107,6 +109,7 @@ namespace lib {
       log_t< log_type::task > task;
       log_t< log_type::link > link;
       log_t< log_type::event > event;
+      log_t< log_type::input > input;
     }
 
     

@@ -15,6 +15,7 @@ namespace lib {
       shift_left = 8, shift_right = 16, control_left = 32, control_right = 64,
     };
 
+
     enum class vkey : unsigned char {
 
       null = 0x00,

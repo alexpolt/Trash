@@ -13,7 +13,7 @@ namespace lib {
     TP<TN T = void>
     locker lock_map{};
 
-    void trigger_lock_map() { (void)lock_map<>; }
+    inline void trigger_lock_map() { (void)lock_map<>; }
   }
 
 }

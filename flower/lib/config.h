@@ -42,24 +42,36 @@
 
 //#define $CONFIG_STL
 
+#define $CONFIG_DEVMODE
+
 
 #ifdef $CONFIG_STL
 # include <vector>
 # include <string>
 #endif
 
+#define WIN32_LEAN_AND_MEAN
+
+#ifdef interface
+#undef interface
+#endif
+
+#ifdef component
+#undef component
+#endif
 
 namespace lib {
 
   namespace config {
 
-    constexpr auto compilation_date = __DATE__ " " __TIME__;
 
-    constexpr auto program_name = "Flower";
+      constexpr auto compilation_date = __DATE__ " " __TIME__;
 
-    constexpr auto program_version = 1;
+      constexpr auto program_name = "Flower";
+
+      constexpr auto program_version = 1;
+
   }
-
 }
 
 

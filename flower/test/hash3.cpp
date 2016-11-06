@@ -96,7 +96,7 @@ void measure1( vector< string >& lines ) {
 
   for( auto i : range{ 0, v.size() } ) {
 
-    if( v[ i ] > 1000 ) info, ++n, ": ", k[ i ].data(), " - ", v[ i ], endl;
+    if( v[ i ] > 5000 ) info, ++n, ": ", k[ i ].data(), " - ", v[ i ], endl;
   }
 
   info, endl;
@@ -136,7 +136,7 @@ void measure2( std::vector< std::string >& lines ) {
 
   for( auto& v : map0 ) {
 
-    if( v.second > 1000 ) info, ++n, ": ", v.first.data(), " - ", v.second, endl;
+    if( v.second >5000 ) info, ++n, ": ", v.first.data(), " - ", v.second, endl;
   }
 
   info, endl;
@@ -145,7 +145,7 @@ void measure2( std::vector< std::string >& lines ) {
 
   auto dt = std::chrono::duration_cast< std::chrono::milliseconds >( end - begin ).count();
 
-  info, "bucket count = ", map0.bucket_count(), ", load factor = ", map0.load_factor(), endl;
+  info, "size = ", map0.size(), ", bucket count = ", map0.bucket_count(), ", load factor = ", map0.load_factor(), endl;
   
   uint empty = 0, max = 0;
 

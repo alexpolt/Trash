@@ -4,6 +4,8 @@
 #include "lib/types.h"
 #include "lib/to-string.h"
 #include "os/vkey.h"
+#include "os/action.h"
+#include "os/types.h"
 
 
 namespace lib {
@@ -17,13 +19,17 @@ namespace lib {
 
     struct event_data {
 
-      os::vkey key;
-
-      os::vmod mod;
+      void* data;
 
       short x;
 
       short y;
+
+      os::action action;
+
+      os::vkey key;
+
+      os::vmod mod;
     };
 
 

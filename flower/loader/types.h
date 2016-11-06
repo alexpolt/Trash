@@ -7,8 +7,9 @@
 #include "lib/vector.h"
 #include "lib/string.h"
 #include "lib/buffer.h"
-#include "lib/shared-ptr.h"
+#include "lib/strong-ptr.h"
 #include "lib/url.h"
+#include "lib/alloc-.h"
 #include "os/file.h"
 
 #include "config.h"
@@ -32,16 +33,21 @@ namespace lib {
 
           os::file f = os::file{ path.data() };
 
-          if( f.exists() )
+          if( f.exists() ) {
 
-            return lib::make_shared< vector_b >( f.load() );
+            auto& data = f.load();
+
+            data.set_allocator( alloc_empty::create() );
+
+            return lib::make_strong< vector_b >( move( data ) );
+          }
 
           path.clear();
         }
 
         $throw $error_loader( location.data() );
 
-        return shared_ptr< vector_b >{ nullptr };
+        return strong_ptr< vector_b >{};
       }
 
     };

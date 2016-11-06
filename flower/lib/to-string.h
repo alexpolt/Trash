@@ -19,7 +19,9 @@ namespace lib {
   TP<> struct str_printf_format< uint > { constexpr static cstr format = "%u"; };
   TP<> struct str_printf_format< long long > { constexpr static cstr format = "%lli"; };
   TP<> struct str_printf_format< long > { constexpr static cstr format = "%li"; };
+  TP<> struct str_printf_format< unsigned long > { constexpr static cstr format = "%lu"; };
   TP<> struct str_printf_format< short > { constexpr static cstr format = "%hi"; };
+  TP<> struct str_printf_format< unsigned short > { constexpr static cstr format = "%hu"; };
   TP<> struct str_printf_format< int > { constexpr static cstr format = "%i"; };
   TP<> struct str_printf_format< void* > { constexpr static cstr format = "0x%p"; };
   TP<> struct str_printf_format< void const* > { constexpr static cstr format = "0x%p"; };

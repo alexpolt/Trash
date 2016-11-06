@@ -12,9 +12,10 @@ namespace lib {
       
       minimize, maximize, close, resize, paint,
 
-      up, down, left, right, jump, crouch, run, crawl, use, drop, 
+      up, down, left, right, jump, crouch, run, 
+      crawl, use, drop, 
       
-      scroll_up, scroll_down, move,
+      scroll, move,
       
       attack1, attack2, attack3, attack4, attack5,
      
