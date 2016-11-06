@@ -4,13 +4,22 @@
 
 
 namespace lib {
+
   namespace os {
 
 
     struct vkey_desc_t {
+
       cstr name;
+
       cstr desc;
-    } vkey_desc[ 256 ] = {
+      
+    };
+
+
+    inline vkey_desc_t& get_vkey_desc( vkey vk ) { 
+
+      static vkey_desc_t vkey_desc[ 256 ] {
 
           { "VK_NULL", "" },
           { "VK_LBUTTON", "Left mouse button" },
@@ -269,9 +278,10 @@ namespace lib {
           { "VK_OEM_CLEAR", "Clear key" },
           { "VK_NULL", "" },
 
-          };
+      };
 
-    auto& get_desc( vkey vk ) { return vkey_desc[ vk ]; }
+      return vkey_desc[ (int) vk ];
+    }
 
   }
 }

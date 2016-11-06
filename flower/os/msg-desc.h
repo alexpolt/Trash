@@ -1,20 +1,24 @@
-
 #pragma once
 
-#include "lib/common.h"
+#include "windows.h"
 
-$ns os::ui {
 
-  inline cstring message_to_string( unsigned msg0 ) {
+namespace lib {
+
+  namespace os {
+
   
-    struct message_desc {
-      unsigned message;
-      cstring desc;
+    struct msg_desc_t {
+
+      DWORD message;
+
+      cstr desc;
     };
     
-# define DEFINE_MESSAGE(wm){ wm, #wm }
+    #define DEFINE_MESSAGE(wm){ wm, #wm }
   
-    static message_desc const messages[] {
+    constexpr msg_desc_t msg_desc[] {
+      
       DEFINE_MESSAGE(WM_CREATE),
       DEFINE_MESSAGE(WM_DESTROY),
       DEFINE_MESSAGE(WM_MOVE),
@@ -160,51 +164,20 @@ $ns os::ui {
       DEFINE_MESSAGE(WM_POWER),
       DEFINE_MESSAGE(WM_WINDOWPOSCHANGED),
       DEFINE_MESSAGE(WM_WINDOWPOSCHANGING),
-    // MFC specific messages
-      DEFINE_MESSAGE(WM_SIZEPARENT),
-      DEFINE_MESSAGE(WM_SETMESSAGESTRING),
-      DEFINE_MESSAGE(WM_IDLEUPDATECMDUI),
-      DEFINE_MESSAGE(WM_INITIALUPDATE),
-      DEFINE_MESSAGE(WM_COMMANDHELP),
-      DEFINE_MESSAGE(WM_HELPHITTEST),
-      DEFINE_MESSAGE(WM_EXITHELPMODE),
-      DEFINE_MESSAGE(WM_HELP),
-      DEFINE_MESSAGE(WM_NOTIFY),
-      DEFINE_MESSAGE(WM_CONTEXTMENU),
-      DEFINE_MESSAGE(WM_TCARD),
-      DEFINE_MESSAGE(WM_MDIREFRESHMENU),
-      DEFINE_MESSAGE(WM_MOVING),
-      DEFINE_MESSAGE(WM_STYLECHANGED),
-      DEFINE_MESSAGE(WM_STYLECHANGING),
-      DEFINE_MESSAGE(WM_SIZING),
-      DEFINE_MESSAGE(WM_SETHOTKEY),
-      DEFINE_MESSAGE(WM_PRINT),
-      DEFINE_MESSAGE(WM_PRINTCLIENT),
-      DEFINE_MESSAGE(WM_POWERBROADCAST),
-      DEFINE_MESSAGE(WM_HOTKEY),
-      DEFINE_MESSAGE(WM_GETICON),
-      DEFINE_MESSAGE(WM_EXITMENULOOP),
-      DEFINE_MESSAGE(WM_ENTERMENULOOP),
-      DEFINE_MESSAGE(WM_DISPLAYCHANGE),
-      DEFINE_MESSAGE(WM_STYLECHANGED),
-      DEFINE_MESSAGE(WM_STYLECHANGING),
-      DEFINE_MESSAGE(WM_GETICON),
-      DEFINE_MESSAGE(WM_SETICON),
-      DEFINE_MESSAGE(WM_SIZING),
-      DEFINE_MESSAGE(WM_MOVING),
-      DEFINE_MESSAGE(WM_CAPTURECHANGED),
-      DEFINE_MESSAGE(WM_DEVICECHANGE),
-      DEFINE_MESSAGE(WM_PRINT),
-      DEFINE_MESSAGE(WM_PRINTCLIENT),
-    };
+   };
   
-# undef DEFINE_MESSAGE
+    #undef DEFINE_MESSAGE
     
-    for( auto& msg : messages )
-      if( msg0 == msg.message ) return msg.desc;
-  
-    return nullcstr;
-  }
+    constexpr inline cstr get_msg_desc( DWORD message ) {
 
+      for( auto& msg : msg_desc )
+
+        if( message == msg.message ) return msg.desc;
+    
+      return "null";
+    }
+
+  }
 }
+
 

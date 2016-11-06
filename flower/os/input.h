@@ -2,13 +2,15 @@
 
 #include "lib/macros.h"
 #include "lib/types.h"
-
-#include "input_win32.h"
+#include "input-win32.h"
 
 
 namespace lib {
+
   namespace os {
 
+
+    using input = input_win32;
 
   }
 }
