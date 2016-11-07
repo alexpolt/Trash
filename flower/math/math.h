@@ -39,14 +39,14 @@ namespace lib {
     $vec_op( mul, * )
     $vec_op( div, / )
 
-    TP< TN T0, ssize_t... NN >
-    constexpr auto operator*( T0 value, vec_t< T0, NN... > vector ) {
+    TP< TN T0, TN T1, ssize_t... NN >
+    constexpr auto operator*( T0 value, vec_t< T1, NN... > vector ) {
 
-      return vec_t< T0, NN... > { value } * vector;
+      return vec_t< T1, NN... > { value } * vector;
     }
 
-    TP< TN T0, ssize_t... NN >
-    constexpr auto operator*( vec_t< T0, NN... > vector, T0 value ) {
+    TP< TN T0, TN T1, ssize_t... NN >
+    constexpr auto operator*( vec_t< T0, NN... > vector, T1 value ) {
 
       return vec_t< T0, NN... > { value } * vector;
     }
@@ -74,14 +74,14 @@ namespace lib {
     $mat_op( mul, * )
     $mat_op( div, / )
 
-    TP< TN T0, ssize_t... NN >
-    constexpr auto operator*( T0 value, mat_t< T0, NN... > matrix ) {
+    TP< TN T0, TN T1, ssize_t... NN >
+    constexpr auto operator*( T0 value, mat_t< T1, NN... > matrix ) {
       
-      return mat_t< T0, NN... >{ value } * matrix;
+      return mat_t< T1, NN... >{ value } * matrix;
     }
 
-    TP< TN T0, ssize_t... NN >
-    constexpr auto operator*( mat_t< T0, NN... > matrix, T0 value ) {
+    TP< TN T0, TN T1, ssize_t... NN >
+    constexpr auto operator*( mat_t< T0, NN... > matrix, T1 value ) {
       
       return mat_t< T0, NN... >{ value } * matrix;
     }

@@ -12,9 +12,9 @@ namespace lib {
   namespace os {
 
 
-    struct error_window : error {
+    struct error_win32 : error {
 
-      error_window( cstr file, int line, cstr func, cstr msg ) :
+      error_win32( cstr file, int line, cstr func, cstr msg ) :
 
         error{ file, line, func, msg } {
 
@@ -31,7 +31,7 @@ namespace lib {
 
     };
 
-    #define $error_window( $0 ) error_window{ __FILE__, __LINE__, __func__, $0 }
+    #define $error_win32( $0 ) error_win32{ __FILE__, __LINE__, __func__, $0 }
 
 
   }

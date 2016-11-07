@@ -17,7 +17,7 @@ namespace lib {
     };
 
 
-    inline vkey_desc_t& get_vkey_desc( vkey vk ) { 
+    inline cstr get_vkey_desc( vkey vk ) { 
 
       static vkey_desc_t vkey_desc[ 256 ] {
 
@@ -280,7 +280,7 @@ namespace lib {
 
       };
 
-      return vkey_desc[ (int) vk ];
+      return vkey_desc[ (int) vk ].name;
     }
 
   }

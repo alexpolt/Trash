@@ -10,9 +10,7 @@
 #include "vkey.h"
 #include "action.h"
 #include "vkey-desc.h"
-#ifdef $CONFIG_DEVMODE
-  #include "msg-desc.h"
-#endif
+#include "msg-desc.h"
 
 
 namespace lib {
@@ -40,7 +38,9 @@ namespace lib {
       TP<TN=void> events_it key_up{ event::create( "key_up" ) };
       TP<TN=void> events_it key_down{ event::create( "key_down" ) };
       TP<TN=void> events_it scroll{ event::create( "scroll" ) };
-      TP<TN=void> events_it window{ event::create( "window" ) };
+      TP<TN=void> events_it window_paint{ event::create( "window_paint" ) };
+      TP<TN=void> events_it window_close{ event::create( "window_close" ) };
+      TP<TN=void> events_it window_resize{ event::create( "window_resize" ) };
       TP<TN=void> events_it input_message{ event::create( "input_message" ) };
       TP<TN=void> events_it exit{ event::create( "exit" ) };
       TP<TN=void> events_it mouse_up{ event::create( "mouse_up" ) };
@@ -55,7 +55,7 @@ namespace lib {
 
           result = e( event );
 
-          if( not result ) return false;
+          if( not result ) break;
         }
 
         return result;
@@ -67,7 +67,7 @@ namespace lib {
     struct input_win32 {
 
 
-      void operator()() {
+      bool operator()() {
 
         MSG msg;
 
@@ -75,24 +75,24 @@ namespace lib {
 
         while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
           
-          #ifdef $CONFIG_DEVMODE
           log::input, "message ", to_string( "%0X", msg.message ), " -> ", get_msg_desc( msg.message ), log::endl;
-          #else
-          log::input, "message ", to_string( "%0X", msg.message ), log::endl;
-          #endif
 
           TranslateMessage( &msg );
 
           event.data = &msg;
 
-          if( msg.message == WM_QUIT )
+          if( msg.message == WM_QUIT ) {
 
-               events::fire( events::exit<>, event );
+            events::fire( events::exit<>, event );
 
-          else events::fire( events::input_message<>, event );  
+            return false;
 
+          }
+          
+          events::fire( events::input_message<>, event );    
         }  
 
+        return true;
       }
 
    };

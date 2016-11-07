@@ -50,7 +50,6 @@
 # include <string>
 #endif
 
-#define WIN32_LEAN_AND_MEAN
 
 #ifdef interface
 #undef interface

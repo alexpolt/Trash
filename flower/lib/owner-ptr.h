@@ -74,7 +74,7 @@ namespace lib {
 
 
   TP<TN T0, TN... TT>
-  inline auto make_owner( TT&&... args ) { return owner_ptr< T0 >{ new T0{ forward< T0 >( args )... } }; }
+  inline auto make_owner( TT&&... args ) { return owner_ptr< T0 >{ new T0{ forward< TT >( args )... } }; }
 
 
 }

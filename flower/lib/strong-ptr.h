@@ -121,11 +121,14 @@ namespace lib {
     static_assert( $size( T0 ) == 0, "don't use strong_ptr for arrays, use a vector" );
   };
 
+
   TP<TN T0>
   using weak_ptr = strong_ptr< T0, true >;
 
+
   TP<TN T0, TN... TT>
-  inline auto make_strong( TT&&... args ) { return strong_ptr< T0 >{ new T0{ forward< T0 >( args )... } }; }
+  inline auto make_strong( TT&&... args ) { return strong_ptr< T0 >{ new T0{ forward< TT >( args )... } }; }
+
 
   TP<TN T0, bool is_weak0, bool is_weak1>
   bool operator==( strong_ptr< T0, is_weak0 > const& l, strong_ptr< T0, is_weak1 > const& r ) {

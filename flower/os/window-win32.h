@@ -4,6 +4,8 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/log.h"
+#include "lib/owner-ptr.h"
+#include "lib/scope-guard.h"
 #include "event/common.h"
 #include "error-win32.h"
 #include "input-win32.h"
@@ -18,25 +20,44 @@ namespace lib {
       
       static constexpr cstr window_clsname = "flower_window";
       static constexpr DWORD style_default = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-      static constexpr DWORD style_fullscreen = WS_OVERLAPPED | WS_VISIBLE;
+      static constexpr DWORD style_noresize = WS_OVERLAPPED | WS_SYSMENU | WS_VISIBLE;
+      static constexpr DWORD style_fullscreen = WS_POPUP | WS_VISIBLE;
 
-      window_win32( HWND hwnd, cstr title, int w, int h, bool fullscreen ) : 
-        _hwnd{ hwnd }, _title{ title }, _w{ w }, _h{ h }, _fs{ fullscreen } { }
+      struct window_data {
+        HWND hwnd;
+        cstr title;
+        int w;
+        int h;
+        bool fs;
+      };
 
-      window_win32( window_win32&& other ) : 
-        _hwnd{ move( other._hwnd ) }, _title{ other._title }, 
-        _w{ other._w }, _h{ other._h }, _fs{ other._fs } { }
+      window_win32( owner_ptr< window_data > data ) : _data{ move( data ) } { }
 
-      static window_win32 create( cstr title, int width, int height, bool fullscreen = false ) {
+      window_win32( window_win32&& other ) : _data{ move( other._data ) }  { }
+
+      static window_win32 create( cstr title, int width, int height, 
+                                  bool resize = false, bool fullscreen = false ) {
 
         register_class( window_clsname );
 
+        auto style = style_default;
+        
+        if( not resize ) style = style_noresize;
+        if( fullscreen ) style = style_fullscreen;
+
+        RECT r{ 0, 0, width, height };
+
+        AdjustWindowRect( &r, style, false );
+
+        r.right = r.right - r.left;
+        r.bottom = r.bottom - r.top;
+
         HWND hwnd = CreateWindow(
-                      window_clsname, title, ( not fullscreen ? style_default : style_fullscreen ),
-                      CW_USEDEFAULT, SW_SHOW, width, height,
+                      window_clsname, title, style,
+                      CW_USEDEFAULT, SW_SHOW, r.right, r.bottom,
                       NULL, NULL, GetModuleHandle( nullptr ), nullptr );
 
-        if( ! hwnd ) $throw $error_window( "create window failed" );
+        if( ! hwnd ) $throw $error_win32( "create window failed" );
 
         $event( "input_message" ) {
 
@@ -44,34 +65,23 @@ namespace lib {
 
           return true;
         };
+        auto data = make_owner< window_data >( hwnd, title, width, height, fullscreen );
 
-        $event( "window" ) {
+        SetWindowLongPtr( hwnd, GWLP_USERDATA, (LONG_PTR)data.get() );
 
-          if( event.action == action::paint ) 
-
-              ValidateRect( (HWND) event.data, nullptr );
-
-          return true;
-        };
-
-
-        RECT r;
-
-        GetClientRect( hwnd, &r );
-
-        return window_win32{ hwnd, title, r.right, r.bottom, fullscreen };
+        return window_win32{ move( data ) };
       }
 
 
       static void register_class( cstr clsname ) {
 
-        WNDCLASS cls{ CS_OWNDC | CS_VREDRAW | CS_HREDRAW, wndproc, 0, 0, 
+        WNDCLASS cls{ CS_OWNDC | CS_VREDRAW | CS_HREDRAW, wndproc, 0, $size( void* ), 
                       GetModuleHandle( nullptr ), NULL, LoadCursor( NULL, IDC_ARROW ), 
-                      HBRUSH( COLOR_WINDOW + 1 ), nullptr, clsname };
+                      HBRUSH( COLOR_BTNFACE + 1 ), nullptr, clsname };
 
         auto atom = RegisterClass( &cls );
 
-        if( not atom ) $throw $error_window( "register class failed" );
+        if( not atom ) $throw $error_win32( "register class failed" );
       }
 
 
@@ -87,11 +97,9 @@ namespace lib {
 
         ScreenToClient( hwnd, &pt );
 
-        switch( msg ) {
+        auto data = (window_data*) GetWindowLongPtr( hwnd, GWLP_USERDATA );
 
-          case WM_NCCREATE:
-            return TRUE;
-          break;
+        switch( msg ) {
 
           case WM_SIZE:
             event.x = LOWORD( lparam ); 
@@ -99,30 +107,32 @@ namespace lib {
             if( wparam == 1 ) event.action = action::minimize;
             else if( wparam == 2 ) event.action = action::maximize;
             else event.action = action::resize; 
-            log::input, "size, width = ", event.x, ", height = ", event.y;
-            log::input, ", action = ", get_action_desc( event.action ), log::endl;
-            events::fire( events::window<>, event );
+            log::input, "size, width = ", event.x, ", height = ", event.y, log::endl;
+            if( not events::fire( events::window_paint<>, event ) and data ) {
+              log::input, "set new size", log::endl;
+              data->w = LOWORD( lparam ); 
+              data->h = HIWORD( lparam ); 
+              return DefWindowProc( hwnd, msg, wparam, lparam );
+            }
           break;
 
           case WM_PAINT:
             log::input, "paint", log::endl;
             event.x = pt.x;
             event.y = pt.y;
-            event.action = action::paint;
-            events::fire( events::window<>, event );
+            if( not events::fire( events::window_paint<>, event ) ) ValidateRect( hwnd, nullptr );
           break;
 
           case WM_CLOSE:
             log::input, "close", log::endl;
             event.mod = get_modifiers();
-            event.action = action::close;
-            if( not events::fire( events::window<>, event ) ) DestroyWindow( hwnd );
+            if( not events::fire( events::window_close<>, event ) ) DestroyWindow( hwnd );
           break;
 
           case WM_KEYUP:
           case WM_KEYDOWN: {
             event.key = (vkey) wparam;
-            log::input, "key ", get_vkey_desc( event.key ).name, log::endl;
+            log::input, "key ", get_vkey_desc( event.key ), log::endl;
             event.x = pt.x;
             event.y = pt.y;
             event.action = input_map( event.key );
@@ -198,29 +208,61 @@ namespace lib {
 
       ~window_win32() {
 
-        if( IsWindow( _hwnd ) )
+        if( $this )
 
-          DestroyWindow( _hwnd );
+          DestroyWindow( _data->hwnd );
       }
 
 
       void close() {
 
-        if( IsWindow( _hwnd ) )
+        if( $this )
 
-          DestroyWindow( _hwnd );
+          DestroyWindow( _data->hwnd );
       }
 
-      auto width() const { return _w; }
-      auto height() const { return _h; }
-      auto title() const { return _title; }
+      void set_data( uint* data ) {
 
-      HWND _hwnd;
-      cstr _title;
-      int _w;
-      int _h;
-      bool _fs;
+        if( not $this ) $throw $error_win32( "no valid window" );
 
+        HDC dc_orig = GetDC( _data->hwnd );
+
+        $on_return{ ReleaseDC( _data->hwnd, dc_orig ); };
+
+        HDC dc_new = CreateCompatibleDC( dc_orig );
+        
+        $on_return{ DeleteDC( dc_new ); };
+
+        HBITMAP bitmap_new = CreateCompatibleBitmap( dc_orig, width(), height() );
+
+        HBITMAP bitmap_old = (HBITMAP) SelectObject( dc_new, bitmap_new );
+
+        $on_return{ SelectObject( dc_new, bitmap_old ); DeleteObject( bitmap_new ); };
+
+        BITMAPINFOHEADER binfo{};
+
+        binfo.biSize = $size ( binfo );
+        binfo.biWidth = width();
+        binfo.biHeight = -height();
+        binfo.biPlanes = 1;
+        binfo.biBitCount = 32;
+        binfo.biCompression = BI_RGB;
+
+        auto r = SetDIBits( dc_new, bitmap_new, 0, height(), data, 
+                            (BITMAPINFO*) &binfo, DIB_RGB_COLORS );
+
+        if( not r ) $throw $error_win32( "SetDIBits failed" );
+
+        BitBlt( dc_orig, 0, 0, width(), height(), dc_new, 0, 0, SRCCOPY );
+      }
+
+      explicit operator bool() const { return IsWindow( _data->hwnd ); }
+
+      int width() const { return _data->w; }
+      int height() const { return _data->h; }
+      cstr title() const { return _data->title; }
+
+      owner_ptr< window_data > _data;
     };
 
 

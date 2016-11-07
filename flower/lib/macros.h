@@ -42,6 +42,12 @@ $empty( __COUNTER__ )
 #define TP1 template
 #define TP2 template
 
+TP<TN T0, unsigned N0, unsigned N1, unsigned N2>
+auto array_length_function( T0( &)[ N0 ][ N1 ][ N2 ] ) -> char( &)[ N0 * N1 * N2 ];
+
+TP<TN T0, unsigned N0, unsigned N1>
+auto array_length_function( T0( &)[ N0 ][ N1 ] ) -> char( &)[ N0 * N1 ];
+
 TP<TN T0, unsigned N0> 
 auto array_length_function( T0( &)[ N0 ] ) -> char( &)[ N0 ];
 
