@@ -4,7 +4,7 @@
 #include "types.h"
 #include "constant.h"
 #include "math.h"
-#include "variable.h"
+#include "matrix-funcs.h"
 #include "to-string.h"
 
 

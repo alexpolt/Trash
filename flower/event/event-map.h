@@ -5,6 +5,7 @@
 #include "lib/error.h"
 #include "lib/value.h"
 #include "lib/vector.h"
+#include "lib/alloc-stat.h"
 #include "lib/hash-map.h"
 #include "lib/algo.h"
 #include "lib/log.h"
@@ -42,13 +43,19 @@ namespace lib {
       using value_type = vector_event;
       using event_type = value< event >;
       using iterator = event_map::iterator;
+      using allocator = value< allocator >;
+      
+      static allocator create_alloc( cstr name = "events" ) { 
+
+        return alloc_stat::create( name ); 
+      }
 
 
       eid_t add( event_desc desc, event_type cb ) {
         
         auto it = _event_map[ desc.name ];
 
-        if( not it ) _event_map.insert( desc.name, vector_event{} );
+        if( not it ) it = create( desc.name );
 
         else {
 
@@ -127,23 +134,23 @@ namespace lib {
 
       event_map::iterator create( cstr name ) {
 
-        auto r = _event_map.insert( name, vector_event{} );
+        auto it = _event_map.insert( name, vector_event{ create_alloc( name ) } );
 
-        if( not r ) {
+        if( not it ) {
 
           log::error, $file_line, "event ", name, " already exists", log::endl;
         }
  
-        return r;
+        return it;
       }
 
       void dump_events() {
 
-        for( auto& e : _event_map ) log::event, e, endl;
+        for( auto& e : _event_map ) if( e.size() ) log::event, e, endl;
       }
       
 
-      event_map _event_map;
+      event_map _event_map{ create_alloc() };
     };
 
 

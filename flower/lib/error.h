@@ -22,14 +22,9 @@ namespace lib {
       snprintf( _buffer, $array_size( _buffer ), "%s", msg );
     }
 
-    error( cstr file, int line, cstr func ) : error() { 
+    error( cstr file, cstr msg ) : error() { 
 
-      snprintf( _buffer, $array_size( _buffer ), "%s:%d::%s() -> ", file, line, func );
-    }
-
-    error( cstr file, int line, cstr func, cstr msg ) : error() { 
-
-      snprintf( _buffer, $array_size( _buffer ), "%s:%d::%s() -> %s", file, line, func, msg );
+      snprintf( _buffer, $array_size( _buffer ), "%s: %s", file, msg );
     }
 
     virtual ~error() {}
@@ -43,7 +38,7 @@ namespace lib {
     buffer_t _buffer;
   };
 
-  #define $error( $0 ) lib::error{ __FILE__, __LINE__, __func__, $0 }
+  #define $error( $0 ) lib::error{ $file_line, $0 }
 
 
   struct error_input : error {
@@ -52,7 +47,7 @@ namespace lib {
 
   };
 
-  #define $error_input( $0 ) lib::error_input{ __FILE__, __LINE__, __func__, $0 }
+  #define $error_input( $0 ) lib::error_input{ $file_line, $0 }
 
 
   struct error_not_implemented : error {
@@ -61,7 +56,7 @@ namespace lib {
 
   };
 
-  #define $error_not_implemented() lib::error_not_implemented{ __FILE__, __LINE__, __func__, "not implemented" }
+  #define $error_not_implemented() lib::error_not_implemented{ $file_line, "not implemented" }
 
 
 }

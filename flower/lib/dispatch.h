@@ -1,7 +1,10 @@
 #pragma once
 
+#include <cstdio>
+
 #include "macros.h"
 #include "types.h"
+
 
 namespace lib {
 
@@ -87,17 +90,16 @@ namespace lib {
  
   struct error_dispatch : error {
 
-    error_dispatch( cstr file, int line, cstr func, cstr msg_a, cstr msg_b ) : error{ file, line, func } {
-        
-      auto l = strlen( error::_buffer );
+    error_dispatch( cstr file, cstr msg_a, cstr msg_b ) {
 
-      auto ptr = error::get_buffer() + l;
+      auto ptr = error::get_buffer();
 
-      snprintf( ptr, $array_size( error::get_buffer() ) - l, ": dispatch failed for ( %s ) and ( %s )", msg_a, msg_b );
+      snprintf( ptr, $array_size( error::get_buffer() ), 
+        "%s: dispatch failed for ( %s ) and ( %s )", file, msg_a, msg_b );
     }
   };
 
-  #define $error_dispatch( $0, $1 ) error_dispatch{ __FILE__, __LINE__, __func__, $0, $1 }
+  #define $error_dispatch( $0, $1 ) error_dispatch{ $file_line, $0, $1 }
 
 
 

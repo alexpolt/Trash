@@ -20,10 +20,10 @@ namespace lib {
       static constexpr ssize_t _size = sizeof...( NN );
 
       TP<TN U0>
-      constexpr explicit vec_t( U0 arg ) : _data{ ( (void)NN, value_type( arg ) )... } { }
+      constexpr vec_t( U0 arg ) : _data{ ( (void)NN, value_type( arg ) )... } { }
 
       TP<TN... UU>
-      constexpr explicit vec_t( UU... args ) : _data{ value_type( args )... } { }
+      constexpr vec_t( UU... args ) : _data{ value_type( args )... } { }
 
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
@@ -77,13 +77,24 @@ namespace lib {
       using value_type = vec< T0, _size >;
 
       TP<TN U0>
-      constexpr explicit mat_t( U0 arg ) : _data{ ( (void)NN, value_type{ arg } )... } { }
+      constexpr mat_t( U0 arg ) {
+        for( auto v : range{ 0, _size } )
+          for( auto d : range{ 0, _size } ) 
+            _data[ v ][ d ] = ( v == d ) ? arg : 0;
+      }
 
       TP<TN... UU>
-      constexpr explicit mat_t( UU... args ) : _data{ value_type{ args }... } { }
+      constexpr mat_t( UU... args ) : _data{ value_type{ args }... } { }
 
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
+
+      constexpr auto column( ssize_t idx ) { 
+
+        check_bounds( idx ); 
+        
+        return value_type{ _data[ NN ][ idx ]... };
+      }
 
       constexpr auto& data() { return _data; }
       constexpr auto& data() const { return _data; }

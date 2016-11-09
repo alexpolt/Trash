@@ -9,8 +9,9 @@
 #include "hash-map.h"
 #include "algo.h"
 #include "log.h"
-#include "ptr.h"
 #include "strong-ptr.h"
+#include "value.h"
+#include "alloc-default.h"
 
 
 namespace lib {
@@ -20,6 +21,11 @@ namespace lib {
   struct linker {
 
     using link_map = hash_map< void*, vector< T > >;
+    using allocator = value< allocator >;
+
+    static allocator create_alloc() { return alloc_default::create( "link_map" ); }
+
+    linker() { }
 
     ~linker() {
       
@@ -129,8 +135,8 @@ namespace lib {
     }
 
 
-    link_map _child_map;
-    link_map _parent_map;
+    link_map _child_map{ create_alloc() };
+    link_map _parent_map{ create_alloc() };
   };
 
 

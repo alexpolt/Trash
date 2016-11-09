@@ -40,7 +40,7 @@
 
 //#define $CONFIG_NO_ATOMIC
 
-//#define $CONFIG_STL
+#define $CONFIG_STL
 
 #define $CONFIG_DEVMODE
 

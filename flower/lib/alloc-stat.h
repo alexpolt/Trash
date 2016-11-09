@@ -5,44 +5,81 @@
 #include "macros.h"
 #include "types.h"
 #include "memory.h"
+#include "strong-ptr.h"
 #include "allocator.h"
 #include "value.h"
+#include "range.h"
 
 
 namespace lib {
 
 
-  struct alloc_empty : allocator {
+  struct alloc_stat : allocator {
 
+    struct data_t;
 
-    static auto create() { return value< allocator >::create< alloc_empty >(); }
+    alloc_stat( cstr name ) { 
+
+      auto data = new data_t{};
+
+      for( auto i : range{ 0, $array_size( data->name ) - 7 } ) 
+        
+        if( name[ i ] ) data->name[ i + 6 ] = name[ i ];
+
+      _data = strong_ptr< data_t >{ data, data->name };
+    }
+
+    alloc_stat( alloc_stat const& other ) : _data{ other._data.lock() } { }
+
+    alloc_stat( alloc_stat&& other ) : _data{ move( other._data ) } { }
+
+    alloc_stat& operator=( alloc_stat other ) { 
+
+      _data = move( other._data );
+      
+      return $this;
+    }
+
+    static auto create( cstr name ) { 
+      
+      return value< allocator >::create< alloc_stat >( name ); 
+    }
 
     value< allocator > get_copy() const override {
 
-      return value< allocator >::create< alloc_empty >();
+      return value< allocator >::create< alloc_stat >( $this );
     }
 
-    char* alloc( ssize_t sz ) override {
+    void* alloc( ssize_t sz ) override {
 
-      log::memory, "alloc_stat::alloc( ", sz, " )", log::endl;
+      _data->total += sz;
 
-      total += sz;
+      log::memory, name(), " alloc( ", sz, " ), total = ", _data->total, log::endl;
 
-      return $alloc( sz );
+      return lib::alloc( sz );
     }
 
     void free( void* ptr, ssize_t sz ) override { 
 
-      log::memory, "alloc_empty::free( ", ptr, ", ", sz, " )", log::endl;
+      log::memory, name(), " free( ", sz, " ), total = ", _data->total, log::endl;
 
-      $free( this, ptr, sz );
+      lib::free( ptr, sz );
     }
 
     ssize_t size() const override { return 0; }
 
     ssize_t available() const override { return 0; }
 
-    ssize_t _total;
+    cstr name() const override { return _data->name; }
+
+    struct data_t {
+
+      ssize_t total;
+      
+      char name[ 16 ]{ "alloc_" };
+    };
+
+    strong_ptr< data_t > _data;
  };
 
 }

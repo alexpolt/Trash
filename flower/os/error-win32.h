@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstring>
+#include <cstdio>
+
 #include "windows.h"
 #include "lib/macros.h"
 #include "lib/types.h"
@@ -14,24 +15,20 @@ namespace lib {
 
     struct error_win32 : error {
 
-      error_win32( cstr file, int line, cstr func, cstr msg ) :
+      error_win32( cstr file, cstr msg ) {
 
-        error{ file, line, func, msg } {
+        auto ptr = error::get_buffer();
 
-        auto l = strlen( error::get_buffer() );
-
-        auto ptr = error::get_buffer() + l;
-
-        *ptr++ = ' ';
+        ptr += snprintf( ptr, $array_size( error::get_buffer() ), "%s: ", file );
 
         FormatMessageA( FORMAT_MESSAGE_FROM_SYSTEM, nullptr, GetLastError(), 0, 
         
-                        ptr, $array_size( error::get_buffer() ) - l - 1, nullptr );
+                        ptr, $array_size( error::get_buffer() ), nullptr );
       }
 
     };
 
-    #define $error_win32( $0 ) error_win32{ __FILE__, __LINE__, __func__, $0 }
+    #define $error_win32( $0 ) error_win32{ $file_line, $0 }
 
 
   }

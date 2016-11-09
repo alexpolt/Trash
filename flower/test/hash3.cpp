@@ -30,7 +30,7 @@ int main() {
 
   int c = 0;
 
-  string s{ lib::alloc_chunk::create( 4096 ) };
+  string s{ lib::alloc_chunk::create( "hitch", 4096 ) };
 
   while( true ) {
 

@@ -14,7 +14,7 @@
 //skip 0
 $empty( __COUNTER__ )
 
-#define $file_line __FILE__ ":" $str( __LINE__ ) ": "
+#define $file_line __FILE__ ":" $str( __LINE__ )
 
 #define $escape( $0 ) asm volatile( "" : : "g" ((void*)$0) : "memory" )
 #define $clobber( $0 ) asm volatile( "" ::: "memory" )

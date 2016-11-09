@@ -17,13 +17,20 @@ namespace lib {
 
     using next_ptr = char*;
 
-    alloc_chunk() { }
 
-    alloc_chunk( ssize_t chunk_size ) : _chunk{ new chunk{} } { 
+    alloc_chunk( cstr name, ssize_t chunk_size ) { 
       
-      _chunk->size = chunk_size;
-
       $assert( chunk_size > $size( next_ptr ), "chunk size has to be > sizeof( char* )" );
+
+      auto ch = new chunk{};
+
+      ch->size = chunk_size;
+
+      for( auto i : range{ 0, $array_size( ch->name ) - 7 } )
+        
+        if( name[ i ] ) ch->name[ i + 6 ] = name[ i ];
+
+      _chunk = strong_ptr< chunk >{ ch, ch->name };
     }
 
     alloc_chunk( alloc_chunk const& other ) : _chunk{ other._chunk.lock() } { }
@@ -37,7 +44,10 @@ namespace lib {
       return $this;
     }
 
-    static auto create( ssize_t size ) { return value< allocator >::create< alloc_chunk >( size ); }
+    static auto create( cstr name, ssize_t size ) { 
+
+      return value< allocator >::create< alloc_chunk >( name, size ); 
+    }
 
     value< allocator > get_copy() const override {
 
@@ -46,50 +56,47 @@ namespace lib {
 
     void new_chunk() {
 
-      auto chunk = (char*) $alloc( _chunk.get(), _chunk->size );
+      log::memory, name(), " getting new chunk size = ", size(), log::endl;
+
+      auto chunk = lib::alloc( _chunk->size );
 
       char** data_next = (char**) chunk;
 
       *data_next = _chunk->data;
 
-      _chunk->data = chunk;
+      _chunk->data = (char*) chunk;
 
       _chunk->offset = $size( next_ptr );
      }
 
-    char* alloc( ssize_t sz ) override {
+    void* alloc( ssize_t sz ) override {
 
-      log::memory, "alloc_chunk::alloc( ", sz, " ), chunk size = ", size(), " ( ", size_true(), " ), ";
-      log::memory, "available = ", available(), log::endl;
-
-      $assert( sz <= size_true(), "size is greater than max size" );
+      $assert( sz <= size() - $size( next_ptr ), "size is greater than max size" );
       
-      if( _chunk->data == nullptr or sz > available() ) {
-
-        log::memory, "chunk size exceeded, allociate another one", log::endl;
-
-        new_chunk();
-      }
+      if( _chunk->data == nullptr or sz > available() ) new_chunk();
 
       auto ptr = _chunk->data + _chunk->offset;
 
       _chunk->offset += sz;
+
+      log::memory, name(), " alloc( ", sz, " ), chunk size = ", size();
+      log::memory, ", available = ", available(), log::endl;
 
       return ptr;
     }
 
     void free( void* ptr, ssize_t sz ) override { 
 
-      log::memory, "alloc)chunk::free( ", ptr, ", ", sz, " ), chunk size = ", size();
-      log::memory, " ( ", size_true(), " ), available = ", available(), log::endl;
+      log::memory, name(), " free( ", ptr, ", ", sz, " ), chunk size = ", size();
+      log::memory, ", available = ", available(), log::endl;
     }
-
-    ssize_t size_true() const { return _chunk->size - $size( next_ptr ); }
 
     ssize_t size() const override { return _chunk->size; }
 
     ssize_t available() const override { return size() - _chunk->offset; }
 
+    cstr name() const override { return _chunk->name; }
+    
     ssize_t offset() const { return _chunk->offset; }
 
     explicit operator bool() const { return (bool) _chunk; }
@@ -102,7 +109,7 @@ namespace lib {
           
           auto next = *( char** ) data;
 
-          $free( this, move( data ), size );
+          lib::free( move( data ), size );
 
           data = next;
         }
@@ -111,6 +118,7 @@ namespace lib {
       char* data;
       ssize_t size;
       ssize_t offset;
+      char name[ 16 ]{ "alloc " };
     };
 
     strong_ptr< chunk > _chunk;

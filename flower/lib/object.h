@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdio>
+
 #include "macros.h"
 #include "types.h"
 #include "assert.h"
@@ -99,17 +101,16 @@ namespace lib {
 
   struct error_object : error {
 
-    error_object( cstr file, int line, cstr func, iid_t iid, cstr msg ) : error{ file, line, func } {
+    error_object( cstr file, iid_t iid, cstr msg ) {
 
-      auto l = strlen( error::get_buffer() );
+      auto ptr = error::get_buffer();
 
-      auto ptr = error::get_buffer() + l;
-
-      snprintf( ptr, $array_size( error::get_buffer() ) - l, ": object %d not found in object( %s )", iid, msg );
+      snprintf( ptr, $array_size( error::get_buffer() ), 
+        "%s: object %d not found in object( %s )", file, iid, msg );
     } 
   };
 
-  #define $error_object( $0, $1 ) error_object{ __FILE__, __LINE__, __func__, $0, $1 }
+  #define $error_object( $0, $1 ) error_object{ $file_line, $0, $1 }
 
 
 

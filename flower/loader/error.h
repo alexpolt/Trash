@@ -15,7 +15,7 @@ namespace lib {
       using error::error;
     };
 
-    #define $error_loader( $0 ) error_loader{ __FILE__, __LINE__, __func__, $0 }
+    #define $error_loader( $0 ) error_loader{ $file_line, $0 }
 
   }
 

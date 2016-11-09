@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstring>
+#include <cstdio>
+
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/error.h"
@@ -13,20 +14,16 @@ namespace lib {
 
     struct error_file : error { 
 
-      error_file( cstr file, int line, cstr func, cstr path, cstr strerror  ) : 
+      error_file( cstr file, cstr path, cstr strerror  ) {
 
-      error{ file, line, func } {
+        auto ptr = error::get_buffer();
 
-        auto l = strlen( error::get_buffer() );
-
-        auto ptr = error::get_buffer() + l;
-
-        snprintf( ptr, $array_size( error::get_buffer() ) - l, "\"%s\" %s", path, strerror );
+        snprintf( ptr, $array_size( error::get_buffer() ), "%s: \"%s\" %s", file, path, strerror );
       }
     };
 
 
-    #define $error_file( $0, $1 ) error_file{ __FILE__, __LINE__, __func__, $0, $1 }
+    #define $error_file( $0, $1 ) error_file{ $file_line, $0, $1 }
 
 
 

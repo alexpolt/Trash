@@ -14,13 +14,17 @@ namespace lib {
 
     virtual ~allocator() { }
 
-    virtual char* alloc( ssize_t ) = 0;
+    virtual void* alloc( ssize_t ) = 0;
 
     virtual void free( void*, ssize_t ) = 0;
 
     virtual ssize_t size() const = 0;
 
     virtual ssize_t available() const = 0;
+
+    virtual cstr name() const = 0;
+
+    virtual cstr to_string() const { return name(); }
 
     virtual value< allocator > get_copy() const = 0;
   };

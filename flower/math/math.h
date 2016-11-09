@@ -102,6 +102,7 @@ namespace lib {
 
     TP< TN T0, ssize_t... NN > 
     constexpr auto operator*( mat_t< T0, NN... > left, vec_t< T0, NN... > right ) {
+
       return vec_t< T0, NN... >{ dot( left[ NN ], right )... };
     }
 
@@ -109,6 +110,19 @@ namespace lib {
     constexpr auto operator*( vec_t< T0, NN... > left, mat_t< T0, NN... > right ) {
       return vec_t< T0, NN... >{ add( vec_t< T0, NN... >{ left[ NN ] } * right[ NN ] ... ) };
     }
+
+    TP< TN T0, ssize_t... NN, TN... TT > 
+    constexpr auto dot_helper( vec_t< T0, NN...> left, TT... args ) { 
+
+      return vec_t< T0, NN... >{ dot( left, args )... };
+    }
+
+    TP< TN T0, ssize_t... NN > 
+    constexpr auto dot( mat_t< T0, NN...> left, mat_t< T0, NN... > right ) { 
+
+      return mat_t< T0, NN... >{ dot_helper( left[ NN ], right.column( NN )...) ... };
+    }
+
 
     TP<TN T0>
     constexpr auto abs( T0 a ) { return a < 0 ? -a : a; }

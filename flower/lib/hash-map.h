@@ -8,12 +8,15 @@
 #include "hash.h"
 #include "vector.h"
 #include "algo.h"
+#include "alloc-default.h"
+#include "value.h"
+
 
 namespace lib {
 
   struct error_hash : error { using error::error; };
 
-  #define $error_hash( $0 ) lib::error_hash{ __FILE__, __LINE__, __func__, $0 }
+  #define $error_hash( $0 ) lib::error_hash{ $file_line, $0 }
 
 
   TP<TN K, TN V, bool is_64bit = false>
@@ -28,17 +31,24 @@ namespace lib {
     using reference = V&;
     using iterator = vector_iterator< vector< value_type > >;
     using const_iterator = vector_iterator< vector< value_type > const >;
+    using allocator = value< allocator >;
 
     static constexpr int _try_max = 7;
     static constexpr int _reserve_factor = 3;
     static constexpr ssize_t _invalid_index = -1;
     static constexpr hash_type _size_max = ( is_64bit ? 1ll << 56 : 1 << 28 ) / 3;
 
-    hash_map() { }
+    static allocator create_alloc() { return alloc_default::create( "hash_map" ); }
 
-    hash_map( ssize_t size ) {
-    
-      if( size ) reserve( size );      
+    hash_map( allocator alloc = create_alloc() ) : 
+      _hash_table{ alloc->get_copy() }, 
+      _keys{ alloc->get_copy() }, 
+      _values{ alloc->get_copy() }, 
+      _erased{ alloc->get_copy() } { }
+
+    hash_map( ssize_t size, allocator alloc = create_alloc() ) : hash_map{ move( alloc ) } {
+      
+      reserve( size );
     }
 
     #define $hash_map_init_hash() \
@@ -103,7 +113,6 @@ namespace lib {
       if( index == _invalid_index ) return _values.end();
 
       _keys[ index ] = move( key );
-        
       _values[ index ] = move( value );
 
       return _values.begin() + index;
@@ -113,7 +122,9 @@ namespace lib {
 
       auto size_table = _hash_table.size();
 
-      auto hash0 = hasher::get_hash( key );
+      hash_type hash0 = hasher::get_hash( key );
+
+      $assert( hash0, "hash of the key should not be zero" );
       
       for( auto i : range{ 0, _try_max } ) {
 
@@ -159,7 +170,6 @@ namespace lib {
           index = _keys.size();
 
           _keys.emplace_back();
-
           _values.emplace_back();
         }
  
@@ -208,7 +218,6 @@ namespace lib {
       _hash_table.resize( _hash_table.capacity() );
 
       _keys.reserve( size );
-
       _values.reserve( size );
     }
 
@@ -306,11 +315,11 @@ namespace lib {
       hash_type _hash;
     };
 
-    ssize_t _rehashes{};
     vector< hash_node > _hash_table;
     vector< key_type > _keys;
     vector< value_type > _values;
     vector< size_type > _erased;
+    ssize_t _rehashes{};
   };
 
 

@@ -7,6 +7,7 @@
 #include "hash-map.h"
 #include "to-string.h"
 #include "log.h"
+#include "alloc-default.h"
 
 
 namespace lib {
@@ -16,6 +17,9 @@ namespace lib {
 
 
     using deleter_t = void (*)( void* );
+    using allocator = value< allocator >;
+
+    static allocator create_alloc() { return alloc_default::create( "lock_map" ); }
 
 
     locker() { }
@@ -27,7 +31,6 @@ namespace lib {
       for( auto& e : _lock_map ) {
         
         counter_s += e.counter_s.load();
-
         counter_w += e.counter_w.load();
       }
       
@@ -38,11 +41,9 @@ namespace lib {
         log::warn, $file_line "weak counter > 0, total weak increments = ", counter_w, log::endl;
     }
 
-    void lock( void* ptr, deleter_t deleter, bool is_weak ) {
+    void lock( void* ptr, deleter_t deleter, bool is_weak, cstr name ) {
 
-      if( _lock_map.size() == 0 ) 
-
-        _lock_map.reserve( 16 );
+      if( _lock_map.size() == 0 ) _lock_map.reserve( 16 );
 
       log::lock, "new ";
 
@@ -50,7 +51,7 @@ namespace lib {
 
       if( not it )
 
-        _lock_map.insert( ptr, lock_node{ 0, 0, deleter } );
+        _lock_map.insert( ptr, lock_node{ 0, 0, deleter, name } );
 
       else if( deleter and it->deleter ) 
 
@@ -60,8 +61,6 @@ namespace lib {
     }
 
     void lock( void* ptr, bool is_weak ) {
-
-      log::lock, "lock_", ( is_weak ? "w" : "s" ), "( ", ptr;
 
       auto it = _lock_map[ ptr ];
 
@@ -80,13 +79,12 @@ namespace lib {
         counter_w = it->counter_w.add( counter_w ) + counter_w;
       }
 
+      log::lock, "lock_", ( is_weak ? "w" : "s" ), " <", it->name, ">( ", ptr;
       log::lock, " ), s = ", counter_s, ", w = ", counter_w, log::endl;
     }
 
     bool unlock( void* ptr, bool is_weak ) {
-
-      log::lock, "unlock_", ( is_weak ? "w" : "s" ), "( ", ptr," ), "; 
-      
+ 
       auto it = _lock_map[ ptr ];
 
       $assert( it, "lock not found" );
@@ -104,17 +102,20 @@ namespace lib {
         counter_w = it->counter_w.sub( counter_w ) - counter_w;
       }
 
+      log::lock, "unlock_", ( is_weak ? "w" : "s" ), " <", it->name, ">( ", ptr," ), ";
       log::lock, "s = ", counter_s, ", w = ", counter_w, log::endl;
 
-      if( not is_weak and counter_s == 0 ) {
+      if( counter_s == 0 ) {
         
         if( it->deleter ) it->deleter( ptr );
-        
-        void *ptr = _lock_map.keys()[ it.get_index() ];
 
         if( counter_w > 0 ) 
           
-          log::error, "object( ", ptr, " ) is deleted but weak counter = ", counter_w, log::endl;
+          log::warn, "object destroyed, but weak counter = ", counter_w, log::endl;
+
+        else
+
+          _lock_map.erase( it );
 
         return true;
       }
@@ -148,55 +149,54 @@ namespace lib {
 
       lock_node() { }
 
-      lock_node( int s, int w, deleter_t d ) : counter_s{}, counter_w{}, deleter{ d } { 
+      lock_node( int s, int w, deleter_t d, cstr n ) : 
+        counter_s{}, counter_w{}, deleter{ d }, name{ n } { 
 
         counter_s = s;
-
         counter_w = w;
       }
 
-      lock_node( lock_node const& other ) : counter_s{}, counter_w{}, deleter{ other.deleter } { 
+      lock_node( lock_node const& other ) : 
+        counter_s{}, counter_w{}, deleter{ other.deleter }, name{ other.name } { 
 
         counter_s = other.counter_s.load();
-
         counter_w = other.counter_w.load();
       }
 
-      lock_node( lock_node&& other ) : counter_s{}, counter_w{}, deleter{ move( other.deleter ) } { 
+      lock_node( lock_node&& other ) : 
+        counter_s{}, counter_w{}, deleter{ move( other.deleter ) }, name{ move( other.name ) } { 
 
         counter_s = other.counter_s.load();
-
         counter_w = other.counter_w.load();
         
         other.counter_s = 0;
-
         other.counter_w = 0;
       }
 
       lock_node& operator=( lock_node const& other ) {
 
-        deleter = other.deleter;
-
         counter_s = other.counter_s.load();
-
         counter_w = other.counter_w.load();
+        deleter = other.deleter;
+        name = other.name;
 
         return $this;
       }
 
       cstr to_string() const { 
         
-        return lib::to_string( "lock_node( s = %d, w = %d, deleter = %p )", 
-                                  counter_s.load(), counter_w.load(), (void*) deleter );
+        return lib::to_string( "lock_node <%s>( s = %d, w = %d, d = %p )", 
+                                  name, counter_s.load(), counter_w.load(), (void*) deleter );
       }
 
       atomic< int > counter_s{};
       atomic< int > counter_w{};
       deleter_t deleter{};
+      cstr name{};
     };
 
 
-    hash_map< void*, lock_node > _lock_map;
+    hash_map< void*, lock_node > _lock_map{ create_alloc() };
   };
 
 

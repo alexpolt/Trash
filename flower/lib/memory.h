@@ -8,16 +8,16 @@
 #include "log.h"
 #include "atomic.h"
 
+
 namespace lib {
 
-  namespace memory {
 
     struct error_memory : error { using error::error; };
+
 
     struct stats_t {
 
       lib::atomic< ssize_t > alloc;
-
     };
 
     inline stats_t& get_stats() { static stats_t stats{}; return stats; }
@@ -38,7 +38,7 @@ namespace lib {
 
             get_stats().alloc.sub( _size[ i ] );
 
-            log::memory, "object ", _owner[ i ], ", free( ", _size[ i ], ", ", (void*) _ptr[ i ];
+            log::memory, "free( ", _size[ i ], ", ", (void*) _ptr[ i ];
             log::memory, " ); total = ", get_stats().alloc.load(), log::endl;
 
             ::free( _ptr[ i ] ); 
@@ -52,7 +52,6 @@ namespace lib {
       volatile bool destroyed = false;
 
       void* _ptr[ size ]; 
-      void* _owner[ size ];
       ssize_t _size[ size ]; 
       ssize_t _index;
     };
@@ -61,7 +60,7 @@ namespace lib {
     inline cache_t& get_cache() { static cache_t cache{}; return cache; }
 
  
-    inline void* alloc( void* object, ssize_t size, cstr file_line ) {
+    inline void* alloc( ssize_t size ) {
 
       auto& stats = get_stats();
 
@@ -75,8 +74,7 @@ namespace lib {
 
           if( cache._ptr[ i ] and cache._size[ i ] == size ) {
 
-            log::memory, "object ", object, " cache alloc( ", size, " ) = ";
-            log::memory, (void*)cache._ptr[ i ], log::endl;
+            log::memory, "alloc from cache( ", size, " ) = ", (void*) cache._ptr[ i ], log::endl;
 
             return move( cache._ptr[ i ] );
           }
@@ -88,15 +86,14 @@ namespace lib {
       
       stats.alloc.add( size );
 
-      log::memory, "object ", object, " malloc( ", size, " ) = ", (void*)ptr, "; ";
-      log::memory, "total = ", stats.alloc.load(), log::endl;
+      log::memory, "malloc( ", size, " ) = ", (void*)ptr, ", total = ", stats.alloc.load(), log::endl;
 
 
       return ptr; 
     }
 
 
-    inline void free( void* owner, void* ptr, ssize_t size, cstr file_line ) { 
+    inline void free( void* ptr, ssize_t size  ) { 
     
       auto& stats = get_stats();
       auto& cache = get_cache();
@@ -105,8 +102,7 @@ namespace lib {
 
         stats.alloc.sub( size );
 
-        log::memory, "object ", owner, ", free( ", size, ", ", ptr, " ); ";
-        log::memory, "total = ", stats.alloc.load(), log::endl;
+        log::memory, "free( ", size, ", ", ptr, " ), total = ", stats.alloc.load(), log::endl;
 
         ::free( ptr ); 
 
@@ -116,12 +112,10 @@ namespace lib {
 
           if( ! cache._ptr[ i ] ) {
 
-            log::memory, "object ", owner, ", free to cache( ", size, ", "; 
-            log::memory, ptr, " ); total = ", stats.alloc.load(), log::endl;
+            log::memory, "free to cache( ", size, ", ", ptr, " ), total = ", stats.alloc.load(), log::endl;
 
             cache._ptr[ i ] = ptr;
             cache._size[ i ] = size;
-            cache._owner[ i ] = owner;
 
             return;
           }
@@ -131,26 +125,18 @@ namespace lib {
 
         stats.alloc.sub( cache._size[ idx ] );
 
-        log::memory, "object ", cache._owner[ idx ], ", free from cache( ", cache._size[ idx ], ", "; 
-        log::memory, cache._ptr[ idx ], " ); total = ", stats.alloc.load(), log::endl;
+        log::memory, "free from cache( ", cache._size[ idx ], ", "; 
+        log::memory, cache._ptr[ idx ], " ), total = ", stats.alloc.load(), log::endl;
 
         ::free( cache._ptr[ idx ] ); 
 
         cache._ptr[ idx ] = ptr;
         cache._size[ idx ] = size;
-        cache._owner[ idx ] = owner;
-
       }
+
     }
 
 
-  }
-
-
-  #define $alloc( $0, $1 ) lib::memory::alloc( (void*)$0, $1, __FILE__ ":" $str( __LINE__ ) )
-  
-  #define $free( $0, $1, $2 ) lib::memory::free( (void*)$0, $1, $2, __FILE__ ":" $str( __LINE__ ) )
-
-
 }
+
 

@@ -7,8 +7,8 @@
 #include "global.h"
 #include "to-string-selector.h"
 
-namespace lib {
 
+namespace lib {
 
 
   TP<TN T0, bool is_weak = false>
@@ -18,16 +18,18 @@ namespace lib {
 
     strong_ptr() { }
 
-    explicit strong_ptr( T0* ptr ) : _ptr{ ptr } { 
+    explicit strong_ptr( T0* ptr, cstr name = "noname" ) : _ptr{ ptr } { 
 
       deleter_t deleter = []( void* ptr ){ delete (T0*) ptr; };
 
-      get_locker().lock( _ptr, not is_weak ? deleter : nullptr, is_weak );
+      if( is_weak ) deleter = nullptr;
+
+      get_locker().lock( _ptr, deleter, is_weak, name );
     }
 
-    strong_ptr( T0* ptr, deleter_t deleter ) : _ptr{ ptr } { 
+    strong_ptr( T0* ptr, deleter_t deleter, cstr name = "noname" ) : _ptr{ ptr } { 
 
-      get_locker().lock( _ptr, deleter, is_weak );
+      get_locker().lock( _ptr, deleter, is_weak, name );
     }
 
     strong_ptr( strong_ptr&& other ) : _ptr { move( other._ptr ) } { }
