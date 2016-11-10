@@ -33,6 +33,8 @@ namespace lib {
 
       virtual tid_t get_id() const = 0;
 
+      virtual cstr get_desc() const = 0;
+
       virtual cstr to_string() const = 0;
     };
 
@@ -46,9 +48,11 @@ namespace lib {
 
       tid_t get_id() const override { return _desc.id; }
 
+      cstr get_desc() const override { return _desc.desc; }
+
       cstr to_string() const override { 
 
-        return lib::to_string( "task #%d( %s )", _desc.id, _desc.desc ); 
+        return lib::to_string( "#%d( %s )", _desc.id, _desc.desc ); 
       }
 
       T0 _fn;

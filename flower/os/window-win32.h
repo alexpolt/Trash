@@ -7,8 +7,12 @@
 #include "lib/owner-ptr.h"
 #include "lib/scope-guard.h"
 #include "event/common.h"
+#include "events.h"
 #include "error-win32.h"
-#include "input-win32.h"
+#include "vkey.h"
+#include "vkey-desc.h"
+#include "action.h"
+#include "input-map-win32.h"
 
 
 namespace lib {
@@ -16,6 +20,9 @@ namespace lib {
   namespace os {
 
 
+    vmod get_modifiers();
+
+    
     struct window_win32 : nocopy {
       
       static constexpr cstr window_clsname = "flower_window";
@@ -59,7 +66,7 @@ namespace lib {
 
         if( ! hwnd ) $throw $error_win32( "create window failed" );
 
-        $event( "input_message" ) {
+        $event( "input_message", "window dispatch" ) {
 
           DispatchMessage( (MSG*) event.data );
 
@@ -264,6 +271,19 @@ namespace lib {
 
       owner_ptr< window_data > _data;
     };
+
+    vmod get_modifiers() {
+
+      vmod mod = vmod::null;
+
+      const short mask = 0x8000;
+
+      if( GetKeyState( (int) vkey::shift ) & mask ) mod = vmod( mod | vmod::shift );
+      if( GetKeyState( (int) vkey::control ) & mask ) mod = vmod( mod | vmod::control );
+      if( GetKeyState( (int) vkey::menu ) & mask ) mod = vmod( mod | vmod::menu );
+
+      return mod;
+    }
 
 
   }

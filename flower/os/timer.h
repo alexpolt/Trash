@@ -1,6 +1,6 @@
 #pragma once
 
-#include "input-win32.h"
+#include "timer-win32.h"
 
 
 namespace lib {
@@ -8,10 +8,11 @@ namespace lib {
   namespace os {
 
 
-    using input = input_win32;
+    using timer = timer_win32;
 
   }
 }
+
 
 
 

@@ -6,6 +6,7 @@
 
 #include "macros.h"
 #include "types.h"
+#include "to-string.h"
 
 
 namespace lib {
@@ -68,6 +69,11 @@ namespace lib {
     explicit operator bool() const { return _index != _object.size(); }
 
     size_type get_index() const { return _index; }
+
+    cstr to_string() const { 
+
+      return lib::to_string( "iterator( index = %d, size = %d )", _index, _object.size() );
+    }
 
     T0& _object;
 

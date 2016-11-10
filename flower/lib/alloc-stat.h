@@ -22,9 +22,9 @@ namespace lib {
 
       auto data = new data_t{};
 
-      for( auto i : range{ 0, $array_size( data->name ) - 7 } ) 
+      for( auto i : range{ 0, $array_size( data->name ) } ) 
         
-        if( name[ i ] ) data->name[ i + 6 ] = name[ i ];
+        if( name[ i ] ) data->name[ i ] = name[ i ];
 
       _data = strong_ptr< data_t >{ data, data->name };
     }
@@ -76,7 +76,7 @@ namespace lib {
 
       ssize_t total;
       
-      char name[ 16 ]{ "alloc_" };
+      char name[ 16 ];
     };
 
     strong_ptr< data_t > _data;

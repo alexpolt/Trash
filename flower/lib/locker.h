@@ -79,7 +79,7 @@ namespace lib {
         counter_w = it->counter_w.add( counter_w ) + counter_w;
       }
 
-      log::lock, "lock_", ( is_weak ? "w" : "s" ), " <", it->name, ">( ", ptr;
+      log::lock, it->name, " lock_", ( is_weak ? "w" : "s" ), "( ", ptr;
       log::lock, " ), s = ", counter_s, ", w = ", counter_w, log::endl;
     }
 
@@ -102,8 +102,8 @@ namespace lib {
         counter_w = it->counter_w.sub( counter_w ) - counter_w;
       }
 
-      log::lock, "unlock_", ( is_weak ? "w" : "s" ), " <", it->name, ">( ", ptr," ), ";
-      log::lock, "s = ", counter_s, ", w = ", counter_w, log::endl;
+      log::lock, it->name, " unlock_", ( is_weak ? "w" : "s" ), "( ", ptr;
+      log::lock, " ), s = ", counter_s, ", w = ", counter_w, log::endl;
 
       if( counter_s == 0 ) {
         
@@ -185,7 +185,7 @@ namespace lib {
 
       cstr to_string() const { 
         
-        return lib::to_string( "lock_node <%s>( s = %d, w = %d, d = %p )", 
+        return lib::to_string( "lock_node %s( s = %d, w = %d, d = %p )", 
                                   name, counter_s.load(), counter_w.load(), (void*) deleter );
       }
 

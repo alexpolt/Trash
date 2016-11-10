@@ -9,7 +9,7 @@ const int w = 1000, h = 1000;
 
 uint data[ h ][ w ];
 
-int index=1, ww, mul = 1, iter = 15;
+int index=1, ww, mul = 1, iter = 20;
 
 vec2i xy_prev;
 
@@ -104,7 +104,7 @@ void draw( os::window& wnd ) {
       float y = (2.f * yy) / r - 1.f;
       float z = (2.f * zz) / rz - 1.f;
 
-      float a = 25.f; 
+      float a = 20.f; 
 
       float rnd1 = float( rand() ) / ( RAND_MAX + 1 );
 
@@ -117,8 +117,9 @@ void draw( os::window& wnd ) {
 
       //auto q = normalize( math::quat< float >{ x, y, z, 0 } );
       auto q = normalize( math::quat< float >{ zc*c, zc*s, zs, 0.025f * ww } );
+      auto qprev = q;
 
-      q[ index ] = q[ index ] + ( 0.5*rnd1 - 0.25f );
+      q[ index ] = q[ index ] + ( 0.25 * rnd1 - 0.125f );
 
       range{ 0, iter } $do { 
 
@@ -127,9 +128,15 @@ void draw( os::window& wnd ) {
         if( mul == 3 ) q = qmul3( q, q );
         if( mul == 4 ) q = qmul4( q, q );
 
+        auto l = norm( q );
+        auto l2 = norm( q - qprev );
+
+        qprev = q;
+
         auto r = rot * vec3f{ q[0], q[1], q[2] };
         
-        r = 20.f * r + vec3f{.0f,.0f,40.f};
+        r = 20.f * r + vec3f{ .0f, .0f, 50.f };
+
         if( r[2] > 1.f ) r = r / vec3f{ r[2] };
 
         int u = ( r[ 0 ] + 1.f ) / 2. * w;
@@ -138,14 +145,28 @@ void draw( os::window& wnd ) {
         u = lib::max( 0, lib::min( u, w-1 ));
         v = lib::max( 0, lib::min( v, h-1 ));
 
-        auto c = data[ v ][ u ];
+        uint c = data[ v ][ u ];
 
-        if( not ( ( c & 0xFF ) == 255 or 
-                  ( c >> 8 & 0xFF ) == 255 or 
-                  ( c >> 16 & 0xFF) == 255 ) )
+        uint d = 1, red = 0, green = 0;
 
-          data[ v ][ u ] += 0x00'01'01'01;
-      };
+        d = l > 1.f ? 1 : d;
+        d = l > 3.f ? 2 : d;
+        d = l > 5.f ? 3 : d;
+
+        green = math::abs( q[3] ) > 3.f ? 1 : green;
+        green = math::abs( q[3] ) > 5.f ? 2 : green;
+
+        red = l2 > 6.f ? 4 : red;
+        red = l2 > 4.f ? 3 : red;
+        red = l2 > 2.f ? 1 : red;
+
+        if( ( c >> 16 & 0xFF ) <= 255-red-d ) data[ v ][ u ] += (d << 16) + (red<<16);
+
+        if( ( c >> 8 & 0xFF ) <= 255-green-d ) data[ v ][ u ] += (d << 8) + (green<<8);
+
+        if( ( c & 0xFF ) <= 255-d ) data[ v ][ u ] += d;
+
+     };
     }
 
   wnd.set_data( (uint*) data );
@@ -163,16 +184,16 @@ int main() {
 
   info, "start program", endl;
 
-  $event( "key_up" ) {
+  $event( "key_up", "quat" ) {
 
     if( event.key == os::vkey::_1 ) { mul = 1; info, "qmul = ", mul, endl; }
     if( event.key == os::vkey::_2 ) { mul = 2; info, "qmul = ", mul, endl; }
     if( event.key == os::vkey::_3 ) { mul = 3; info, "qmul = ", mul, endl; }
     if( event.key == os::vkey::_4 ) { mul = 4; info, "qmul = ", mul, endl; }
     
-    if( event.key == os::vkey::space ) { rot = mat3f{ 1.f }; }
+    if( event.key == os::vkey::c ) { rot = mat3f{ 1.f }; ww = 0; }
 
-    if( event.key == os::vkey::tab ) {
+    if( event.key == os::vkey::space ) {
       drawing = drawing != 1;
       if( drawing ) info, "drawing", endl;
       else info, "not drawing", endl;
@@ -189,14 +210,14 @@ int main() {
 
   auto wnd0 = os::window::create( "Test Window", w, h );
 
-  $event( "scroll" ) {
+  $event( "scroll", "quat" ) {
     ww = ww + event.y;
     info, "ww = ", ww, endl;
     data_clear();
     return true;
   };
 
-  $event( "mouse_move" ) {
+  $event( "mouse_move", "quat" ) {
 
     if( rotate ) {  
       auto o = vec2i{ event.x, event.y }; 
@@ -214,16 +235,16 @@ int main() {
     return true;
   };
 
-  $event( "mouse_down" ) {
+  $event( "mouse_down", "quat" ) {
 
     xy_prev = {event.x, event.y};
     rotate = true;
-    iter = 8;
+    iter = 10;
 
     return true;
   };
 
-  $event( "mouse_up" ) {
+  $event( "mouse_up", "quat" ) {
 
     rotate = false;
 
@@ -233,7 +254,7 @@ int main() {
       info, "index = ", index, endl;
    }
 
-    iter = 15;
+    iter = 20;
 
     data_clear();
 
@@ -243,11 +264,9 @@ int main() {
 
   lib::global::event_map<>.dump_events();
 
-  os::input in;
-
   while( loop ) {
 
-    if( not in() ) break;
+    if( not os::input::process() ) break;
 
     if( drawing ) draw( wnd0 );
 

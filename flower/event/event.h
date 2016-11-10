@@ -37,7 +37,7 @@ namespace lib {
 
       cstr name;
 
-      cstr origin;
+      cstr desc;
 
       eid_t id;
     };
@@ -53,9 +53,7 @@ namespace lib {
 
       virtual eid_t get_id() const = 0;
 
-      virtual cstr get_name() const = 0;
-
-      virtual cstr get_origin() const = 0;
+      virtual cstr get_desc() const = 0;
 
       virtual cstr to_string() const = 0;
     };
@@ -70,13 +68,11 @@ namespace lib {
 
       eid_t get_id() const override { return _desc.id; }
 
-      cstr get_name() const override { return _desc.name; }
-
-      cstr get_origin() const override { return _desc.origin; }
+      cstr get_desc() const override { return _desc.desc; }
 
       cstr to_string() const override { 
 
-        return lib::to_string( "event #%d( %s, %s )", _desc.id, _desc.name, _desc.origin ); 
+        return lib::to_string( "%s, #%d( %s )", _desc.name, _desc.id, _desc.desc ); 
       }
 
       T0 _fn;

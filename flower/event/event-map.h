@@ -2,15 +2,13 @@
 
 #include "lib/macros.h"
 #include "lib/types.h"
-#include "lib/error.h"
 #include "lib/value.h"
 #include "lib/vector.h"
-#include "lib/alloc-stat.h"
+#include "lib/alloc-default.h"
 #include "lib/hash-map.h"
 #include "lib/algo.h"
 #include "lib/log.h"
 #include "lib/sequence.h"
-
 #include "event.h"
 
 
@@ -45,9 +43,9 @@ namespace lib {
       using iterator = event_map::iterator;
       using allocator = value< allocator >;
       
-      static allocator create_alloc( cstr name = "events" ) { 
+      static allocator create_alloc() {
 
-        return alloc_stat::create( name ); 
+        return alloc_default::create( "event_map" ); 
       }
 
 
@@ -57,18 +55,9 @@ namespace lib {
 
         if( not it ) it = create( desc.name );
 
-        else {
-
-          auto it_e = find( *it, [&desc]( event_type& e ){ return equal( e->get_origin(), desc.origin ); } );
-
-          if( it_e )
-
-            log::warn, $file_line, "event ", desc.name," from ", desc.origin, " was already added", log::endl;
-        }
+        log::event, "add ", cb, log::endl;
 
         it->push_back( move( cb ) );
-
-        log::event, "add event#", desc.id, " ", (void*)&it->back(), "( ", desc.name, " ) from ", desc.origin, log::endl;
 
         return desc.id;
       }
@@ -108,7 +97,7 @@ namespace lib {
 
         if( not it ) {
 
-          log::event, "fire event ", name, ", no events found", log::endl;
+          log::event, "fire ", name, ", no events found", log::endl;
 
           return false;
         }
@@ -134,7 +123,7 @@ namespace lib {
 
       event_map::iterator create( cstr name ) {
 
-        auto it = _event_map.insert( name, vector_event{ create_alloc( name ) } );
+        auto it = _event_map.insert( name, vector_event{ 1, _event_map.get_allocator() } );
 
         if( not it ) {
 
@@ -178,17 +167,17 @@ namespace lib {
 
       auto id = desc.id = global::gen_id< event_tag >();
 
-      auto t = value< event >::create< event_basic< T > >( move( fn ), desc );
+      auto cb = value< event >::create< event_basic< T > >( move( fn ), desc );
 
-      global::event_map<>.add( desc, move( t ) );
+      global::event_map<>.add( desc, move( cb ) );
 
       return id;
     }
 
 
     #define $event( ... ) \
-      lib::event::event_desc{ $args_first( __VA_ARGS__ ), $file_line } + \
-        [ $args_second( __VA_ARGS__ ) ]( lib::event::event_data& event ) -> bool
+      lib::event::event_desc{ $args_first( __VA_ARGS__ ), $args_second( __VA_ARGS__ ) } + \
+        [ $args_third( __VA_ARGS__ ) ]( lib::event::event_data& event ) -> bool
 
 
   }

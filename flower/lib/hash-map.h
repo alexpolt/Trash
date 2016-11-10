@@ -44,7 +44,8 @@ namespace lib {
       _hash_table{ alloc->get_copy() }, 
       _keys{ alloc->get_copy() }, 
       _values{ alloc->get_copy() }, 
-      _erased{ alloc->get_copy() } { }
+      _erased{ alloc->get_copy() },
+      _alloc{ move( alloc ) } { };
 
     hash_map( ssize_t size, allocator alloc = create_alloc() ) : hash_map{ move( alloc ) } {
       
@@ -290,6 +291,10 @@ namespace lib {
     auto empty() const { return size() == 0; }
     auto rehashes() const { return _rehashes; }
 
+    void set_allocator( allocator alloc ) { _alloc = move( alloc ); }
+
+    allocator get_allocator() { return _alloc->get_copy(); }
+
 
     struct hash_node {
 
@@ -319,6 +324,7 @@ namespace lib {
     vector< key_type > _keys;
     vector< value_type > _values;
     vector< size_type > _erased;
+    allocator _alloc;
     ssize_t _rehashes{};
   };
 

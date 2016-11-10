@@ -23,8 +23,8 @@
 #include "strong-ptr.h"
 #include "allocator.h"
 #include "handle.h"
+#include "time.h"
 
-//#include ""
 
 using lib::object;
 using lib::interface;
@@ -51,4 +51,7 @@ using lib::weak_ptr;
 using lib::strong_ptr;
 using lib::make_strong;
 using lib::handle;
+using lib::operator ""_s;
+using lib::operator ""_ms;
+
 

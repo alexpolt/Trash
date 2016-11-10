@@ -295,13 +295,14 @@ namespace lib {
 
       $assert( it < end(), "iterator is not valid" );
 
-      if( it == --end() ) 
+      if( it == --end() ) {
 
         pop_back();
 
-      else 
+        return begin();
+      }
 
-        *it = pop_back();
+      *it = pop_back();
 
       return it; 
     }
@@ -471,7 +472,7 @@ namespace lib {
 
     void set_allocator( allocator alloc ) { _alloc = move( alloc ); }
 
-    allocator get_allocator() { return _alloc ? _alloc->get_copy() : allocator{}; }
+    allocator get_allocator() { return _alloc->get_copy(); }
 
     auto data() const { return _data; }
     auto size() const { return _index; }

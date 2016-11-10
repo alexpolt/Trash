@@ -2,7 +2,6 @@
 
 #include "lib/macros.h"
 #include "lib/types.h"
-#include "lib/error.h"
 #include "lib/value.h"
 #include "lib/log.h"
 #include "lib/sequence.h"
@@ -15,13 +14,13 @@ namespace lib {
   namespace task {
 
 
-    inline void run( value< task > task0 ) {
+    inline void run( value< task > task ) {
 
-      log::task, task0, log::endl;
+      log::task, "run ", task, log::endl;
 
       $try {
 
-        auto result = task0();
+        auto result = task();
 
         (void) result;
 
@@ -39,15 +38,17 @@ namespace lib {
       
       auto id = desc.id = global::gen_id< task_tag >();
 
-      auto t = value< task >::create< task_basic< T0 > >( move( fn ), desc );
+      auto task = value< task >::create< task_basic< T0 > >( move( fn ), desc );
 
-      run( move( t ) );
+      log::task, "new ", task, log::endl;
+
+      run( move( task ) );
 
       return id;
     }
    
     #define $task( ... ) \
-      lib::task::task_desc{ $file_line $args_first( __VA_ARGS__ ) } + \
+      lib::task::task_desc{ $args_first( __VA_ARGS__ ) } + \
         [ $args_second( __VA_ARGS__ ) ]() -> task::result 
 
 

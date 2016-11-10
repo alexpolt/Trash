@@ -28,14 +28,14 @@ namespace lib {
 
     void* alloc( ssize_t sz ) override {
 
-      log::memory, "allocator <", name(), "> alloc( ", sz, " )", log::endl;
+      log::memory, name(), " alloc( ", sz, " )", log::endl;
 
       return lib::alloc( sz );
     }
 
     void free( void* ptr, ssize_t sz ) override { 
 
-      log::memory, "allocator <", name(), "> free( ", ptr, ", ", sz, " )", log::endl;
+      log::memory, name(), " free( ", ptr, ", ", sz, " )", log::endl;
 
       lib::free( ptr, sz );
     }

@@ -136,7 +136,7 @@ namespace lib {
 
 
     link_map _child_map{ create_alloc() };
-    link_map _parent_map{ create_alloc() };
+    link_map _parent_map{ _child_map.get_allocator() };
   };
 
 
