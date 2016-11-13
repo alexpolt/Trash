@@ -20,7 +20,7 @@ namespace lib {
 
     strong_ptr< vector_b > load( url location ) {
 
-      if( location.get_scheme() == url::scheme::file ) {
+      if( location.scheme() == url::scheme::file ) {
 
         return loader_file::load( location );
       }

@@ -40,11 +40,11 @@ namespace lib {
     }
 
 
-    auto get_scheme() const { return _scheme; }
+    auto scheme() const { return _scheme; }
     
-    auto get_path() const { return _path; }
+    auto path() const { return _path; }
 
-    auto data() const { return _path_orig; }
+    auto source() const { return _path_orig; }
 
     cstr _path_orig{};
     scheme _scheme{};

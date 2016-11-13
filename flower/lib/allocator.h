@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdio>
-
 #include "macros.h"
 #include "types.h"
 #include "value.h"

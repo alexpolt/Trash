@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cstdio>
-
 #include "macros.h"
 #include "types.h"
+#include "assert.h"
 #include "memory.h"
 #include "strong-ptr.h"
 #include "allocator.h"

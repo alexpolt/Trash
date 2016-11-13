@@ -11,6 +11,7 @@
 #include "lib/vector.h"
 #include "lib/scope-guard.h"
 #include "lib/handle.h"
+#include "lib/alloc-default.h"
 
 #include "error.h"
 
@@ -33,7 +34,7 @@ namespace lib {
 
         ssize_t file_size = size();
 
-        vector_b data{ file_size };
+        vector_b data{ file_size, alloc_default::create( "file data" ) };
 
         while( data.size() < file_size ) {
 

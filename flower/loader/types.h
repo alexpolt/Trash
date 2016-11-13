@@ -9,7 +9,7 @@
 #include "lib/buffer.h"
 #include "lib/strong-ptr.h"
 #include "lib/url.h"
-#include "lib/alloc-.h"
+#include "lib/alloc-empty.h"
 #include "os/file.h"
 
 #include "config.h"
@@ -29,15 +29,15 @@ namespace lib {
         
         for( auto dir : config::file_dirs ) {
 
-          path << dir << location.get_path();
+          path << dir << location.path();
 
           os::file f = os::file{ path.data() };
 
           if( f.exists() ) {
 
-            auto& data = f.load();
+            auto data = f.load();
 
-            data.set_allocator( alloc_empty::create() );
+            data.set_allocator( alloc_empty::create( data.get_allocator().name() ) );
 
             return lib::make_strong< vector_b >( move( data ) );
           }
@@ -45,7 +45,7 @@ namespace lib {
           path.clear();
         }
 
-        $throw $error_loader( location.data() );
+        $throw $error_loader( location.source() );
 
         return strong_ptr< vector_b >{};
       }

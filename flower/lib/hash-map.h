@@ -293,7 +293,7 @@ namespace lib {
 
     void set_allocator( allocator alloc ) { _alloc = move( alloc ); }
 
-    allocator get_allocator() { return _alloc->get_copy(); }
+    allocator& get_allocator() { return _alloc; }
 
 
     struct hash_node {
