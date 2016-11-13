@@ -4,32 +4,32 @@
 
 #include "macros.h"
 #include "types.h"
-#include "global.h"
+#include "lock-map.h"
 #include "to-string-selector.h"
+#include "value.h"
+#include "deleter.h"
 
 
 namespace lib {
 
 
-  TP<TN T0, bool is_weak = false>
+  TP<TN T, bool is_weak = false>
   struct strong_ptr : nocopy {
-
-    using deleter_t = locker::deleter_t;
 
     strong_ptr() { }
 
-    explicit strong_ptr( T0* ptr, cstr name = "noname" ) : _ptr{ ptr } { 
+    explicit strong_ptr( T* ptr, cstr name = "noname" ) : _ptr{ ptr } { 
 
-      deleter_t deleter = []( void* ptr ){ delete (T0*) ptr; };
+      deleter_t deleter{};
 
-      if( is_weak ) deleter = nullptr;
+      if( not is_weak ) deleter = deleter_default< T >::create();
 
-      get_locker().lock( _ptr, deleter, is_weak, name );
+      get_locker().lock( _ptr, move( deleter ), is_weak, name );
     }
 
-    strong_ptr( T0* ptr, deleter_t deleter, cstr name = "noname" ) : _ptr{ ptr } { 
+    strong_ptr( T* ptr, deleter_t deleter, cstr name = "noname" ) : _ptr{ ptr } { 
 
-      get_locker().lock( _ptr, deleter, is_weak, name );
+      get_locker().lock( _ptr, move( deleter ), is_weak, name );
     }
 
     strong_ptr( strong_ptr&& other ) : _ptr { move( other._ptr ) } { }
@@ -99,53 +99,47 @@ namespace lib {
 
     bool expired() { return get_locker().expired( _ptr ); }
 
-    cstr to_string() const { return to_string_selector< T0 >::to_string( _ptr ); }
+    cstr to_string() const { return to_string_selector< T >::to_string( _ptr ); }
 
     auto get() const { return _ptr; }
 
-    T0* operator->() { return _ptr; }
+    T* operator->() { return _ptr; }
 
-    T0 const * operator->() const { return _ptr; }
+    T const * operator->() const { return _ptr; }
 
-    T0& operator*() { return *_ptr; }
+    T& operator*() { return *_ptr; }
 
-    T0 const& operator*() const { return *_ptr; }
+    T const& operator*() const { return *_ptr; }
 
     explicit operator bool() const { return _ptr != nullptr; }
 
 
-    T0* _ptr{};
-  };
-
-  TP<TN T0>
-  struct strong_ptr< T0[] > {
-
-    static_assert( $size( T0 ) == 0, "don't use strong_ptr for arrays, use a vector" );
+    T* _ptr{};
   };
 
 
-  TP<TN T0>
-  using weak_ptr = strong_ptr< T0, true >;
+  TP<TN T>
+  using weak_ptr = strong_ptr< T, true >;
 
 
-  TP<TN T0, TN... TT>
-  inline auto make_strong( TT&&... args ) { return strong_ptr< T0 >{ new T0{ forward< TT >( args )... } }; }
+  TP<TN T, TN... TT>
+  inline auto make_strong( TT&&... args ) { return strong_ptr< T >{ new T{ forward< TT >( args )... } }; }
 
 
-  TP<TN T0, bool is_weak0, bool is_weak1>
-  bool operator==( strong_ptr< T0, is_weak0 > const& l, strong_ptr< T0, is_weak1 > const& r ) {
+  TP<TN T, bool is_weak0, bool is_weak1>
+  bool operator==( strong_ptr< T, is_weak0 > const& l, strong_ptr< T, is_weak1 > const& r ) {
 
     return l.get() == r.get();
   }
 
-  TP<TN T0, bool is_weak0>
-  bool operator==( T0 const* l, strong_ptr< T0, is_weak0 > const& r ) {
+  TP<TN T, bool is_weak0>
+  bool operator==( T const* l, strong_ptr< T, is_weak0 > const& r ) {
 
     return l == r.get();
   }
 
-  TP<TN T0, bool is_weak0>
-  bool operator==( strong_ptr< T0, is_weak0 > const& l, T0 const* r ) {
+  TP<TN T, bool is_weak0>
+  bool operator==( strong_ptr< T, is_weak0 > const& l, T const* r ) {
 
     return l.get() == r;
   }

@@ -22,7 +22,7 @@ namespace lib {
 
       auto data = new data_t{};
 
-      for( auto i : range{ 0, $array_size( data->name ) } ) 
+      for( auto i : range{ 0, $array_size( data->name ) - 1 } ) 
         
         if( name[ i ] ) data->name[ i ] = name[ i ];
 
@@ -66,7 +66,7 @@ namespace lib {
       lib::free( ptr, sz );
     }
 
-    ssize_t size() const override { return 0; }
+    ssize_t size() const override { return _data->total; }
 
     ssize_t available() const override { return 0; }
 

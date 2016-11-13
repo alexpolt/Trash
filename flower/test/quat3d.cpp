@@ -224,8 +224,8 @@ int main() {
       auto v = o - xy_prev;
       xy_prev = o;
 
-      if( v[0] != 0 ) rot = dot( roty[ v[0] < 0 ? 0 : 1 ], rot );
-      if( v[1] != 0 ) rot = dot( rotx[ v[1] < 0 ? 0 : 1 ], rot );
+      if( v[0] != 0 ) rot = roty[ v[0] < 0 ? 0 : 1 ] * rot;
+      if( v[1] != 0 ) rot = rotx[ v[1] < 0 ? 0 : 1 ] * rot;
 
       rot = normalize( rot );
 
@@ -237,7 +237,7 @@ int main() {
 
   $event( "mouse_down", "quat" ) {
 
-    xy_prev = {event.x, event.y};
+    xy_prev = vec2i{event.x, event.y};
     rotate = true;
     iter = 10;
 
@@ -261,8 +261,6 @@ int main() {
     return true;
   };
 
-
-  lib::global::event_map<>.dump_events();
 
   while( loop ) {
 

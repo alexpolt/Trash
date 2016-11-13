@@ -61,7 +61,7 @@ namespace lib {
       return $this->operator()( forward< TT > ( args )... ); 
     }
 
-    value get_raw_copy() const { auto v = value{}; v._data = $this._data; return v; }
+    value get_copy() const { auto v = value{}; v._data = $this._data; return v; }
 
     T0& operator*() { return type_cast< T0& >( _data.data ); }
     T0* operator->() { return type_cast< T0* >( & _data.data ); }

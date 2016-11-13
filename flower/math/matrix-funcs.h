@@ -4,7 +4,6 @@
 
 #include "lib/macros.h"
 #include "lib/types.h"
-
 #include "constant.h"
 #include "types.h"
 #include "math.h"

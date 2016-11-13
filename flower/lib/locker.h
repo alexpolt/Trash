@@ -8,6 +8,7 @@
 #include "to-string.h"
 #include "log.h"
 #include "alloc-default.h"
+#include "deleter.h"
 
 
 namespace lib {
@@ -15,8 +16,6 @@ namespace lib {
 
   struct locker : nocopy {
 
-
-    using deleter_t = void (*)( void* );
     using allocator = value< allocator >;
 
     static allocator create_alloc() { return alloc_default::create( "lock_map" ); }
@@ -51,7 +50,7 @@ namespace lib {
 
       if( not it )
 
-        _lock_map.insert( ptr, lock_node{ 0, 0, deleter, name } );
+        _lock_map.insert( ptr, lock_node{ 0, 0, move( deleter ), name } );
 
       else if( deleter and it->deleter ) 
 
@@ -150,14 +149,14 @@ namespace lib {
       lock_node() { }
 
       lock_node( int s, int w, deleter_t d, cstr n ) : 
-        counter_s{}, counter_w{}, deleter{ d }, name{ n } { 
+        counter_s{}, counter_w{}, deleter{ move( d ) }, name{ n } { 
 
         counter_s = s;
         counter_w = w;
       }
 
       lock_node( lock_node const& other ) : 
-        counter_s{}, counter_w{}, deleter{ other.deleter }, name{ other.name } { 
+        counter_s{}, counter_w{}, deleter{ other.deleter.get_copy() }, name{ other.name } { 
 
         counter_s = other.counter_s.load();
         counter_w = other.counter_w.load();
@@ -177,7 +176,7 @@ namespace lib {
 
         counter_s = other.counter_s.load();
         counter_w = other.counter_w.load();
-        deleter = other.deleter;
+        deleter = other.deleter.get_copy();
         name = other.name;
 
         return $this;
@@ -185,8 +184,8 @@ namespace lib {
 
       cstr to_string() const { 
         
-        return lib::to_string( "lock_node %s( s = %d, w = %d, d = %p )", 
-                                  name, counter_s.load(), counter_w.load(), (void*) deleter );
+        return lib::to_string( "lock_node %s( s = %d, w = %d, d = %d )", 
+                                  name, counter_s.load(), counter_w.load(), (bool) deleter );
       }
 
       atomic< int > counter_s{};

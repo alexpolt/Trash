@@ -66,7 +66,7 @@ namespace lib {
 
     operator vector_iterator< T0 const >() const { return vector_iterator< T0 const >{ _object, _index }; }
 
-    explicit operator bool() const { return _index != _object.size(); }
+    explicit operator bool() const { return _index != _object.index(); }
 
     size_type get_index() const { return _index; }
 

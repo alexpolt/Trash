@@ -6,8 +6,6 @@
 #include "lib/macros.h"
 #include "lib/assert.h"
 #include "lib/types.h"
-#include "lib/algo.h"
-
 #include "types.h"
 #include "constant.h"
 
@@ -40,13 +38,13 @@ namespace lib {
     $vec_op( div, / )
 
     TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( T0 value, vec_t< T1, NN... > vector ) {
+    constexpr auto operator*( T0 value, vec_t< T1, NN... > const& vector ) {
 
       return vec_t< T1, NN... > { value } * vector;
     }
 
     TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( vec_t< T0, NN... > vector, T1 value ) {
+    constexpr auto operator*( vec_t< T0, NN... > const& vector, T1 value ) {
 
       return vec_t< T0, NN... > { value } * vector;
     }
@@ -71,17 +69,15 @@ namespace lib {
 
     $mat_op( add, + )
     $mat_op( sub, - )
-    $mat_op( mul, * )
-    $mat_op( div, / )
 
     TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( T0 value, mat_t< T1, NN... > matrix ) {
+    constexpr auto operator*( T0 value, mat_t< T1, NN... > const& matrix ) {
       
       return mat_t< T1, NN... >{ value } * matrix;
     }
 
     TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( mat_t< T0, NN... > matrix, T1 value ) {
+    constexpr auto operator*( mat_t< T0, NN... > const& matrix, T1 value ) {
       
       return mat_t< T0, NN... >{ value } * matrix;
     }
@@ -94,31 +90,31 @@ namespace lib {
 
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto dot( vec_t< T0, NN...> left, vec_t< T0, NN... > right ) { 
+    constexpr auto dot( vec_t< T0, NN...> const& left, vec_t< T0, NN... > const& right ) { 
 
         return add( left[ NN ] * right[ NN ]... );
     }
 
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto operator*( mat_t< T0, NN... > left, vec_t< T0, NN... > right ) {
+    constexpr auto operator*( mat_t< T0, NN... > const& left, vec_t< T0, NN... > const& right ) {
 
       return vec_t< T0, NN... >{ dot( left[ NN ], right )... };
     }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto operator*( vec_t< T0, NN... > left, mat_t< T0, NN... > right ) {
+    constexpr auto operator*( vec_t< T0, NN... > const& left, mat_t< T0, NN... > const& right ) {
       return vec_t< T0, NN... >{ add( vec_t< T0, NN... >{ left[ NN ] } * right[ NN ] ... ) };
     }
 
     TP< TN T0, ssize_t... NN, TN... TT > 
-    constexpr auto dot_helper( vec_t< T0, NN...> left, TT... args ) { 
+    constexpr auto dot_helper( vec_t< T0, NN...> const& left, TT... args ) { 
 
       return vec_t< T0, NN... >{ dot( left, args )... };
     }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto dot( mat_t< T0, NN...> left, mat_t< T0, NN... > right ) { 
+    constexpr auto operator*( mat_t< T0, NN...> const& left, mat_t< T0, NN... > const& right ) { 
 
       return mat_t< T0, NN... >{ dot_helper( left[ NN ], right.column( NN )...) ... };
     }
@@ -128,19 +124,41 @@ namespace lib {
     constexpr auto abs( T0 a ) { return a < 0 ? -a : a; }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto abs( vec_t< T0, NN... > value ) { return vec_t< T0, NN... >{ abs( value[ NN ] )... }; }
+    constexpr auto abs( vec_t< T0, NN... > const& value ) { return vec_t< T0, NN... >{ abs( value[ NN ] )... }; }
 
     TP<TN T0>
     constexpr auto sign( T0 a ) { return a < 0 ? T0( -1.0 ) : T0( 1.0 ); }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto sign( vec_t< T0, NN... > value ) { return vec_t< T0, NN... >{ sign( value[ NN ] )... }; }
+    constexpr auto sign( vec_t< T0, NN... > const& value ) { return vec_t< T0, NN... >{ sign( value[ NN ] )... }; }
+
+    TP<TN T0> 
+    constexpr auto& max( T0 const& arg0 ) { return arg0; }
+
+    TP<TN T0, TN... TT> 
+    constexpr auto& max( T0 const& arg0, TT const&... args ) { 
+
+      auto& r = max( args... );
+
+      return arg0 > r ? arg0 : r; 
+    }
+
+    TP<TN T0> 
+    constexpr auto& min( T0 const& arg0 ) { return arg0; }
+
+    TP<TN T0, TN... TT> 
+    constexpr auto& min( T0 const& arg0, TT const&... args ) { 
+
+      auto& r = min( args... );
+
+      return arg0 > r ? r : arg0; 
+    }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto max( vec_t< T0, NN... > value ) { return lib::max( value[ NN ]... ); }
+    constexpr auto max( vec_t< T0, NN... > const& value ) { return max( value[ NN ]... ); }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto min( vec_t< T0, NN... > value ) { return lib::min( value[ NN ]... ); }
+    constexpr auto min( vec_t< T0, NN... > const& value ) { return min( value[ NN ]... ); }
 
     constexpr auto sqrt_cexpr( double value, double guess = 1.0, double n = 0 ) {
 
@@ -160,7 +178,7 @@ namespace lib {
 
     #define $sqrt( ... ) lib::math::sqrt_cexpr( __VA_ARGS__ );
 
-    constexpr auto angle_adjust( double &angle, bool cos ) {
+    constexpr auto angle_adjust( double& angle, bool cos ) {
 
       double s = cos ? 1.0 : sign( angle );
 
@@ -205,33 +223,33 @@ namespace lib {
     #define $sin( ... ) lib::math::sin_cexpr( __VA_ARGS__ )
 
     TP< TN T0, ssize_t... NN > 
-    constexpr T0 norm( vec_t< T0, NN... > v ) { return sqrt( dot( v, v ) ); }
+    constexpr T0 norm( vec_t< T0, NN... > const& v ) { return sqrt( dot( v, v ) ); }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto normalize( vec_t< T0, NN...> v ) { 
+    constexpr auto normalize( vec_t< T0, NN...> const& v ) { 
 
         return v / vec_t< T0, NN... >{ norm( v ) };
     }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto normalize( mat_t< T0, NN...> m ) { 
+    constexpr auto normalize( mat_t< T0, NN...> const& m ) { 
 
         return mat_t< T0, NN... > { m[ NN ] / vec_t< T0, NN... >{ norm( m[ NN ] ) }... };
     }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr T0 norm_cexpr( vec_t< T0, NN... > v ) { return sqrt_cexpr( dot( v, v ) ); }
+    constexpr T0 norm_cexpr( vec_t< T0, NN... > const& v ) { return sqrt_cexpr( dot( v, v ) ); }
 
     #define $norm( ... ) lib::math::norm_cexpr( __VA_ARGS__ )
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto normalize_cexpr( vec_t< T0, NN...> v ) { 
+    constexpr auto normalize_cexpr( vec_t< T0, NN...> const& v ) { 
 
         return v / vec_t< T0, NN... >{ norm_cexpr( v ) };
     }
 
     TP< TN T0, ssize_t... NN > 
-    constexpr auto normalize_cexpr( mat_t< T0, NN...> m ) { 
+    constexpr auto normalize_cexpr( mat_t< T0, NN...> const& m ) { 
 
         return mat_t< T0, NN... > { m[ NN ] / vec_t< T0, NN... >{ norm_cexpr( m[ NN ] ) }... };
     }
@@ -240,7 +258,7 @@ namespace lib {
 
 
     TP<TN T0, ssize_t... NN >
-    constexpr auto qmul( vec_t< T0, NN... > l, vec_t< T0, NN... > right ) {
+    constexpr auto qmul( vec_t< T0, NN... > const& l, vec_t< T0, NN... > const& right ) {
 
       auto m = mat< T0, 4 > {
 
@@ -254,19 +272,19 @@ namespace lib {
     }
 
     TP<TN T0, ssize_t... NN >
-    constexpr auto conj( vec_t< T0, NN... > v ) {
+    constexpr auto conj( vec_t< T0, NN... > const& v ) {
 
       return quat< T0 >{ v[ 0 ], -v[ 1 ], -v[ 2 ], -v[ 3 ] };
     }
 
     TP<TN T0, ssize_t... NN >
-    constexpr auto qdiv( vec_t< T0, NN... > left, vec_t< T0, NN... > right ) {
+    constexpr auto qdiv( vec_t< T0, NN... > const& left, vec_t< T0, NN... > const& right ) {
 
       return qmul( left, conj( right ) ) / vec_t< T0, NN... >{ dot( right, right ) };
     }
 
     TP<TN T0, ssize_t... NN >
-    constexpr auto qsqrt( vec_t< T0, NN... > q ) {
+    constexpr auto qsqrt( vec_t< T0, NN... > const& q ) {
 
       auto x = T0( 0.5 ) * q;
 

@@ -7,6 +7,7 @@ using uchar = unsigned char;
 using cstr = char const*;
 using byte = unsigned char;
 using llong = long long;
+using usize_t = uint;
 using ssize_t = int;
 
 namespace lib {

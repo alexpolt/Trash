@@ -295,21 +295,20 @@ namespace lib {
 
       $assert( it < end(), "iterator is not valid" );
 
-      if( it == --end() ) {
+      if( it == --end() )
 
         pop_back();
 
-        return begin();
-      }
+      else
 
-      *it = pop_back();
+        *it = pop_back();
 
       return it; 
     }
 
-    auto& operator[]( ssize_t index ) { $assert( index < size(), "out of bounds" ); return _data[ index ]; }
+    auto& operator[]( size_type index ) { $assert( index < size(), "out of bounds" ); return _data[ index ]; }
 
-    auto const& operator[]( ssize_t index ) const { $assert( index < size(), "out of bounds" ); return _data[ index ]; }
+    auto const& operator[]( size_type index ) const { $assert( index < size(), "out of bounds" ); return _data[ index ]; }
 
 
     TP<TN U = char, TN = enable_if_t< is_string and $size( U )>>
@@ -476,6 +475,7 @@ namespace lib {
 
     auto data() const { return _data; }
     auto size() const { return _index; }
+    auto index() const { return _index; }
     auto capacity() const { return _capacity; }
     auto available() const { return capacity() - size(); }
     auto size_bytes() const { return size() * value_size; }

@@ -19,18 +19,4 @@ namespace lib {
 }
 
 
-#include "linker.h"
-#include "ptr.h"
-
-
-namespace lib {
-
-  namespace global {
-
-    TP<TN T = object_wp>
-    linker< T > link_map{};
-  }
-
-}
-
 

@@ -15,7 +15,6 @@
 #include "string.h"
 #include "hash-map.h"
 #include "value.h"
-#include "object.h"
 #include "ret.h"
 #include "optional.h"
 #include "ptr.h"
@@ -26,9 +25,6 @@
 #include "time.h"
 
 
-using lib::object;
-using lib::interface;
-using lib::component;
 using lib::value;
 using lib::make_out;
 using lib::range;
