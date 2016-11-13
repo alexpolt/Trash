@@ -27,7 +27,7 @@ namespace lib {
       
       $assert( false, "no such scheme" );
 
-      return shared_ptr< vector_b >{};
+      return strong_ptr< vector_b >{};
     }
 
 

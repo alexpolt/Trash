@@ -38,7 +38,7 @@ namespace lib {
       
       auto id = desc.id = global::gen_id< task_tag >();
 
-      auto task = value< task >::create< task_basic< T0 > >( move( fn ), desc );
+      auto task = value< struct task >::create< task_basic< T0 > >( move( fn ), desc );
 
       log::task, "new ", task, log::endl;
 

@@ -6,9 +6,9 @@
 #include "lib/assert.h"
 #include "lib/vector.h"
 #include "lib/string.h"
-#include "lib/buffer.h"
 #include "lib/strong-ptr.h"
 #include "lib/url.h"
+#include "lib/alloc-default.h"
 #include "lib/alloc-empty.h"
 #include "os/file.h"
 
@@ -23,9 +23,9 @@ namespace lib {
 
     struct loader_file {
 
-      static shared_ptr< vector_b > load( url location ) {
+      static strong_ptr< vector_b > load( url location ) {
       
-        auto path = lib::make_string( global::get_buffer< char >() );
+        string path{ 64, alloc_default::create( "loader data path" ) };
         
         for( auto dir : config::file_dirs ) {
 
@@ -37,9 +37,11 @@ namespace lib {
 
             auto data = f.load();
 
-            data.set_allocator( alloc_empty::create( data.get_allocator().name() ) );
+            auto name = data.get_allocator()->name();
 
-            return lib::make_strong< vector_b >( move( data ) );
+            data.set_allocator( alloc_empty::create( name ) );
+
+            return strong_ptr< vector_b >( new vector_b{ move( data ) }, name );
           }
 
           path.clear();

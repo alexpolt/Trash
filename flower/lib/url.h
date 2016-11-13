@@ -12,6 +12,8 @@ namespace lib {
 
     enum class scheme { file, web, db, null };
 
+    url() { }
+
     url( scheme s, cstr p ) : _scheme{ s }, _path{ p } { }
 
     url( cstr op, scheme s, cstr p ) : _path_orig{ op }, _scheme{ s }, _path{ p } { }
@@ -47,7 +49,7 @@ namespace lib {
     auto source() const { return _path_orig; }
 
     cstr _path_orig{};
-    scheme _scheme{};
+    enum scheme _scheme{};
     cstr _path{};
 
   };
