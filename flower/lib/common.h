@@ -14,6 +14,7 @@
 #include "vector.h"
 #include "string.h"
 #include "hash-map.h"
+#include "queue.h"
 #include "value.h"
 #include "ret.h"
 #include "optional.h"

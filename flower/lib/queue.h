@@ -30,7 +30,9 @@ namespace lib {
     static auto create_alloc() { return alloc_default::create( "queue" ); }
 
 
-    queue( ssize_t size = N, allocator alloc = create_alloc() ) : 
+    queue( allocator alloc = create_alloc() ) : queue{ N, move( alloc ) } { }
+
+    queue( ssize_t size, allocator alloc = create_alloc() ) : 
 
       _size_queue( size ), _data{ size, move( alloc ) } {
 

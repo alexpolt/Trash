@@ -3,6 +3,7 @@
 #include "macros.h"
 #include "vector.h"
 
+
 namespace lib {
 
   TP<TN T0, TN T1 = vector< T0 >>

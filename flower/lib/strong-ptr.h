@@ -16,34 +16,37 @@ namespace lib {
   TP<TN T, bool is_weak = false>
   struct strong_ptr : nocopy {
 
+    using value_type = no_array_t< T >;
+    using pointer = value_type*;
+    using const_pointer = value_type const*;
+    using reference = value_type&;
+    using const_reference = value_type const&;
+
     strong_ptr() { }
 
-    explicit strong_ptr( T* ptr, cstr name = "noname" ) : _ptr{ ptr } { 
+    explicit strong_ptr( pointer ptr, cstr name = "noname" ) : 
+    
+      strong_ptr{ ptr, is_weak ? deleter_t{} : deleter_default< T >::create(), name } { }
 
-      deleter_t deleter{};
+    strong_ptr( pointer ptr, deleter_t deleter, cstr name = "noname" ) : _ptr{ ptr } { 
 
-      if( not is_weak ) deleter = deleter_default< T >::create();
-
-      get_locker().lock( _ptr, move( deleter ), is_weak, name );
-    }
-
-    strong_ptr( T* ptr, deleter_t deleter, cstr name = "noname" ) : _ptr{ ptr } { 
+      $assert( ptr, "null pointer is not allowed" );
 
       get_locker().lock( _ptr, move( deleter ), is_weak, name );
     }
 
     strong_ptr( strong_ptr&& other ) : _ptr { move( other._ptr ) } { }
 
-    TP<TN U>
+    TP<TN U, TN = enable_if_t< is_base_v< T, U > >>
     strong_ptr( strong_ptr< U, is_weak >&& other ) : _ptr { move( other._ptr ) } { }
 
-    TP<TN U, bool weak, TN = enable_if_t< $size( U ) and is_weak >>
+    TP<TN U, bool weak, TN = enable_if_t< is_base_v< T, U > and is_weak >>
     strong_ptr( strong_ptr< U, weak > const& other ) : _ptr { other._ptr } { 
 
       get_locker().lock( _ptr, is_weak );
     }
 
-    TP<TN U>
+    TP<TN U, TN = enable_if_t< is_base_v< T, U > >>
     auto& operator=( strong_ptr< U, is_weak >&& other ) {
 
       destroy();
@@ -53,7 +56,7 @@ namespace lib {
       return $this;
     }
 
-    TP<TN U, bool weak, TN = enable_if_t< $size( U ) and is_weak >>
+    TP<TN U, bool weak, TN = enable_if_t< is_base_v< T, U > and is_weak >>
     auto& operator=( strong_ptr< U, weak > const& other ) {
 
       destroy();
@@ -103,18 +106,29 @@ namespace lib {
 
     auto get() const { return _ptr; }
 
-    T* operator->() { return _ptr; }
+    pointer operator->() { return _ptr; }
 
-    T const * operator->() const { return _ptr; }
+    const_pointer operator->() const { return _ptr; }
 
-    T& operator*() { return *_ptr; }
+    auto& operator*() { return *_ptr; }
 
-    T const& operator*() const { return *_ptr; }
+    auto const& operator*() const { return *_ptr; }
+
+    auto& operator[]( ssize_t index ) { return _ptr[ index ]; }
+
+    auto const& operator[]( ssize_t index ) const { return _ptr[ index ]; }
 
     explicit operator bool() const { return _ptr != nullptr; }
 
+    TP<TN U, TN = disable_if_t< is_ref_v< U > >>
+    explicit operator strong_ptr< U >() { 
 
-    T* _ptr{};
+      if( not $this ) return strong_ptr< U >{};
+
+      return strong_ptr< U >{ static_cast< U* >( _ptr ), deleter_t{} };
+    }
+
+    pointer _ptr{};
   };
 
 

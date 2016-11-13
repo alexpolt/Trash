@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lib/macros.h"
 
 #include "types.h"
 #include "constant.h"

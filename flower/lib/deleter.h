@@ -12,7 +12,7 @@ namespace lib {
 
     virtual ~deleter() { }
 
-    virtual void operator( void* ) = 0;
+    virtual void operator()( void* ) = 0;
   };
 
   using deleter_t = value< deleter >;
@@ -22,9 +22,9 @@ namespace lib {
 
     auto static create() { return value< deleter >::create< deleter_default >(); }
 
-    void operator( T* ptr ) override {
+    void operator()( void* ptr ) override {
 
-      delete ptr;
+      delete (T*) ptr;
     }
   };
 
@@ -33,9 +33,9 @@ namespace lib {
 
     auto static create() { return value< deleter >::create< deleter_default >(); }
 
-    void operator( T* ptr ) override {
+    void operator()( void* ptr ) override {
 
-      delete[] ptr;
+      delete[] (T*) ptr;
     }
   };
 

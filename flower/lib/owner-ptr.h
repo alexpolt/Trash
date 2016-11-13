@@ -6,7 +6,6 @@
 #include "types.h"
 #include "to-string-selector.h"
 #include "value.h"
-#include "deleter.h"
 
 
 namespace lib {
@@ -15,23 +14,20 @@ namespace lib {
   TP<TN T>
   struct owner_ptr : nocopy {
 
+    using value_type = no_array_t< T >;
+    using pointer = value_type*;
+    using const_pointer = value_type const*;
 
-    owner_ptr( deleter_t del = deleter_default< T >::create() ) : _deleter{ move( del ) } { }
+    owner_ptr() { }
 
-    explicit owner_ptr( T* ptr, deleter_t del = deleter_default< T >::create() ) : 
-    
-      _ptr{ ptr }, _deleter{ move( del ) } { }
+    explicit owner_ptr( pointer ptr ) : _ptr{ ptr } { }
 
-    owner_ptr( owner_ptr&& other ) noexcept : 
-    
-      _ptr { move( other._ptr ) }, _deleter{ other._deleter } { }
+    owner_ptr( owner_ptr&& other ) : _ptr { move( other._ptr ) } { }
 
-    TP<TN U0>
-    owner_ptr( owner_ptr< U0 >&& other ) noexcept : 
-    
-      _ptr { move( other._ptr ) }, _deleter{ other._deleter } { }
+    TP<TN U, TN = enable_if_t< is_base_v< T, U > >>
+    owner_ptr( owner_ptr< U >&& other ) : _ptr { move( other._ptr ) } { }
 
-    auto& operator=( T* ptr ) noexcept {
+    auto& operator=( pointer ptr ) noexcept {
 
       destroy();
 
@@ -40,21 +36,29 @@ namespace lib {
       return $this;
     }
 
-    TP<TN U0>
-    auto& operator=( owner_ptr< U0 >&& other ) noexcept {
+    TP<TN U, TN = enable_if_t< is_base_v< T, U > >>
+    auto& operator=( owner_ptr< U >&& other ) noexcept {
 
       destroy();
 
       _ptr = move( other._ptr );
-
-      _deleter = move( other._deleter );
 
       return $this;
     }
 
     ~owner_ptr() { destroy(); }
 
-    void destroy() { _deleter( move( _ptr ) ); }
+    void destroy() { 
+
+      if( $this ) {
+
+        if( not is_array_v< T > ) 
+
+             delete _ptr; 
+
+        else delete[] _ptr;
+      }
+    }
 
     auto release() { return move( _ptr ); }
 
@@ -62,19 +66,29 @@ namespace lib {
 
     auto get() const { return _ptr; }
 
-    auto operator->() { return _ptr; }
+    pointer operator->() { return _ptr; }
 
-    auto const * operator->() const { return _ptr; }
+    const_pointer operator->() const { return _ptr; }
 
     auto& operator*() { return *_ptr; }
 
-    auto const& operator*() const { return *_ptr; }
+    auto const&operator*() const { return *_ptr; }
+
+    auto& operator[]( ssize_t index ) { return _ptr[ index ]; }
+
+    auto const& operator[]( ssize_t index ) const { return _ptr[ index ]; }
 
     explicit operator bool() const { return _ptr != nullptr; }
 
+    TP<TN U, TN = disable_if_t< is_ref_v< U > >>
+    explicit operator owner_ptr< U >() { 
+      
+      auto ptr = release(); 
+      
+      return owner_ptr< U >{ static_cast< U* >( ptr ) };
+    }
 
-    T _ptr{};
-    deleter_t _deleter;
+    pointer _ptr{};
   };
 
 
