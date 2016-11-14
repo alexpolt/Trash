@@ -48,8 +48,22 @@ namespace lib {
     }
    
     #define $task( ... ) \
-      lib::task::task_desc{ $args_first( __VA_ARGS__ ) } + \
-        [ $args_second( __VA_ARGS__ ) ]() -> task::result 
+      lib::task::task_desc{ $args_first( __VA_ARGS__ ), $args_second( __VA_ARGS__ ) } + \
+        [ $args_third( __VA_ARGS__ ) ]() -> task::result 
+
+    #define $task_phys( ... ) \
+      lib::task::task_desc{ $args_first( __VA_ARGS__ ), $args_second( __VA_ARGS__ ), type::phys } + \
+        [ $args_third( __VA_ARGS__ ) ]() -> task::result 
+
+    #define $task_gfx( ... ) \
+      lib::task::task_desc{ $args_first( __VA_ARGS__ ), $args_second( __VA_ARGS__ ), type::gfx } + \
+        [ $args_third( __VA_ARGS__ ) ]() -> task::result 
+
+    #define $task_ai( ... ) \
+      lib::task::task_desc{ $args_first( __VA_ARGS__ ), $args_second( __VA_ARGS__ ), type::ai } + \
+        [ $args_third( __VA_ARGS__ ) ]() -> task::result 
+
+
 
 
 

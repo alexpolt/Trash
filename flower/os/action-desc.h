@@ -17,9 +17,11 @@ namespace lib {
         "minimize", "maximize", "close", "resize", "paint",
 
         "up", "down", "left", "right", "jump", "crouch", "run", 
-        "crawl", "use", "drop", 
+        "crawl", "use", "drop",
+
+        "bank-left", "bank-right",
         
-        "scroll", "move",
+        "scroll", "move", "cursor", "cursor-off",
         
         "attack1", "attack2", "attack3", "attack4", "attack5",
       };

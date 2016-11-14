@@ -14,8 +14,10 @@ namespace lib {
 
       up, down, left, right, jump, crouch, run, 
       crawl, use, drop, 
-      
-      scroll, move,
+
+      bank_left, bank_right,
+
+      scroll, move, cursor, cursor_off
       
       attack1, attack2, attack3, attack4, attack5,
      

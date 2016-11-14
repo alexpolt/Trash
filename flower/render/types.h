@@ -21,6 +21,7 @@ namespace lib {
         mesh, material, cbuffer, shader, size
       };
 
+      constexpr cstr type_desc[]{ "mesh", "material", "cbuffer", "shader" };
 
       struct base {
 
@@ -72,7 +73,7 @@ namespace lib {
 
       cstr to_string() const { 
 
-        return lib::to_string( "render_msg( type = %d, data = %p)", (int)_type, (void*)_data ); 
+        return lib::to_string( "render_msg( %d, %p )", message::type_desc[ _type ], (void*)_data ); 
       }
 
       auto data() { return _data; }
