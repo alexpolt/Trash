@@ -15,7 +15,7 @@ namespace lib {
     namespace global {
 
       TP<TN T=void>
-      queue< render_message, 1 > render_queue{ alloc_default::create( "render_queue" ) };
+      queue< render_message, 4 > render_queue{ alloc_default::create( "render_queue" ) };
 
     }
 

@@ -59,10 +59,10 @@ namespace lib {
     };
 
 
-    TP<TN T0>
+    TP<TN T>
     struct event_basic : event {
 
-      event_basic( T0 fn, event_desc desc ) : _fn{ move( fn ) }, _desc{ desc } { }
+      event_basic( T fn, event_desc desc ) : _fn{ move( fn ) }, _desc{ desc } { }
 
       bool operator()( event_data& event ) override { return _fn( event ); }
 
@@ -75,7 +75,7 @@ namespace lib {
         return lib::to_string( "%s, #%d( %s )", _desc.name, _desc.id, _desc.desc ); 
       }
 
-      T0 _fn;
+      T _fn;
       event_desc _desc;
     };
 

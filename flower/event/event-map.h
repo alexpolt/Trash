@@ -49,17 +49,19 @@ namespace lib {
       }
 
 
-      eid_t add( event_desc desc, event_type cb ) {
+      eid_t add( cstr name, event_type cb ) {
         
-        auto it = _event_map[ desc.name ];
+        auto it = _event_map[ name ];
 
-        if( not it ) it = create( desc.name );
+        if( not it ) it = create( name );
 
         log::event, "add ", cb, log::endl;
 
+        auto id = cb->get_id();
+
         it->push_back( move( cb ) );
 
-        return desc.id;
+        return id;
       }
 
 
@@ -123,7 +125,7 @@ namespace lib {
 
       event_map::iterator create( cstr name ) {
 
-        auto it = _event_map.insert( name, vector_event{ 1, _event_map.get_allocator() } );
+        auto it = _event_map.insert( name, vector_event{ 1, _event_map.get_allocator().get_copy() } );
 
         if( not it ) {
 
@@ -169,7 +171,7 @@ namespace lib {
 
       auto cb = value< event >::create< event_basic< T > >( move( fn ), desc );
 
-      global::event_map<>.add( desc, move( cb ) );
+      global::event_map<>.add( desc.name, move( cb ) );
 
       return id;
     }

@@ -19,10 +19,26 @@ namespace lib {
       
       static constexpr message::type type = message::type::mesh;
 
-      mesh() { log::info, "mesh()", log::endl; }
-
-      ~mesh() { log::info, "~mesh()", log::endl; }
+      vbuffer vb;
+      ibuffer ib;
     };
+
+    struct cbuffer : message::base {
+      
+      static constexpr message::type type = message::type::cbuffer;
+
+      cbuffer vs;
+      cbuffer ps;
+    };
+
+    struct shader : message::base {
+      
+      static constexpr message::type type = message::type::shader;
+
+      shader vs;
+      shader ps;
+    };
+
 
 
   }

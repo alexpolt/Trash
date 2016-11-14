@@ -34,7 +34,8 @@ namespace lib {
 
   TP<TN...> struct type_first;
   TP<TN T, TN... TT> struct type_first< T, TT... > { using type = T; };
-
+  TP<TN... TT>
+  using type_first_t = typename type_first< TT... >::type;
 
   TP<TN T> T declval();
 
@@ -81,6 +82,12 @@ namespace lib {
 
   TP<bool N, TN T = void>
   using disable_if_t = TN disable_if< N, T >::type;
+
+  TP<bool... NN> struct all { };
+  TP<bool N, bool... NN> struct all< N, NN... > { static constexpr bool value = N and all< NN... >::value; };
+  TP<bool N> struct all< N > { static constexpr bool value = N; };
+  TP<bool... NN>
+  constexpr bool all_v = all< NN... >::value;
 
 
   TP<TN T> struct is_array : type_false { using type = T; };

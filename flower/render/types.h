@@ -18,7 +18,7 @@ namespace lib {
 
       enum type : int {
 
-        mesh, material, cbuffer, size
+        mesh, material, cbuffer, shader, size
       };
 
 
@@ -38,6 +38,7 @@ namespace lib {
       TP<TN T=void>
       vector< message::base* > messages_free[ message::type::size + 1 ]{
         
+        { alloc_default::create( "render msgs ptrs" ) },
         { alloc_default::create( "render msgs ptrs" ) },
         { alloc_default::create( "render msgs ptrs" ) },
         { alloc_default::create( "render msgs ptrs" ) },

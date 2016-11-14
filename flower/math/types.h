@@ -3,7 +3,8 @@
 #include "lib/macros.h"
 #include "lib/assert.h"
 #include "lib/types.h"
-
+#include "lib/range.h"
+#include "lib/to-string.h"
 #include "constant.h"
 
 
@@ -12,21 +13,41 @@ namespace lib {
   namespace math {
 
 
-    TP<TN T0, ssize_t... NN>
+    TP<TN T, ssize_t... NN>
     struct vec_t {
     
-      using value_type = T0;
+      using value_type = T;
 
       static constexpr ssize_t _size = sizeof...( NN );
+      
+      static constexpr bool is_math_vector = true;
 
-      TP<TN U0>
-      explicit constexpr vec_t( U0 arg ) : _data{ ( (void)NN, value_type( arg ) )... } { }
+      constexpr vec_t() {}
+
+      TP<TN U>
+      explicit constexpr vec_t( U arg ) : _data{ ( (void)NN, value_type( arg ) )... } { }
 
       TP<TN... UU>
       explicit constexpr vec_t( UU... args ) : _data{ value_type( args )... } { }
 
+      TP<TN U, ssize_t... MM>
+      constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ other[ MM ]... } { }
+
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
+
+      TP< TN U, ssize_t... MM >
+      constexpr auto& operator=( vec_t< U, MM... >& right ) {
+        
+        static_assert( sizeof...( NN ) <= sizeof...( MM ), "left operand should have <= dimension" );
+
+        char dummy[] = { ( $this[ NN ] = right[ NN ], '\0' )... };
+
+        (void) dummy;
+
+        return $this;
+      }
+
 
       constexpr auto& data() { return _data; }
       constexpr auto& data() const { return _data; }
@@ -35,18 +56,18 @@ namespace lib {
       constexpr void check_bounds( ssize_t idx ) const { $assert( idx < size(), "out of bounds" ); }
 
 
-      value_type _data[ _size ];
+      value_type _data[ _size ]{};
     };
 
 
     TP<TN T0, TN T1> 
     struct define_vector_t;
 
-    TP<TN T0, ssize_t... NN> 
-    struct define_vector_t< T0, lib::index_list< NN...> > { using type = vec_t< T0, NN... >; };
+    TP<TN T, ssize_t... NN> 
+    struct define_vector_t< T, lib::index_list< NN...> > { using type = vec_t< T, NN... >; };
 
-    TP<TN T0, ssize_t N0>
-    using vec = typename define_vector_t< T0, lib::index_list_t< N0 > >::type;
+    TP<TN T, ssize_t N>
+    using vec = typename define_vector_t< T, lib::index_list_t< N > >::type;
 
     #define $define_vec( $0, $1, $2 ) \
     using $paste( vec, $paste( $0, $1 ) ) = typename define_vector_t< $2, lib::index_list_t< $0 > >::type;
@@ -65,29 +86,61 @@ namespace lib {
     $define_vec( 3, i, int )
     $define_vec( 4, i, int )
 
-    TP<TN T0>
-    using quat = vec< T0, 4 >;
+    TP<TN T>
+    using quat = vec< T, 4 >;
 
 
-    TP<TN T0, ssize_t... NN>
+    TP<TN T, ssize_t... NN>
     struct mat_t {
 
       static constexpr ssize_t _size = sizeof...( NN );
 
-      using value_type = vec< T0, _size >;
+      using value_type = vec< T, _size >;
 
-      TP<TN U0>
-      explicit constexpr mat_t( U0 arg ) {
+      constexpr mat_t() {}
+      
+      TP<TN U, TN = enable_if_t< is_primitive_v< U > >>
+      explicit constexpr mat_t( U arg ) {
+        
         for( auto v : range{ 0, _size } )
           for( auto d : range{ 0, _size } ) 
             _data[ v ][ d ] = ( v == d ) ? arg : 0;
       }
 
-      TP<TN... UU>
+      TP<TN... UU, TN = enable_if_t< type_first_t< UU... >::is_math_vector >>
       explicit constexpr mat_t( UU... args ) : _data{ value_type{ args }... } { }
+
+      TP<TN... UU, TN = enable_if_t< is_primitive_v< type_first_t< UU... > > >, TN = void>
+      explicit constexpr mat_t( UU... args ) { 
+
+        static_assert( sizeof...( args ) <= _size * _size, "too many arguments" );
+
+        type_first_t< UU... > data_args[]{ args... };
+
+        for( auto v : range{ 0, _size } )
+          for( auto d : range{ 0, _size } ) 
+            if( uint( v * _size + d ) < sizeof...( args ) ) 
+                 _data[ v ][ d ] = data_args[ v * _size + d ];
+            else _data[ v ][ d ] =  0;
+       }
+
+      TP<TN U, ssize_t... MM>
+      constexpr mat_t( mat_t< U, MM... > const& other ) : _data{ other[ MM ]... } { }
 
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
+
+      TP< TN U, ssize_t... MM >
+      constexpr auto& operator=( mat_t< U, MM... >& right ) {
+        
+        static_assert( sizeof...( NN ) <= sizeof...( MM ), "left operand should have <= dimension" );
+
+        char dummy[] = { ( $this[ NN ] = right[ NN ], '\0' )... };
+
+        (void) dummy;
+
+        return $this;
+      }
 
       constexpr auto column( ssize_t idx ) const { 
 
@@ -110,11 +163,11 @@ namespace lib {
     TP<TN T0, TN T1> 
     struct define_mat_t;
 
-    TP<TN T0, ssize_t... NN> 
-    struct define_mat_t< T0, lib::index_list< NN...> > { using type = mat_t< T0, NN... >; };
+    TP<TN T, ssize_t... NN> 
+    struct define_mat_t< T, lib::index_list< NN...> > { using type = mat_t< T, NN... >; };
 
-    TP<TN T0, ssize_t N0>
-    using mat = typename define_mat_t< T0, lib::index_list_t< N0 > >::type;
+    TP<TN T, ssize_t N>
+    using mat = typename define_mat_t< T, lib::index_list_t< N > >::type;
 
     #define $define_mat( $0, $1, $2 ) \
     using $paste( mat, $paste( $0, $1 ) ) = typename define_mat_t< $2, lib::index_list_t< $0 > >::type;
