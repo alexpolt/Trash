@@ -14,14 +14,14 @@ namespace lib {
 
         "null",
         
-        "minimize", "maximize", "close", "resize", "paint",
+        "cancel", "minimize", "maximize", "close", "resize", "paint",
 
         "up", "down", "left", "right", "jump", "crouch", "run", 
         "crawl", "use", "drop",
 
-        "bank-left", "bank-right",
+        "roll-left", "roll-right",
         
-        "scroll", "move", "cursor", "cursor-off",
+        "scroll", "move", "cursor", "cursor-on",
         
         "attack1", "attack2", "attack3", "attack4", "attack5",
       };

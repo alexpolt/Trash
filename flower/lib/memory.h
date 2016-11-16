@@ -38,8 +38,8 @@ namespace lib {
 
             get_stats().alloc.sub( _size[ i ] );
 
-            log::memory, "free( ", _size[ i ], ", ", (void*) _ptr[ i ];
-            log::memory, " ); total = ", get_stats().alloc.load(), log::endl;
+            log::malloc, "free( ", _size[ i ], ", ", (void*) _ptr[ i ];
+            log::malloc, " ); total = ", get_stats().alloc.load(), log::endl;
 
             ::free( _ptr[ i ] ); 
 
@@ -74,7 +74,7 @@ namespace lib {
 
           if( cache._ptr[ i ] and cache._size[ i ] == size ) {
 
-            log::memory, "alloc from cache( ", size, " ) = ", (void*) cache._ptr[ i ], log::endl;
+            log::malloc, "alloc from cache( ", size, " ) = ", (void*) cache._ptr[ i ], log::endl;
 
             return move( cache._ptr[ i ] );
           }
@@ -86,7 +86,7 @@ namespace lib {
       
       stats.alloc.add( size );
 
-      log::memory, "malloc( ", size, " ) = ", (void*)ptr, ", total = ", stats.alloc.load(), log::endl;
+      log::malloc, "malloc( ", size, " ) = ", (void*)ptr, ", total = ", stats.alloc.load(), log::endl;
 
 
       return ptr; 
@@ -102,7 +102,7 @@ namespace lib {
 
         stats.alloc.sub( size );
 
-        log::memory, "free( ", size, ", ", ptr, " ), total = ", stats.alloc.load(), log::endl;
+        log::malloc, "free( ", size, ", ", ptr, " ), total = ", stats.alloc.load(), log::endl;
 
         ::free( ptr ); 
 
@@ -112,7 +112,7 @@ namespace lib {
 
           if( ! cache._ptr[ i ] ) {
 
-            log::memory, "free to cache( ", size, ", ", ptr, " ), total = ", stats.alloc.load(), log::endl;
+            log::malloc, "free to cache( ", size, ", ", ptr, " ), total = ", stats.alloc.load(), log::endl;
 
             cache._ptr[ i ] = ptr;
             cache._size[ i ] = size;
@@ -125,8 +125,8 @@ namespace lib {
 
         stats.alloc.sub( cache._size[ idx ] );
 
-        log::memory, "free from cache( ", cache._size[ idx ], ", "; 
-        log::memory, cache._ptr[ idx ], " ), total = ", stats.alloc.load(), log::endl;
+        log::malloc, "free from cache( ", cache._size[ idx ], ", "; 
+        log::malloc, cache._ptr[ idx ], " ), total = ", stats.alloc.load(), log::endl;
 
         ::free( cache._ptr[ idx ] ); 
 

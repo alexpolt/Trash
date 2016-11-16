@@ -1,8 +1,5 @@
 #pragma once
 
-#include "windows.h"
-#include "lib/macros.h"
-#include "lib/types.h"
 #include "display-mode-win32.h"
 
 

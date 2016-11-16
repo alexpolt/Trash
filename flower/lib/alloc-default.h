@@ -46,6 +46,8 @@ namespace lib {
 
     cstr name() const override { return _name; }
 
+    void set_name( cstr name ) override { _name = name; }
+
     cstr _name;
  };
 

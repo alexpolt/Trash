@@ -14,33 +14,35 @@ namespace lib {
 
   namespace render {
 
+    namespace message {
+
+
+      struct mesh : message::base {
         
-    struct mesh : message::base {
-      
-      static constexpr message::type type = message::type::mesh;
+        static constexpr message::type type = message::type::mesh;
 
-      vbuffer vb;
-      ibuffer ib;
-    };
+        vbuffer vb;
+        ibuffer ib;
+      };
 
-    struct cbuffer : message::base {
-      
-      static constexpr message::type type = message::type::cbuffer;
+      struct cbuffer : message::base {
+        
+        static constexpr message::type type = message::type::cbuffer;
 
-      cbuffer vs;
-      cbuffer ps;
-    };
+        render::cbuffer vs;
+        render::cbuffer ps;
+      };
 
-    struct shader : message::base {
-      
-      static constexpr message::type type = message::type::shader;
+      struct shader : message::base {
+        
+        static constexpr message::type type = message::type::shader;
 
-      shader vs;
-      shader ps;
-    };
+        render::shader vs;
+        render::shader ps;
+      };
 
 
-
+    }
   }
 }
 

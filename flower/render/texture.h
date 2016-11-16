@@ -9,7 +9,10 @@ namespace lib {
   namespace render {
 
 
+    struct texture {
+    };
 
+    
   }
 }
 

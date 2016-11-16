@@ -80,6 +80,13 @@ namespace lib {
 
     cstr name() const override { return _data->name; }
 
+    void set_name( cstr name ) override { 
+
+      for( auto i : range{ 0, $array_size( _data->name ) - 1 } )
+        
+        if( name[ i ] ) _data->name[ i ] = name[ i ];
+    }
+
 
     struct data_unit {
 

@@ -19,6 +19,9 @@ namespace lib {
 
     TP<TN>
     struct events;
+
+    struct event_tag {};
+
   }
 
   namespace global {
@@ -32,7 +35,7 @@ namespace lib {
     
 
     TP<TN = void>
-    struct events {
+    struct events : nocopy {
 
       using vector_event = vector< value< event > >;
 
@@ -46,6 +49,13 @@ namespace lib {
       static allocator create_alloc() {
 
         return alloc_default::create( "event_map" ); 
+      }
+
+      events() {
+
+        auto id_dummy = global::gen_id< event_tag >();
+
+        (void) id_dummy;
       }
 
 
@@ -71,7 +81,7 @@ namespace lib {
 
         if( not it ) {
 
-          log::warn, $file_line, "no events for ", name, log::endl;
+          log::warn, $file_line, " no events for ", name, log::endl;
 
           return false;
         }
@@ -80,7 +90,7 @@ namespace lib {
 
         if( not it_e ) {
 
-          log::warn, $file_line, "event #", id, " in ", name, " not found", log::endl;
+          log::warn, $file_line, " event #", id, " in ", name, " not found", log::endl;
 
           return false;
         }
@@ -93,7 +103,7 @@ namespace lib {
       }
 
 
-      bool fire( cstr name, event_data& event ) {
+      bool fire( cstr name, event_data& event, eid_t id = 0 ) {
 
         auto it = _event_map[ name ];
 
@@ -102,6 +112,22 @@ namespace lib {
           log::event, "fire ", name, ", no events found", log::endl;
 
           return false;
+        }
+
+        if( id != 0 ) {
+
+          auto it_e = find( *it, [id]( event_type& e ){ return e->get_id() == id;} );
+
+          if( not it_e ) {
+
+            log::warn, $file_line, " fire #", id, " in ", name, " not found", log::endl;
+
+            return false;
+          }
+
+          log::event, "fire ", *it_e, log::endl;
+
+          return (*it_e)( event );
         }
 
         bool result = false;
@@ -125,11 +151,15 @@ namespace lib {
 
       event_map::iterator create( cstr name ) {
 
-        auto it = _event_map.insert( name, vector_event{ 1, _event_map.get_allocator().get_copy() } );
+        auto alloc = _event_map.get_allocator().get_copy();
+
+        alloc->set_name( "event-vector" );
+
+        auto it = _event_map.insert( name, vector_event{ 1, move( alloc ) } );
 
         if( not it ) {
 
-          log::error, $file_line, "event ", name, " already exists", log::endl;
+          log::error, $file_line, " event ", name, " already exists", log::endl;
         }
  
         return it;
@@ -137,11 +167,11 @@ namespace lib {
 
       void dump_events() {
 
-        for( auto& e : _event_map ) if( e.size() ) log::event, e, endl;
+        for( auto& e : _event_map ) if( e.size() ) log::event, e, log::endl;
       }
       
 
-      event_map _event_map{ create_alloc() };
+      event_map _event_map{ 16, create_alloc() };
     };
 
 
@@ -155,13 +185,16 @@ namespace lib {
       return lib::global::event_map<>.fire( name, event );
     }
 
+    inline auto fire( cstr name, eid_t eid, event_data& event ) {
+      
+      return lib::global::event_map<>.fire( name, event, eid );
+    }
+
+
     inline auto create( cstr name ) {
 
       return lib::global::event_map<>.create( name ); 
     }
-
-
-    struct event_tag {};
 
 
     TP<TN T> 

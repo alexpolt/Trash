@@ -22,6 +22,8 @@ namespace lib {
 
     virtual cstr name() const = 0;
 
+    virtual void set_name( cstr ) = 0;
+
     virtual cstr to_string() const { return name(); }
 
     virtual value< allocator > get_copy() const = 0;

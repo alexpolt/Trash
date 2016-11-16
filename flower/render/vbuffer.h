@@ -8,7 +8,10 @@ namespace lib {
 
   namespace render {
 
-    
+
+    struct vbuffer {
+
+    };
 
 
   }

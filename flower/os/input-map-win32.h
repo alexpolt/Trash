@@ -15,18 +15,16 @@ namespace lib {
 
       static vkey vkeys[] { 
 
-        vkey::a, vkey::s, vkey::w, vkey::d, vkey::space, 
-        vkey::q, vkey::e,
+        vkey::a, vkey::s, vkey::w, vkey::d, vkey::space, vkey::shift, 
         vkey::lbutton, vkey::rbutton, 
-        vkey::scroll, vkey::control, vkey::menu
+        vkey::escape, vkey::scroll, vkey::control, vkey::menu
       };
 
       static action actions[] { 
 
-        action::left, action::down, action::up, action::right, action::jump,
-        action::bank_left, action::bank_right,
+        action::left, action::down, action::up, action::right, action::jump, action::crouch,
         action::attack1, action::attack2, 
-        action::scroll, action::cursor, action::cursor_off
+        action::cancel, action::scroll, action::cursor, action::cursor_on
       };
 
       for( auto i : range{ 0, $array_size( vkeys ) } )

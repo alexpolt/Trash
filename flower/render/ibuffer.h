@@ -9,8 +9,10 @@ namespace lib {
   namespace render {
 
 
-    
+    struct ibuffer {
 
+    };
+    
 
   }
 }

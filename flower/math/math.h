@@ -16,14 +16,14 @@ namespace lib {
   namespace math {
 
     #define $vec_fn( $0, $1 ) \
-      TP< TN T0, ssize_t... NN > \
-      constexpr auto $0( vec_t< T0, NN...> left, vec_t< T0, NN... > right ) { \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto $0( vec_t< T0, NN...> const& left, vec_t< T1, NN... > const& right ) { \
         return vec_t< T0, NN... >{ left[ NN ] $1 right[ NN ]... }; \
       } 
 
     #define $vec_op( $0, $1 ) \
-      TP< TN T0, ssize_t... NN > \
-      constexpr auto operator $1( vec_t< T0, NN...> left, vec_t< T0, NN... > right ) { \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto operator $1( vec_t< T0, NN...> const& left, vec_t< T1, NN... > const& right ) { \
         return $0( left, right ); \
       }
     
@@ -38,27 +38,35 @@ namespace lib {
     $vec_op( div, / )
 
     TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( T0 value, vec_t< T1, NN... > const& vector ) {
+    constexpr auto& operator+=( vec_t< T0, NN... >& left, vec_t< T1, NN... > const& right ) {
 
-      return vec_t< T1, NN... > { value } * vector;
+      return left = add( left, right );
     }
 
-    TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( vec_t< T0, NN... > const& vector, T1 value ) {
 
-      return vec_t< T0, NN... > { value } * vector;
-    }
- 
+    #define $vec_value_op( $0, $1 ) \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto operator $1( vec_t< T0, NN...> const& left, T1 value ) { \
+        return $0( left, vec_t< T0, NN... >{ value } ); \
+      } \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto operator $1( T1 value, vec_t< T0, NN...> const& right ) { \
+        return $0( right, vec_t< T0, NN... >{ value } ); \
+      }
+
+    $vec_value_op( mul, * );
+    $vec_value_op( div, / );
+
 
     #define $mat_fn( $0, $1 ) \
-      TP< TN T0, ssize_t... NN > \
-      constexpr auto $0( mat_t< T0, NN...> left, mat_t< T0, NN... > right ) { \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto $0( mat_t< T0, NN...> const& left, mat_t< T1, NN... > const& right ) { \
         return mat_t< T0, NN... >{ left[ NN ] $1 right[ NN ]... }; \
       } 
 
     #define $mat_op( $0, $1 ) \
-      TP< TN T0, ssize_t... NN > \
-      constexpr auto operator $1( mat_t< T0, NN...> left, mat_t< T0, NN... > right ) { \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto operator $1( mat_t< T0, NN...> const& left, mat_t< T1, NN... > const& right ) { \
         return $0( left, right ); \
       }
     
@@ -70,17 +78,19 @@ namespace lib {
     $mat_op( add, + )
     $mat_op( sub, - )
 
-    TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( T0 value, mat_t< T1, NN... > const& matrix ) {
-      
-      return mat_t< T1, NN... >{ value } * matrix;
-    }
+    #define $mat_value_op( $0, $1 ) \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto operator $1( mat_t< T0, NN...> const& left, T1 value ) { \
+        return $0( left, mat_t< T0, NN... >{ ( (void)NN, vec_t< T0, NN... >{ value } )... } ); \
+      } \
+      TP< TN T0, TN T1, ssize_t... NN > \
+      constexpr auto operator $1( T1 value, mat_t< T0, NN...> const& right ) { \
+        return $0( right, mat_t< T0, NN... >{ ( (void)NN, vec_t< T0, NN... >{ value } )... } ); \
+      }
 
-    TP< TN T0, TN T1, ssize_t... NN >
-    constexpr auto operator*( mat_t< T0, NN... > const& matrix, T1 value ) {
-      
-      return mat_t< T0, NN... >{ value } * matrix;
-    }
+    $mat_value_op( mul, * );
+    $mat_value_op( div, / );
+
 
     TP< TN T0 >
     constexpr auto add( T0 left ) { return left; }
@@ -127,7 +137,7 @@ namespace lib {
     constexpr auto abs( vec_t< T0, NN... > const& value ) { return vec_t< T0, NN... >{ abs( value[ NN ] )... }; }
 
     TP<TN T0>
-    constexpr auto sign( T0 a ) { return a < 0 ? T0( -1.0 ) : T0( 1.0 ); }
+    constexpr auto sign( T0 a ) { return a < 0 ? T0( -1 ) : T0( 1 ); }
 
     TP< TN T0, ssize_t... NN > 
     constexpr auto sign( vec_t< T0, NN... > const& value ) { return vec_t< T0, NN... >{ sign( value[ NN ] )... }; }

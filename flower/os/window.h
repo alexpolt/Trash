@@ -1,6 +1,6 @@
 #pragma once
 
-#include "os/window-win32.h"
+#include "window-win32.h"
 
 
 namespace lib {

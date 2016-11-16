@@ -10,14 +10,14 @@ namespace lib {
 
       null,
       
-      minimize, maximize, close, resize, paint,
+      cancel, minimize, maximize, close, resize, paint,
 
       up, down, left, right, jump, crouch, run, 
       crawl, use, drop, 
 
-      bank_left, bank_right,
+      roll_left, roll_right,
 
-      scroll, move, cursor, cursor_off
+      scroll, move, cursor, cursor_on,
       
       attack1, attack2, attack3, attack4, attack5,
      

@@ -28,7 +28,7 @@ namespace lib {
       for( auto i : range{ 0, $array_size( ch->name ) - 1 } )
         
         if( name[ i ] ) ch->name[ i ] = name[ i ];
-
+        
       _chunk = strong_ptr< chunk >{ ch, ch->name };
     }
 
@@ -99,6 +99,13 @@ namespace lib {
     ssize_t available() const override { return size_chunk() - _chunk->offset; }
 
     cstr name() const override { return _chunk->name; }
+
+    void set_name( cstr name ) override { 
+
+      for( auto i : range{ 0, $array_size( _chunk->name ) - 1 } )
+        
+        if( name[ i ] ) _chunk->name[ i ] = name[ i ];
+    }
     
     ssize_t offset() const { return _chunk->offset; }
 

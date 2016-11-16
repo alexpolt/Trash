@@ -22,7 +22,16 @@ namespace lib {
 
     vmod get_modifiers();
 
-    
+    struct window_win32;
+
+
+    namespace global {
+
+      TP<TN...>
+      window_win32* window_top;
+    }
+
+
     struct window_win32 : nocopy {
       
       static constexpr cstr window_clsname = "flower_window";
@@ -30,8 +39,10 @@ namespace lib {
       static constexpr DWORD style_noresize = WS_OVERLAPPED | WS_SYSMENU | WS_VISIBLE;
       static constexpr DWORD style_fullscreen = WS_POPUP | WS_VISIBLE;
 
+      using handle_t = HWND;
+
       struct window_data {
-        HWND hwnd;
+        handle_t hwnd;
         cstr title;
         int w;
         int h;
@@ -59,7 +70,7 @@ namespace lib {
         r.right = r.right - r.left;
         r.bottom = r.bottom - r.top;
 
-        HWND hwnd = CreateWindow(
+        handle_t hwnd = CreateWindow(
                       window_clsname, title, style,
                       CW_USEDEFAULT, SW_SHOW, r.right, r.bottom,
                       NULL, NULL, GetModuleHandle( nullptr ), nullptr );
@@ -76,7 +87,11 @@ namespace lib {
 
         SetWindowLongPtr( hwnd, GWLP_USERDATA, (LONG_PTR)data.get() );
 
-        return window_win32{ move( data ) };
+        auto w = window_win32{ move( data ) };
+
+        global::window_top<> = &w;
+
+        return w;
       }
 
 
@@ -92,17 +107,11 @@ namespace lib {
       }
 
 
-      static LRESULT CALLBACK wndproc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam ) {
+      static LRESULT CALLBACK wndproc( handle_t hwnd, UINT msg, WPARAM wparam, LPARAM lparam ) {
 
         auto event = event::event_data{};
 
         event.data = hwnd;
-
-        POINT pt{};
-
-        GetCursorPos( &pt );
-
-        ScreenToClient( hwnd, &pt );
 
         auto data = (window_data*) GetWindowLongPtr( hwnd, GWLP_USERDATA );
 
@@ -125,8 +134,6 @@ namespace lib {
 
           case WM_PAINT:
             log::input, "paint", log::endl;
-            event.x = pt.x;
-            event.y = pt.y;
             if( not events::fire( events::window_paint<>, event ) ) ValidateRect( hwnd, nullptr );
           break;
 
@@ -136,26 +143,25 @@ namespace lib {
             if( not events::fire( events::window_close<>, event ) ) DestroyWindow( hwnd );
           break;
 
+          case WM_SYSKEYUP:
+          case WM_SYSKEYDOWN:
           case WM_KEYUP:
-          case WM_KEYDOWN: {
+          case WM_KEYDOWN:
             event.key = (vkey) wparam;
             log::input, "key ", get_vkey_desc( event.key ), log::endl;
-            event.x = pt.x;
-            event.y = pt.y;
             event.action = input_map( event.key );
             event.mod = get_modifiers();
-            if( msg == WM_KEYUP ) 
+            if( msg == WM_KEYUP or msg == WM_SYSKEYUP ) 
                  events::fire( events::key_up<>, event );
             else events::fire( events::key_down<>, event );
-          }
           break;
 
           case WM_LBUTTONUP:
           case WM_LBUTTONDOWN:
           case WM_RBUTTONUP:
           case WM_RBUTTONDOWN:
-            event.x = pt.x;
-            event.y = pt.y;
+            event.x = LOWORD( lparam ); 
+            event.y = HIWORD( lparam ); 
             event.mod = get_modifiers();
             if( msg == WM_LBUTTONUP ) { 
               log::input, "mouse left button up", log::endl;
@@ -181,9 +187,9 @@ namespace lib {
           break;
 
           case WM_MOUSEMOVE:
-            log::input, "mouse move, x = ", pt.x, ", y = ", pt.y, log::endl;
-            event.x = pt.x;
-            event.y = pt.y;
+            event.x = LOWORD( lparam ); 
+            event.y = HIWORD( lparam ); 
+            log::input, "mouse move, x = ", event.x, ", y = ", event.y, log::endl;
             event.key = vkey::null;
             event.mod = get_modifiers();
             event.action = action::move;
@@ -268,6 +274,9 @@ namespace lib {
       int width() const { return _data->w; }
       int height() const { return _data->h; }
       cstr title() const { return _data->title; }
+      handle_t handle() const { return _data->hwnd; }
+
+      static auto window_top() { return global::window_top<>; }
 
       owner_ptr< window_data > _data;
     };

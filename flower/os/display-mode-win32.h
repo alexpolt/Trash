@@ -25,6 +25,8 @@ namespace lib {
         if( ret != DISP_CHANGE_SUCCESSFUL ) 
 
           $throw $error_win32( " change display settings failed" );
+
+        _changed = true;
       }
 
       auto width() const { return _dm.dmPelsWidth; }

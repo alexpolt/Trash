@@ -17,9 +17,9 @@ namespace lib {
       char* ptr = buffer;
 
       for( auto i : range{ 0, v.size() - 1 } )
-        ptr += snprintf( ptr, $array_size( buffer ), "%+.4f, ", v[ i ] );
+        ptr += snprintf( ptr, $array_size( buffer ), "%+.4f, ", double( v[ i ] ) );
 
-      snprintf( ptr, $array_size( buffer ), "%+.4f", v[ v.size() - 1 ] );
+      snprintf( ptr, $array_size( buffer ), "%+.4f", double( v[ v.size() - 1 ] ) );
 
       return buffer; 
     }
@@ -35,12 +35,14 @@ namespace lib {
 
       char* ptr = buffer;
 
+      *ptr++ = '\n';
+
       for( auto& v : m.data() ) {
 
         for( auto i : range{ 0, v.size() - 1 } )
-          ptr += snprintf( ptr, $array_size( buffer ), "%+.4f, ", v[ i ] );
+          ptr += snprintf( ptr, $array_size( buffer ), "%+.4f, ", double( v[ i ] ) );
 
-        ptr += snprintf( ptr, $array_size( buffer ), "%+.4f\n", v[ v.size() - 1 ] );
+        ptr += snprintf( ptr, $array_size( buffer ), "%+.4f\n", double( v[ v.size() - 1 ] ) );
       }
 
       *(ptr-1) = '\0';

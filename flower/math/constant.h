@@ -19,10 +19,10 @@ namespace lib {
     constexpr float pi2f = pi2;
 
     constexpr double radians( double angle ) { return angle * pi / double( 180 ); }
-
     constexpr float radiansf( float angle ) { return angle * pif / float( 180 ); }
 
-    constexpr auto operator ""_rad( unsigned long long angle ) { return radians( angle ); }
+    constexpr auto operator ""_rad( unsigned long long angle ) { return radiansf( angle ); }
+    constexpr auto operator ""_rad( long double angle ) { return radiansf( angle ); }
      
 
   }

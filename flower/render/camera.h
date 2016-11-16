@@ -2,9 +2,11 @@
 
 #include "lib/macros.h"
 #include "lib/types.h"
+#include "lib/to-string.h"
 #include "math/common.h"
 #include "event/common.h"
 #include "os/action.h"
+#include "os/cursor.h"
 
 
 namespace lib {
@@ -14,30 +16,43 @@ namespace lib {
 
     struct camera {
       
-      void move( vec3f const& delta ) { _pos += delta; }
+      void move( vec3f const& delta ) { _pos = _pos + _rot * delta; }
 
-      void rotate( mat3f const& r ) { _rot = r * rot; }
+      void move_pos( vec3f const& delta ) { _pos = _pos + delta; }
 
-      auto position() const { return _pos; }
+      void rotate( mat3f const& r ) { _rot = r * _rot; }
+      
+      void yaw( mat3f const& r ) { _rot = r * _rot; }
+      void pitch( mat3f const& r ) { _rot = _rot * r; }
+      void roll( mat3f const& r ) { _rot = _rot * r; }
 
-      auto rotation() const { return _rot; }
+      auto& position() const { return _pos; }
+
+      auto& rotation() const { return _rot; }
 
       auto set_position( vec3f pos ) { _pos = pos; }
 
       auto set_rotation( mat3f rot ) { _rot = rot; }
 
-      void normalize() { _rot = normalize( _rot ); }
+      void normalize() { _rot = math::normalize( _rot ); }
 
-      vec3f _pos{};
-      mat3f _rot{};
+      cstr to_string() const { 
+        
+        return lib::to_string( "camera( %+.5f, %+.5f, %+.5f )", _pos[ 0 ], _pos[ 1 ], _pos[ 2 ] );
+      }
+
+      vec3f _pos{ 0.f };
+      mat3f _rot{ 1.f };
     };
 
 
-    struct camera_fpv : camera {
+    struct camera_control {
       
-      camera_fpv( float angle, float delta, bool bind = false ) : _angle{ angle }, _delta{ delta } {
+      camera_control( camera& cam, float angle, float delta ) : 
 
-        if( bind ) bind_input();
+        _camera{ cam }, _angle{ angle }, _delta{ delta } {
+
+        bind_input();
 
         _rotx_p = math::rotx< float >( angle );
         _rotx_n = math::rotx< float >( -angle );
@@ -45,109 +60,164 @@ namespace lib {
         _roty_n = math::roty< float >( -angle );
         _rotz_p = math::rotz< float >( angle );
         _rotz_n = math::rotz< float >( -angle );
+
+        show_cursor();
+
+        os::cursor_center();
+
+        set_cursor_xy( os::cursor_xy() );
       }
 
-      ~camera_fpv() {
+      ~camera_control() {
 
-        if( _eid[ 1 ] ) unbind_input();
+        unbind_input();
       }
 
       void bind_input() {
 
-        static struct {
-          camera_fpv* camera;
-          vec2i mouse_down_xy;
-          bool cursor_off;
-          bool bound;
-        } data{ this };
-
         int count = 0;
 
-        _eid[ count++ ] = $event( "key_down", "camera" ) {
+        _eid[ count++ ] = $event( "key_down", "camera", this ) {
+
+          switch( event.action ) {
+            case os::action::left : _action[ 0 ] = event.action; break;
+            case os::action::right : _action[ 1 ] = event.action; break;
+            case os::action::up : _action[ 2 ] = event.action; break;
+            case os::action::down : _action[ 3 ] = event.action; break;
+            case os::action::jump : _action[ 6 ] = event.action; break;
+            case os::action::crouch : _action[ 7 ] = event.action; break;
+            default:;
+          }
 
           switch( event.action ) {
 
-            case os::action::left : data.camera->move( vec3f{ -delta, 0, 0 } ); break;
-            case os::action::right : data.camera->move( vec3f{ delta, 0, 0 } ); break;
-            case os::action::up : data.camera->move( vec3f{ 0, 0, delta } ); break;
-            case os::action::down : data.camera->move( vec3f{ 0, 0, -delta } ); break;
-            case os::action::bank_left : data.camera->rotatez( 1 ); break;
-            case os::action::bank_right : data.camera->rotatez( -1 ); break;
-            case os::action::cursor_off : data.cursor_off = true;
+            case os::action::cursor_on :
+              if( not is_cursor() ) {
+                _cursor_on = true;
+                set_is_cursor( true );
+                show_cursor();
+              }
+            break;
+
+            default:;
           }
 
           return true;
         };
 
-        _eid[ count++ ] = $event( "key_up", "camera" ) {
+        _eid[ count++ ] = $event( "key_up", "camera", this ) {
+
+          switch( event.action ) {
+            case os::action::left : _action[ 0 ] = os::action::null; break;
+            case os::action::right : _action[ 1 ] = os::action::null; break;
+            case os::action::up : _action[ 2 ] = os::action::null; break;
+            case os::action::down : _action[ 3 ] = os::action::null; break;
+            case os::action::jump : _action[ 6 ] = os::action::null; break;
+            case os::action::crouch : _action[ 7 ] = os::action::null; break;
+            default:;
+          }
 
           switch( event.action ) {
 
-            case os::action::cursor : 
-              data.camera->set_is_cursor( data.camera->is_cursor() != true ); break;
-            case os::action::cursor_off : data.cursor_off = false; break;
+            case os::action::cursor :
+              set_is_cursor( is_cursor() != true );
+              show_cursor();
+              os::cursor_center();
+            break;
+
+            case os::action::cursor_on :
+              if( _cursor_on ) {
+                _cursor_on = false;
+                set_is_cursor( false );
+                show_cursor();
+                os::cursor_center();
+              }
+            break;
+
+            default:;
           }
 
           return true;
         };
 
-        _eid[ count++ ] = $event( "mouse_up", "camera", &data ) {
+        _eid[ count++ ] = $event( "mouse_move", "camera", this ) {
 
-          return true;
-        };
-        
-        _eid[ count++ ] = $event( "mouse_down", "camera", &data ) {
-
-          data.mouse_down_xy = vec2i{ event.x, event.y };
-  
-          return true;
-        };
-
-        _eid[ count++ ] = $event( "mouse_move", "camera", &data ) {
- 
           auto mouse_move_xy = vec2i{ event.x, event.y };
 
-          if( data.camera->is_cursor() and not data.cursor_off ) {
+          if( is_cursor() ) {
 
-            data.camera->set_cursor_xy( mouse_move_xy );
+            //set_cursor_xy( mouse_move_xy );
 
             return true;
           }
 
-          auto delta = mouse_move_xy - data.mouse_down_xy;
+          auto delta = mouse_move_xy - cursor_xy();
 
-          data.mouse_down_xy = mouse_move_xy;
+          //set_cursor_xy( mouse_move_xy );
 
-          if( delta[ 0 ] != 0 ) data.camera->rotatey( math::sign( delta[ 0 ] ) );
-          if( delta[ 1 ] != 0 ) data.camera->rotatex( math::sign( delta[ 1 ] ) );
+          if( delta[ 1 ] != 0 ) pitch( math::sign( -delta[ 1 ] ) );
 
-          data.camera->normalize();
+          if( delta[ 0 ] != 0 ) yaw( math::sign( -delta[ 0 ] ) );
+
+          _camera.normalize();
 
           return true;
         };
 
-        data.bound = true;
+      }
+
+      void operator()() {
+
+        for( auto action : _action )
+        switch( action ) {
+          case os::action::left : _camera.move( vec3f{ -delta(), 0, 0 } ); break;
+          case os::action::right : _camera.move( vec3f{ delta(), 0, 0 } ); break;
+          case os::action::up : _camera.move( vec3f{ 0, 0, delta() } ); break;
+          case os::action::down : _camera.move( vec3f{ 0, 0, -delta() } ); break;
+          case os::action::jump : _camera.move_pos( vec3f{ 0, delta(), 0 } ); break;
+          case os::action::crouch : _camera.move_pos( vec3f{ 0, -delta(), 0 } ); break;
+          default:;
+        }
+
+        if( not is_cursor() ) os::cursor_center();
       }
 
       void unbind_input() {
 
-        event::remove( "key_down",    _eid[ 0 ] );
-        event::remove( "key_up",      _eid[ 1 ] );
-        event::remove( "mouse_up",    _eid[ 2 ] );
-        event::remove( "mouse_down",  _eid[ 3 ] );
-        event::remove( "mouse_move",  _eid[ 4 ] );
+        event::remove( "key_down", _eid[ 0 ] );
+        event::remove( "key_up", _eid[ 1 ] );
+        event::remove( "mouse_move", _eid[ 2 ] );
       }
 
-      void rotatex( int sign ) { sign > 0 ? rotate( _rotx_p ) : rotate( _rotx_n ); }
-      void rotatey( int sign ) { sign > 0 ? rotate( _roty_p ) : rotate( _roty_n ); }
-      void rotatez( int sign ) { sign > 0 ? rotate( _rotz_p ) : rotate( _rotz_n ); }
+
+      void pitch( float sign ) { sign > 0 ? _camera.pitch( _rotx_p ) : _camera.pitch( _rotx_n ); }
+
+      void yaw( float sign ) { sign > 0 ? _camera.yaw( _roty_p ) : _camera.yaw( _roty_n ); }
+
+      void roll( float sign ) { sign > 0 ? _camera.roll( _rotz_p ) : _camera.roll( _rotz_n ); }
 
       bool is_cursor() const { return _is_cursor; }
-      vec2i cursor_xy() const { return _cursor_xy; }
 
-      void set_is_cursor( bool flag ) { _is_cursor = flag; }
+      void show_cursor() { 
+
+        os::show_cursor( _is_cursor );
+      }
+
+      void set_is_cursor( bool flag ) { 
+
+        _is_cursor = flag; 
+
+        show_cursor();
+      }
+
+      vec2i const& cursor_xy() const { return _cursor_xy; }
+
       void set_cursor_xy( vec2i xy ) { _cursor_xy = xy; }
 
+      float delta() const { return _delta; }
+      float angle() const { return _angle; }
+
+      camera& _camera;
       float _angle{};
       float _delta{};
       mat3f _rotx_p{};
@@ -157,8 +227,10 @@ namespace lib {
       mat3f _rotz_p{};
       mat3f _rotz_n{};
       vec2i _cursor_xy{};
-      event::eid_t _eid[5]{};
+      event::eid_t _eid[3]{};
+      os::action _action[8];
       bool _is_cursor{};
+      bool _cursor_on{};
     };
 
 
