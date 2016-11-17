@@ -16,6 +16,8 @@ namespace lib {
     TP< TN U0 >
     struct atomic {
 
+      atomic( U0 value = 0 ) : _data{ value } { }
+
       U0 add( U0 value, std::memory_order order = std::memory_order_relaxed ) { return _data.fetch_add( value, order ); }
       U0 sub( U0 value, std::memory_order order = std::memory_order_relaxed ) { return _data.fetch_sub( value, order ); }
 
@@ -38,6 +40,8 @@ namespace lib {
     TP< TN U0 >
     struct atomic {
 
+      atomic( U0 value = 0 ) : _data{ value } { }
+      
       U0 add( U0 value ) { auto tmp = _data; _data+=value; return tmp; }
       U0 sub( U0 value ) { auto tmp = _data; _data-=value; return tmp; }
 

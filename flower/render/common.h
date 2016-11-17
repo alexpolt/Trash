@@ -8,6 +8,7 @@
 #include "ibuffer.h"
 #include "shader.h"
 #include "camera.h"
+#include "camera-control.h"
 #include "texture.h"
 
 namespace render = lib::render;

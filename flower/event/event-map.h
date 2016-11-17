@@ -51,13 +51,6 @@ namespace lib {
         return alloc_default::create( "event_map" ); 
       }
 
-      events() {
-
-        auto id_dummy = global::gen_id< event_tag >();
-
-        (void) id_dummy;
-      }
-
 
       eid_t add( cstr name, event_type cb ) {
         

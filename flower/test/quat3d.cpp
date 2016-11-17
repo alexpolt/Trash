@@ -3,18 +3,19 @@
 #include "os/common.h"
 #include "event/common.h"
 #include "math/common.h"
+#include "render/common.h"
 
-
-const int w = 1000, h = 1000;
+const int w = 800, h = 800;
 
 uint data[ h ][ w ];
 
-int index=1, ww, mul = 1, iter = 20;
+int index=1, ww, mul = 2, iter = 15;
 
 vec2i xy_prev;
 
 bool rotate, loop = true, drawing = false;
 
+render::camera cam0{ vec3f{ 0, 0, -2 } };
 auto rot = mat3f{ 1 };
 
 float s = math::pi12f / 25.f;
@@ -133,17 +134,22 @@ void draw( os::window& wnd ) {
 
         qprev = q;
 
-        auto r = rot * vec3f{ q[0], q[1], q[2] };
+        auto r = vec3f{ q[0], q[1], q[2] };
         
-        r = 20.f * r + vec3f{ .0f, .0f, 50.f };
+        //r = 20.f * r + vec3f{ .0f, .0f, 50.f };
 
-        if( r[2] > 1.f ) r = r / vec3f{ r[2] };
+
+        r = ( r - cam0.position() ) * cam0.rotation();
+
+        if( r[2] < 1.f ) return;
+        
+        r = r / r[2];
 
         int u = ( r[ 0 ] + 1.f ) / 2. * w;
         int v = ( r[ 1 ] + 1.f ) / 2. * h;
 
         u = lib::max( 0, lib::min( u, w-1 ));
-        v = lib::max( 0, lib::min( v, h-1 ));
+        v = h - 1 - lib::max( 0, lib::min( v, h-1 ));
 
         uint c = data[ v ][ u ];
 
@@ -191,9 +197,9 @@ int main() {
     if( event.key == os::vkey::_3 ) { mul = 3; info, "qmul = ", mul, endl; }
     if( event.key == os::vkey::_4 ) { mul = 4; info, "qmul = ", mul, endl; }
     
-    if( event.key == os::vkey::c ) { rot = mat3f{ 1.f }; ww = 0; }
+    if( event.key == os::vkey::f2 ) { rot = mat3f{ 1.f }; ww = 0; }
 
-    if( event.key == os::vkey::space ) {
+    if( event.key == os::vkey::f1 ) {
       drawing = drawing != 1;
       if( drawing ) info, "drawing", endl;
       else info, "not drawing", endl;
@@ -210,6 +216,9 @@ int main() {
 
   auto wnd0 = os::window::create( "Test Window", w, h );
 
+
+  render::camera_control cam0_control{ cam0, 0.25_rad, 0.5f };
+
   $event( "scroll", "quat" ) {
     ww = ww + event.y;
     info, "ww = ", ww, endl;
@@ -219,7 +228,7 @@ int main() {
 
   $event( "mouse_move", "quat" ) {
 
-    if( rotate ) {  
+    if( false and rotate ) {  
       auto o = vec2i{ event.x, event.y }; 
       auto v = o - xy_prev;
       xy_prev = o;
@@ -231,6 +240,8 @@ int main() {
 
       data_clear();
     }
+    
+    if( rotate ) data_clear();
 
     return true;
   };
@@ -254,7 +265,7 @@ int main() {
       info, "index = ", index, endl;
    }
 
-    iter = 20;
+    iter = 15;
 
     data_clear();
 
@@ -265,6 +276,8 @@ int main() {
   while( loop ) {
 
     if( not os::input::process() ) break;
+
+    cam0_control();
 
     if( drawing ) draw( wnd0 );
 

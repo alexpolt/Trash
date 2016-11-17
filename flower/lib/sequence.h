@@ -9,7 +9,7 @@ namespace lib {
 
     oid_t next() { return _source.add( 1 ); }
 
-    lib::atomic< oid_t > _source{};
+    lib::atomic< oid_t > _source{ 1 };
 
   };
 

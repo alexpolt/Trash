@@ -28,6 +28,7 @@ namespace lib {
       TP<TN=void> events_it mouse_up{ event::create( "mouse_up" ) };
       TP<TN=void> events_it mouse_down{ event::create( "mouse_down" ) };
       TP<TN=void> events_it mouse_move{ event::create( "mouse_move" ) };
+      TP<TN=void> events_it mouse_rinput{ event::create( "mouse_rinput" ) };
 
       bool fire( events_it& it, event::event_data& event ) {
 

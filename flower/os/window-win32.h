@@ -71,9 +71,9 @@ namespace lib {
         r.bottom = r.bottom - r.top;
 
         handle_t hwnd = CreateWindow(
-                      window_clsname, title, style,
-                      CW_USEDEFAULT, SW_SHOW, r.right, r.bottom,
-                      NULL, NULL, GetModuleHandle( nullptr ), nullptr );
+                          window_clsname, title, style,
+                          CW_USEDEFAULT, SW_SHOW, r.right, r.bottom,
+                          NULL, NULL, GetModuleHandle( nullptr ), nullptr );
 
         if( ! hwnd ) $throw $error_win32( "create window failed" );
 
@@ -206,6 +206,26 @@ namespace lib {
             events::fire( events::scroll<>, event );
           break;
 
+          case WM_INPUT: {
+            UINT dwSize = 40;
+            static BYTE lpb[40];
+        
+            GetRawInputData((HRAWINPUT)lparam, RID_INPUT, 
+                            lpb, &dwSize, sizeof(RAWINPUTHEADER));
+        
+            RAWINPUT* raw = (RAWINPUT*)lpb;
+        
+            if (raw->header.dwType == RIM_TYPEMOUSE) {
+              event.x = raw->data.mouse.lLastX;
+              event.y = raw->data.mouse.lLastY;
+              event.key = vkey::null;
+              event.mod = get_modifiers();
+              event.action = action::move;
+              events::fire( events::mouse_rinput<>, event );
+            }
+          }
+          break;
+          
 
           case WM_DESTROY:
             log::input, "destroy", log::endl;
