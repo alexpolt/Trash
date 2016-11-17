@@ -93,27 +93,39 @@ namespace lib {
 
 
     TP< TN T0 >
-    constexpr auto add( T0 left ) { return left; }
+    constexpr T0 add( T0 left ) { return left; }
 
     TP< TN T0, TN... TT >
-    constexpr auto add( T0 left, TT... args ) { return left + add( args... ); }
+    constexpr T0 add( T0 left, TT... args ) { return left + add( args... ); }
 
 
-    TP< TN T0, ssize_t... NN > 
-    constexpr auto dot( vec_t< T0, NN...> const& left, vec_t< T0, NN... > const& right ) { 
+    TP< TN T0, TN T1, ssize_t... NN > 
+    constexpr auto dot( vec_t< T0, NN...> const& left, vec_t< T1, NN... > const& right ) { 
 
         return add( left[ NN ] * right[ NN ]... );
     }
 
+    TP< TN T0, TN T1, ssize_t... NN, TN = enable_if_t< sizeof...( NN ) == 2 >> 
+    constexpr T0 cross( vec_t< T0, NN...> const& l, vec_t< T1, NN... > const& r ) { 
 
-    TP< TN T0, ssize_t... NN > 
-    constexpr auto operator*( mat_t< T0, NN... > const& left, vec_t< T0, NN... > const& right ) {
+        return l[0]*r[1]-l[1]*r[0];
+    }
+
+    TP< TN T0, TN T1, ssize_t... NN, TN = enable_if_t< sizeof...( NN ) == 3 >> 
+    constexpr auto cross( vec_t< T0, NN...> const& l, vec_t< T1, NN... > const& r ) { 
+
+        return vec_t< T0, NN... >{ l[1]*r[2]-l[2]*r[1], l[0]*r[2]-l[2]*r[0], l[0]*r[1]-l[1]*r[0] };
+    }
+
+
+    TP< TN T0, TN T1, ssize_t... NN > 
+    constexpr auto operator*( mat_t< T0, NN... > const& left, vec_t< T1, NN... > const& right ) {
 
       return vec_t< T0, NN... >{ dot( left[ NN ], right )... };
     }
 
-    TP< TN T0, ssize_t... NN > 
-    constexpr auto operator*( vec_t< T0, NN... > const& left, mat_t< T0, NN... > const& right ) {
+    TP< TN T0, TN T1, ssize_t... NN > 
+    constexpr auto operator*( vec_t< T1, NN... > const& left, mat_t< T0, NN... > const& right ) {
       return vec_t< T0, NN... >{ add( vec_t< T0, NN... >{ left[ NN ] } * right[ NN ] ... ) };
     }
 
@@ -123,8 +135,8 @@ namespace lib {
       return vec_t< T0, NN... >{ dot( left, args )... };
     }
 
-    TP< TN T0, ssize_t... NN > 
-    constexpr auto operator*( mat_t< T0, NN...> const& left, mat_t< T0, NN... > const& right ) { 
+    TP< TN T0, TN T1, ssize_t... NN > 
+    constexpr auto operator*( mat_t< T0, NN...> const& left, mat_t< T1, NN... > const& right ) { 
 
       return mat_t< T0, NN... >{ dot_helper( left[ NN ], right.column( NN )...) ... };
     }
