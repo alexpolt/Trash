@@ -24,6 +24,7 @@ namespace lib {
 
     uint mseconds() const { return _ms; }
 
+    float operator()() const { return float( _s ) + float( _ms ) / 1000.f; }
 
     cstr to_string() const { return lib::to_string( "%u.%0.3u", _s, _ms ); }
 

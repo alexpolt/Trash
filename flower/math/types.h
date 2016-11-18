@@ -24,6 +24,12 @@ namespace lib {
 
       constexpr vec_t() {}
 
+      TP<TN U, ssize_t... MM, TN = enable_if_t< sizeof...( NN ) <= sizeof...( MM ) >>
+      explicit constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ value_type( other[ NN ] )... } { }
+
+      TP<TN U, ssize_t... MM, TN = enable_if_t< ( sizeof...( NN ) > sizeof...( MM ) ) >, TN = void>
+      explicit constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ value_type( other[ MM ] )... } { }
+
       TP<TN U>
       explicit constexpr vec_t( U arg ) : _data{ ( (void)NN, value_type( arg ) )... } { }
 
@@ -36,15 +42,18 @@ namespace lib {
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
 
-      TP< TN U, ssize_t... MM >
+
+      TP<TN U, ssize_t... MM, TN = enable_if_t< sizeof...( NN ) <= sizeof...( MM ) >>
       constexpr auto& operator=( vec_t< U, MM... >& right ) {
-        
-        static_assert( sizeof...( NN ) <= sizeof...( MM ), "left operand should have <= dimension" );
 
-        char dummy[] = { ( $this[ NN ] = right[ NN ], '\0' )... };
+        char dummy[] = { ( $this[ NN ] = right[ NN ], '\0' )... }; (void) dummy;
+        return $this;
+      }
 
-        (void) dummy;
+      TP<TN U, ssize_t... MM, TN = enable_if_t< ( sizeof...( NN ) > sizeof...( MM ) ) >, TN = void>
+      constexpr auto& operator=( vec_t< U, MM... >& right ) {
 
+        char dummy[] = { ( $this[ MM ] = right[ MM ], '\0' )... }; (void) dummy;
         return $this;
       }
 
@@ -99,6 +108,12 @@ namespace lib {
 
       constexpr mat_t() {}
       
+      TP<TN U, ssize_t... MM, TN = enable_if_t< sizeof...( NN ) <= sizeof...( MM ) >>
+      explicit constexpr mat_t( mat_t< U, MM... > const& other ) : _data{ other[ NN ]... } { }
+
+      TP<TN U, ssize_t... MM, TN = enable_if_t< ( sizeof...( NN ) > sizeof...( MM ) ) >, TN = void>
+      explicit constexpr mat_t( mat_t< U, MM... > const& other ) : _data{ other[ MM ]... } { }
+
       TP<TN U, TN = enable_if_t< is_primitive_v< U > >>
       explicit constexpr mat_t( U arg ) {
         
@@ -130,15 +145,17 @@ namespace lib {
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }
 
-      TP< TN U, ssize_t... MM >
+      TP<TN U, ssize_t... MM, TN = enable_if_t< sizeof...( NN ) <= sizeof...( MM ) >>
       constexpr auto& operator=( mat_t< U, MM... >& right ) {
-        
-        static_assert( sizeof...( NN ) <= sizeof...( MM ), "left operand should have <= dimension" );
 
-        char dummy[] = { ( $this[ NN ] = right[ NN ], '\0' )... };
+        char dummy[] = { ( $this[ NN ] = right[ NN ], '\0' )... }; (void) dummy;
+        return $this;
+      }
 
-        (void) dummy;
+      TP<TN U, ssize_t... MM, TN = enable_if_t< ( sizeof...( NN ) > sizeof...( MM ) ) >, TN = void>
+      constexpr auto& operator=( mat_t< U, MM... >& right ) {
 
+        char dummy[] = { ( $this[ MM ] = right[ MM ], '\0' )... }; (void) dummy;
         return $this;
       }
 

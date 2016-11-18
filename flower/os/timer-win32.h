@@ -19,7 +19,7 @@ namespace lib {
         QueryPerformanceCounter( &_start );
       }
 
-      time stop() {
+      time operator()() {
 
         QueryPerformanceCounter( &_end );
 
