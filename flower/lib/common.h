@@ -48,7 +48,6 @@ using lib::weak_ptr;
 using lib::strong_ptr;
 using lib::make_strong;
 using lib::handle;
-using lib::operator ""_s;
-using lib::operator ""_ms;
+using lib::operator ""_t;
 
 

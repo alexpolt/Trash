@@ -27,17 +27,9 @@ namespace lib {
 
         QueryPerformanceFrequency( &freq );
 
-        auto delta = _end.QuadPart - _start.QuadPart;
+        double delta = _end.QuadPart - _start.QuadPart;
 
-        auto seconds = delta / freq.QuadPart;
-
-        delta -= seconds;
-
-        uint mseconds = delta * 1000 / freq.QuadPart;
-
-        mseconds = mseconds % 1000;
-
-        return time{ (uint) seconds, mseconds };
+        return time( delta / freq.QuadPart );
       }
 
       LARGE_INTEGER _start{};

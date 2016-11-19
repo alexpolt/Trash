@@ -54,7 +54,7 @@ namespace lib {
 
       timeout_basic( T0 fn, timeout_desc desc ) : _fn{ move( fn ) }, _desc{ desc } { }
 
-      void operator() () override { _fn(); }
+      void operator()() override { _fn(); }
 
       tid_t get_id() const override { return _desc.id; }
 

@@ -14,7 +14,8 @@ namespace lib {
 
         "null",
         
-        "cancel", "minimize", "maximize", "close", "resize", "paint",
+        "cancel", "minimize", "maximize", "close", "resize", "paint", "activate",
+        "on", "off", "lowpower",
 
         "up", "down", "left", "right", "jump", "crouch", "run", 
         "crawl", "use", "drop",

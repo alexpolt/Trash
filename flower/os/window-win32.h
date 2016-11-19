@@ -12,6 +12,7 @@
 #include "vkey.h"
 #include "vkey-desc.h"
 #include "action.h"
+#include "action-desc.h"
 #include "input-map-win32.h"
 
 
@@ -204,6 +205,26 @@ namespace lib {
             event.key = vkey::scroll;
             event.action = input_map( event.key );
             events::fire( events::scroll<>, event );
+          break;
+
+          case WM_ACTIVATEAPP:
+            log::input, "activate ", (bool) wparam, log::endl;
+            event.x = wparam;
+            event.action = action::activate;
+            events::fire( events::window_activate<>, event );
+          break;
+
+          case WM_SYSCOMMAND:
+            if( wparam == SC_MONITORPOWER ) {
+              event.action = lparam == -1 ? action::on : 
+                                ( lparam == 1 ? action::lowpower : action::off );
+              log::input, "monitorpower ", get_action_desc( event.action ), log::endl;
+              event.x = lparam;
+              return events::fire( events::monitor<>, event );
+            } else if( wparam == SC_SCREENSAVE ) {
+              log::input, "screensaver", log::endl;
+              return events::fire( events::screensaver<>, event );
+            }
           break;
 
           case WM_INPUT: {

@@ -10,59 +10,37 @@ namespace lib {
 
   struct time {
 
-    constexpr time() { }
 
-    constexpr time( uint s, uint ms = 0 ) {
+    constexpr time( double time = 0 ) : _time{ time } { }
 
-      _s = s + ms / 1000;
+    auto seconds() const { return int( _time ); }
 
-      _ms = ms % 1000;
-    }
+    auto mseconds() const { return int( 1000.f * ( _time - int( _time ) ) ); }
 
+    auto get() const { return _time; }
 
-    uint seconds() const { return _s; }
+    float operator()() const { return _time; }
 
-    uint mseconds() const { return _ms; }
+    cstr to_string() const { return lib::to_string( "%.3f", _time ); }
 
-    float operator()() const { return float( _s ) + float( _ms ) / 1000.f; }
+    time operator+( time const& r ) const { return time{ _time + r._time }; }
 
-    cstr to_string() const { return lib::to_string( "%u.%0.3u", _s, _ms ); }
+    bool operator==( time const& r ) const { return _time == r._time; }
 
-
-    time operator+( time const& r ) const { 
-
-      return time{ _s + r._s, _ms + r._ms }; 
-    }
-
-    bool operator==( time const& r ) const { 
-
-      return _s == r._s and _ms == r._ms; 
-    }
-
-    bool operator<( time const& r ) const { 
-
-      return _s < r._s or ( _s == r._s and _ms < r._ms );
-    }
+    bool operator<( time const& r ) const { return _time < r._time; }
 
     bool operator!=( time const& r ) const { return not ( $this == r ); }
     bool operator>( time const& r ) const { return r < $this or r == $this; }
     bool operator>=( time const& r ) const { return r < $this; }
     bool operator<=( time const& r ) const { return r > $this; }
 
-
-    uint _s{};
-    uint _ms{};
+    double _time{};
   };
 
 
-  constexpr auto operator ""_s( unsigned long long seconds ) {
+  constexpr auto operator ""_t( long double t ) {
 
-    return time( seconds );
-  }
-
-  constexpr auto operator ""_ms( unsigned long long mseconds ) {
-
-    return time( 0, mseconds );
+    return time( t );
   }
 
 

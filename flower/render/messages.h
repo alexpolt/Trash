@@ -3,9 +3,8 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "types.h"
-#include "ibuffer.h"
-#include "vbuffer.h"
-#include "cbuffer.h"
+#include "buffer.h"
+#include "camera.h"
 #include "texture.h"
 #include "shader.h"
 
@@ -14,31 +13,35 @@ namespace lib {
 
   namespace render {
 
-    namespace message {
+    namespace messages {
 
 
-      struct mesh : message::base {
+      struct clear : message {
+        
+        static constexpr message::type type = message::type::command;
+
+        enum command_t {
+        };
+
+        command_t command;
+      };
+
+      struct mesh : message {
         
         static constexpr message::type type = message::type::mesh;
 
-        vbuffer vb;
-        ibuffer ib;
       };
 
-      struct cbuffer : message::base {
+      struct cbuffer : message {
         
         static constexpr message::type type = message::type::cbuffer;
 
-        render::cbuffer vs;
-        render::cbuffer ps;
       };
 
-      struct shader : message::base {
+      struct shader : message {
         
         static constexpr message::type type = message::type::shader;
 
-        render::shader vs;
-        render::shader ps;
       };
 
 

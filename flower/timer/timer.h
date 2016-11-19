@@ -17,21 +17,24 @@ namespace lib {
 
   namespace timer {
 
+    namespace global {
 
-    TP<TN T = value< timeout >>
-    vector< T > timer_list{ alloc_default::create( "timer_list" ) };
+      TP<TN T = value< timeout >>
+      vector< T > timer_list{ alloc_default::create( "timer_list" ) };
 
-    TP<TN T = value< timeout >>
-    vector< T > timeout_list{ alloc_default::create( "timeout_list" ) };
+      TP<TN T = value< timeout >>
+      vector< T > timeout_list{ alloc_default::create( "timeout_list" ) };
 
-    TP<TN=void>
-    os::timer clock;
+      TP<TN...>
+      os::timer clock;
+      
+    }
 
-    void process() {
+    void fire_events() {
+      
+      auto time0 = global::clock<>();
 
-      auto time0 = clock<>.stop();
-
-      for( auto& e : timer_list<> ) {
+      for( auto& e : global::timer_list<> ) {
 
         auto time1 = e->get_timeout();
         
@@ -45,7 +48,7 @@ namespace lib {
         e->set_timeout( time0 + e->get_time() );
       }
 
-      for( auto it = begin( timeout_list<> ); it; ) {
+      for( auto it = begin( global::timeout_list<> ); it; ) {
 
         auto& e = *it;
   
@@ -57,37 +60,37 @@ namespace lib {
 
           e();
 
-          it = timeout_list<>.erase( it );
+          it = global::timeout_list<>.erase( it );
 
           continue;
         }
 
         ++it;
-     }
+      }
 
     }
 
 
     auto remove( tid_t tid ) {
 
-      auto it = find( timer_list<>, [tid]( value< timeout >& timer ){ return tid == timer->get_id(); } );
+      auto it = find( global::timer_list<>, [tid]( value< timeout >& timer ){ return tid == timer->get_id(); } );
 
       if( it ) {
 
         log::timer, "removed ", *it, log::endl;
 
-        timer_list<>.erase( it );
+        global::timer_list<>.erase( it );
 
         return true;
       }
 
-      it = find( timeout_list<>, [tid]( value< timeout >& timer ){ return tid == timer->get_id(); } );
+      it = find( global::timeout_list<>, [tid]( value< timeout >& timer ){ return tid == timer->get_id(); } );
 
       if( it ) {
 
         log::timer, "removed ", *it, log::endl;
 
-        timeout_list<>.erase( it );
+        global::timeout_list<>.erase( it );
 
         return true;
       }
@@ -104,15 +107,15 @@ namespace lib {
     TP<TN T> 
     tid_t operator+( timeout_desc desc, T fn ) { 
 
-      auto id = desc.id = global::gen_id< timer_tag >();
+      auto id = desc.id = lib::global::gen_id< timer_tag >();
 
       auto timer = value< timeout >::create< timeout_basic< T > >( move( fn ), desc );
 
       log::timer, "add ", timer, log::endl;
 
-      timer->set_timeout( clock<>.stop() + desc.time );
+      timer->set_timeout( global::clock<>() + desc.time );
 
-      timer_list<>.push_back( move( timer ) );
+      global::timer_list<>.push_back( move( timer ) );
 
       return id;
     }
@@ -120,15 +123,15 @@ namespace lib {
     TP<TN T> 
     tid_t operator-( timeout_desc desc, T fn ) { 
 
-      auto id = desc.id = global::gen_id< timer_tag >();
+      auto id = desc.id = lib::global::gen_id< timer_tag >();
 
       auto timer = value< timeout >::create< timeout_basic< T > >( move( fn ), desc );
 
       log::timer, "add ", timer, log::endl;
 
-      timer->set_timeout( clock<>.stop() + desc.time );
+      timer->set_timeout( global::clock<>() + desc.time );
 
-      timeout_list<>.push_back( move( timer ) );
+      global::timeout_list<>.push_back( move( timer ) );
 
       return id;
     }

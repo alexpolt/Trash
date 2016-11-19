@@ -87,14 +87,17 @@ namespace lib {
           switch( event.action ) {
 
             case os::action::cursor :
-              set_is_cursor( is_cursor() != true );
-              os::cursor_center();
+              if( not _cursor_on ) {
+                set_is_cursor( is_cursor() != true );
+                os::cursor_center();
+              }
             break;
 
             case os::action::cursor_on :
               if( _cursor_on ) {
                 _cursor_on = false;
                 set_is_cursor( false );
+                show_cursor();
               }
             break;
 
@@ -108,10 +111,7 @@ namespace lib {
 
           auto mouse_move_xy = vec2i{ event.x, event.y };
 
-          if( is_cursor() ) {
-
-            return true;
-          }
+          if( is_cursor() ) return true;
 
           auto delta = mouse_move_xy - cursor_xy();
 

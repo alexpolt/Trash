@@ -148,7 +148,7 @@ namespace lib {
 
         alloc->set_name( "event-vector" );
 
-        auto it = _event_map.insert( name, vector_event{ 1, move( alloc ) } );
+        auto it = _event_map.insert( name, vector_event{ move( alloc ) } );
 
         if( not it ) {
 

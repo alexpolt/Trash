@@ -14,9 +14,9 @@ namespace lib {
   namespace os {
 
 
-    struct input_win32 {
+    struct input_win32 : nocopy {
 
-      static bool process() {
+      static bool fire_events() {
 
         MSG msg;
 

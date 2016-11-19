@@ -32,11 +32,11 @@ namespace lib {
 
 
     enum class log_type { info, error, warn, debug, malloc, memory, lock, task, link, event, input,
-                          timer };
+                          timer, render };
 
     constexpr cstr log_type_str[] = { "info: ", "error: ", "warn: ", "debug: ", "malloc: ", "memory: ", 
                                       "lock: ", "task: ", "link: ", "event: ", "input: ",
-                                      "timer: "
+                                      "timer: ", "render: "
                                     };
 
     TP<log_type T>
@@ -115,6 +115,7 @@ namespace lib {
       log_t< log_type::event > event;
       log_t< log_type::input > input;
       log_t< log_type::timer > timer;
+      log_t< log_type::render > render;
 
     }
 
@@ -139,8 +140,8 @@ namespace lib {
       return logger; 
     }
 
-    TP<log_type T0>
-    inline auto& operator,( log_t< T0 > &logger, endl_t endl ) { 
+    TP<log_type T>
+    inline auto& operator,( log_t< T > &logger, endl_t endl ) { 
 
       logger.log( endl );
 
@@ -161,6 +162,14 @@ namespace lib {
     inline auto& operator,( log_t< T0 > &logger, T1 const& data ) { 
 
       logger.log( data.to_string() ); 
+
+      return logger;
+    }
+
+    TP<log_type T>
+    inline auto& operator,( log_t< T > &logger, bool data ) { 
+
+      logger.log( to_string( "%s", ( data ? "true" : "false" ) ) ); 
 
       return logger;
     }
