@@ -8,6 +8,7 @@
 #include "lib/vector.h"
 #include "lib/value.h"
 #include "lib/to-string.h"
+#include "lib/log.h"
 #include "link-map.h"
 
 
@@ -106,7 +107,9 @@ namespace lib {
 
       snprintf( ptr, $array_size( error::get_buffer() ), 
         "%s: object %d not found in object( %s )", file, iid, msg );
-    } 
+
+      log::error, error::get_buffer(), log::endl;
+    }
   };
 
   #define $error_object( $0, $1 ) error_object{ $file_line, $0, $1 }

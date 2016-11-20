@@ -1,7 +1,19 @@
 #pragma once
 
-#include "opengl-win32.h"
+#include "opengl/opengl-win32.h"
 
-using opengl = opengl_win32;
+
+namespace lib {
+
+  namespace gfx {
+
+  namespace gl {
+
+
+    using context = opengl_win32;
+
+  }
+  }
+}
 
 

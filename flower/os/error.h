@@ -5,6 +5,7 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/error.h"
+#include "lib/log.h"
 
 
 namespace lib {
@@ -19,6 +20,8 @@ namespace lib {
         auto ptr = error::get_buffer();
 
         snprintf( ptr, $array_size( error::get_buffer() ), "%s: \"%s\" %s", file, path, strerror );
+
+        log::error, error::get_buffer(), log::endl;
       }
     };
 

@@ -17,7 +17,7 @@ namespace lib {
 
   namespace event {
 
-    TP<TN>
+    TP<TN...>
     struct events;
 
     struct event_tag {};
@@ -26,7 +26,7 @@ namespace lib {
 
   namespace global {
 
-    TP<TN T = void>
+    TP<TN T=void>
     event::events< T > event_map;
     
   }
@@ -34,7 +34,7 @@ namespace lib {
   namespace event {
     
 
-    TP<TN = void>
+    TP<TN...>
     struct events : nocopy {
 
       using vector_event = vector< value< event > >;

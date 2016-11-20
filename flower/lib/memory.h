@@ -82,7 +82,7 @@ namespace lib {
 
       auto ptr = ::malloc( size );
 
-      if( ! ptr ) $throw error_memory{ "malloc failed" };
+      if( ! ptr ) $throw error_memory{ $file_line, "malloc failed" };
       
       stats.alloc.add( size );
 

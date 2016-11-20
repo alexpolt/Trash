@@ -28,8 +28,8 @@ namespace lib {
   };
 
 
-  struct type_true { constexpr static int value = 1; };
-  struct type_false { constexpr static int value = 0; };
+  struct type_true { static constexpr bool value = true; };
+  struct type_false { static constexpr bool value = false; };
 
 
   TP<TN...> struct type_first;

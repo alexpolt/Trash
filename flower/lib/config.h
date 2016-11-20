@@ -6,6 +6,13 @@
 
   #define $CONFIG_GCC
 
+  #ifdef __MINGW32__
+
+    #define $CONFIG_MINGW
+
+  #endif
+  
+
   #ifndef __EXCEPTIONS
 
     #define $CONFIG_NO_EXCEPT

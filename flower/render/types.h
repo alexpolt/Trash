@@ -36,7 +36,7 @@ namespace lib {
 
       enum type : int {
 
-        command, mesh, material, cbuffer, shader, size
+        clear, mesh, material, cbuffer, shader, size
       };
 
       static cstr get_desc( type type ) {
@@ -50,6 +50,7 @@ namespace lib {
     };
 
 
+    //struct colorf 
 
   }
 }

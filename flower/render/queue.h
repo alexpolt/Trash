@@ -43,7 +43,7 @@ namespace lib {
 
     inline bool available() {
 
-      return global::render_queue<>.available() > 0;
+      return global::render_queue<>.size() > 0;
     }
 
 

@@ -7,7 +7,6 @@
 #include "new.h"
 
 
-
 namespace lib {
 
   namespace log {
@@ -32,11 +31,11 @@ namespace lib {
 
 
     enum class log_type { info, error, warn, debug, malloc, memory, lock, task, link, event, input,
-                          timer, render };
+                          timer, render, gfx };
 
     constexpr cstr log_type_str[] = { "info: ", "error: ", "warn: ", "debug: ", "malloc: ", "memory: ", 
                                       "lock: ", "task: ", "link: ", "event: ", "input: ",
-                                      "timer: ", "render: "
+                                      "timer: ", "render: ", "gfx: "
                                     };
 
     TP<log_type T>
@@ -116,6 +115,7 @@ namespace lib {
       log_t< log_type::input > input;
       log_t< log_type::timer > timer;
       log_t< log_type::render > render;
+      log_t< log_type::render > gfx;
 
     }
 

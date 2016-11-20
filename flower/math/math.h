@@ -189,9 +189,22 @@ namespace lib {
     constexpr auto mod( double a, double b ) { return a - b * (long long int)( a / b ); }
 
     constexpr auto frac( float value ) { return value - float( int( abs( value ) ) ); }
-    constexpr auto frac( double value ) { return value - float( (long long int)( abs( value ) ) ); }
+    constexpr auto frac( double value ) { return value - double( (long long int)( abs( value ) ) ); }
+
+    constexpr auto trunc( float value ) { return float( int( value ) ); }
+    constexpr auto trunc( double value ) { return double( (long long int)( value ) ); }
 
     constexpr auto round( float value ) {
+
+      return value > 0 ? trunc( value + 0.5f ) : trunc( value - 0.5f );
+    }
+    
+    constexpr auto round( double value ) {
+
+      return value > 0 ? trunc( value + 0.5 ) : trunc( value - 0.5 );
+    }
+
+    constexpr auto round_precise( float value ) {
 
       auto n2 = (int)( value * 2.f );
       auto bit = n2 & 0x1;
@@ -199,7 +212,7 @@ namespace lib {
       return  n2/2 + bit;
     }
 
-    constexpr auto round( double value ) {
+    constexpr auto round_precise( double value ) {
 
       auto n2 = (long long int)( value * 2. );
       auto bit = n2 & 0x1;

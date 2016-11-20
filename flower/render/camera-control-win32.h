@@ -7,6 +7,7 @@
 #include "event/common.h"
 #include "os/action.h"
 #include "os/cursor.h"
+#include "camera.h"
 
 
 namespace lib {
@@ -180,7 +181,7 @@ namespace lib {
         int sign = math::sign( steps );
         steps = math::abs( steps );
 
-        if( _camera.rotation()[1][1] < 0 ) sign = -sign;
+        if( _camera.view()[1][1] < 0 ) sign = -sign;
 
         range{ 0, steps } $do { 
 

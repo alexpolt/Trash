@@ -5,6 +5,8 @@
 #include "macros.h"
 #include "types.h"
 #include "buffer.h"
+#include "log.h"
+
 
 namespace lib {
 
@@ -17,14 +19,11 @@ namespace lib {
 
     error( ) : _buffer{ global::get_buffer< error, buffer_size >() } { }
 
-    error( cstr msg ) : error() {
-
-      snprintf( _buffer, $array_size( _buffer ), "%s", msg );
-    }
-
     error( cstr file, cstr msg ) : error() { 
 
       snprintf( _buffer, $array_size( _buffer ), "%s: %s", file, msg );
+
+      log::error, _buffer, log::endl;
     }
 
     virtual ~error() {}

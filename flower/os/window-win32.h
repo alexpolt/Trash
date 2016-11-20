@@ -12,7 +12,6 @@
 #include "vkey.h"
 #include "vkey-desc.h"
 #include "action.h"
-#include "action-desc.h"
 #include "input-map-win32.h"
 
 
@@ -35,10 +34,16 @@ namespace lib {
 
     struct window_win32 : nocopy {
       
-      static constexpr cstr window_clsname = "flower_window";
-      static constexpr DWORD style_default = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-      static constexpr DWORD style_noresize = WS_OVERLAPPED | WS_SYSMENU | WS_VISIBLE;
-      static constexpr DWORD style_fullscreen = WS_POPUP | WS_VISIBLE;
+      static constexpr cstr window_clsname = "flower_engine_window";
+
+      static constexpr DWORD style_default = 
+        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+
+      static constexpr DWORD style_noresize = 
+        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE;
+
+      static constexpr DWORD style_fullscreen = 
+        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP | WS_VISIBLE;
 
       using handle_t = HWND;
 
@@ -125,23 +130,26 @@ namespace lib {
             else if( wparam == 2 ) event.action = action::maximize;
             else event.action = action::resize; 
             log::input, "size, width = ", event.x, ", height = ", event.y, log::endl;
-            if( not events::fire( events::window_paint<>, event ) and data ) {
-              log::input, "set new size", log::endl;
-              data->w = LOWORD( lparam ); 
-              data->h = HIWORD( lparam ); 
-              return DefWindowProc( hwnd, msg, wparam, lparam );
+            if( data ) {
+              log::input, "setting new window size", log::endl;
+              data->w = LOWORD( lparam );
+              data->h = HIWORD( lparam );
             }
-          break;
+            if( events::fire( events::window_resize<>, event ) ) return 0;
+         break;
 
           case WM_PAINT:
             log::input, "paint", log::endl;
-            if( not events::fire( events::window_paint<>, event ) ) ValidateRect( hwnd, nullptr );
+            if( events::fire( events::window_paint<>, event ) ) return 0;
           break;
 
           case WM_CLOSE:
             log::input, "close", log::endl;
             event.mod = get_modifiers();
-            if( not events::fire( events::window_close<>, event ) ) DestroyWindow( hwnd );
+            if( events::fire( events::window_close<>, event ) ) { 
+              DestroyWindow( hwnd );
+              return 0;
+            }
           break;
 
           case WM_SYSKEYUP:
@@ -152,9 +160,9 @@ namespace lib {
             log::input, "key ", get_vkey_desc( event.key ), log::endl;
             event.action = input_map( event.key );
             event.mod = get_modifiers();
-            if( msg == WM_KEYUP or msg == WM_SYSKEYUP ) 
-                 events::fire( events::key_up<>, event );
-            else events::fire( events::key_down<>, event );
+            if( msg == WM_KEYUP or msg == WM_SYSKEYUP ) {
+                   if( events::fire( events::key_up<>, event ) ) return 0;
+            } else if( events::fire( events::key_down<>, event ) ) return 0;
           break;
 
           case WM_LBUTTONUP:
@@ -168,22 +176,22 @@ namespace lib {
               log::input, "mouse left button up", log::endl;
               event.key = vkey::lbutton; 
               event.action = input_map( event.key );
-              events::fire( events::mouse_up<>, event );
+              if( events::fire( events::mouse_up<>, event ) ) return 0;
             } else if( msg == WM_LBUTTONDOWN ) { 
               log::input, "mouse left button down", log::endl;
               event.key = vkey::lbutton; 
               event.action = input_map( event.key );
-              events::fire( events::mouse_down<>, event );
+              if( events::fire( events::mouse_down<>, event ) ) return 0;
             } else if( msg == WM_RBUTTONUP ) { 
               log::input, "mouse rightbutton up", log::endl;
               event.key = vkey::rbutton; 
               event.action = input_map( event.key );
-              events::fire( events::mouse_up<>, event );
+              if( events::fire( events::mouse_up<>, event ) ) return 0;
             } else if( msg == WM_RBUTTONDOWN ) { 
               log::input, "mouse right button down", log::endl;
               event.key = vkey::rbutton; 
               event.action = input_map( event.key );
-              events::fire( events::mouse_down<>, event ); 
+              if( events::fire( events::mouse_down<>, event ) ) return 0;
             }
           break;
 
@@ -194,7 +202,7 @@ namespace lib {
             event.key = vkey::null;
             event.mod = get_modifiers();
             event.action = action::move;
-            events::fire( events::mouse_move<>, event );
+            if( events::fire( events::mouse_move<>, event ) ) return 0;
           break;
 
           case WM_MOUSEWHEEL:
@@ -204,14 +212,14 @@ namespace lib {
             event.mod = get_modifiers();
             event.key = vkey::scroll;
             event.action = input_map( event.key );
-            events::fire( events::scroll<>, event );
+            if( events::fire( events::scroll<>, event ) ) return 0;
           break;
 
           case WM_ACTIVATEAPP:
             log::input, "activate ", (bool) wparam, log::endl;
             event.x = wparam;
             event.action = action::activate;
-            events::fire( events::window_activate<>, event );
+            if( events::fire( events::window_activate<>, event ) ) return 0;
           break;
 
           case WM_SYSCOMMAND:
@@ -219,12 +227,15 @@ namespace lib {
               event.action = lparam == -1 ? action::on : 
                                 ( lparam == 1 ? action::lowpower : action::off );
               log::input, "monitorpower ", get_action_desc( event.action ), log::endl;
-              event.x = lparam;
-              return events::fire( events::monitor<>, event );
+              if( events::monitor<>->size() )
+                return events::fire( events::monitor<>, event );
+              else break;
             } else if( wparam == SC_SCREENSAVE ) {
               log::input, "screensaver", log::endl;
-              return events::fire( events::screensaver<>, event );
-            }
+              if( events::screensaver<>->size() )
+                return events::fire( events::screensaver<>, event );
+              else break;
+             }
           break;
 
           case WM_INPUT: {
@@ -243,6 +254,7 @@ namespace lib {
               event.mod = get_modifiers();
               event.action = action::move;
               events::fire( events::mouse_rinput<>, event );
+              return 0;
             }
           }
           break;
@@ -251,13 +263,10 @@ namespace lib {
           case WM_DESTROY:
             log::input, "destroy", log::endl;
             PostQuitMessage( 0 );
-          break;
-
-          default:
-            return DefWindowProc( hwnd, msg, wparam, lparam );
+            return 0;
         }
-        
-        return 0;
+
+        return DefWindowProc( hwnd, msg, wparam, lparam );
       }
 
       ~window_win32() {
@@ -279,17 +288,17 @@ namespace lib {
 
         if( not $this ) $throw $error_win32( "no valid window" );
 
-        HDC dc_orig = GetDC( _data->hwnd );
+        auto dc_orig = GetDC( _data->hwnd );
 
         $on_return{ ReleaseDC( _data->hwnd, dc_orig ); };
 
-        HDC dc_new = CreateCompatibleDC( dc_orig );
+        auto dc_new = CreateCompatibleDC( dc_orig );
         
         $on_return{ DeleteDC( dc_new ); };
 
-        HBITMAP bitmap_new = CreateCompatibleBitmap( dc_orig, width(), height() );
+        auto bitmap_new = CreateCompatibleBitmap( dc_orig, width(), height() );
 
-        HBITMAP bitmap_old = (HBITMAP) SelectObject( dc_new, bitmap_new );
+        auto bitmap_old = (HBITMAP) SelectObject( dc_new, bitmap_new );
 
         $on_return{ SelectObject( dc_new, bitmap_old ); DeleteObject( bitmap_new ); };
 

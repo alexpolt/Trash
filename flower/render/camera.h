@@ -27,8 +27,8 @@ namespace lib {
       void pitch( float a ) { _rot = _rot * math::rotx< float >( a ); }
       void roll( float a ) { _rot = _rot * math::rotz< float >( a ); }
 
-      auto& position() const { return _pos; }
-      auto& rotation() const { return _rot; }
+      auto& pos() const { return _pos; }
+      auto& view() const { return _rot; }
 
       auto set_position( vec3f pos ) { _pos = pos; }
       auto set_rotation( mat3f rot ) { _rot = rot; }

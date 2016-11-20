@@ -13,39 +13,37 @@ namespace lib {
 
   namespace render {
 
-    namespace messages {
+  namespace messages {
 
 
-      struct clear : message {
-        
-        static constexpr message::type type = message::type::command;
+    struct clear : message {
+      
+      static constexpr message::type type = message::type::clear;
 
-        enum command_t {
-        };
+      //color c;
+      //depth d;
+    };
 
-        command_t command;
-      };
+    struct mesh : message {
+      
+      static constexpr message::type type = message::type::mesh;
 
-      struct mesh : message {
-        
-        static constexpr message::type type = message::type::mesh;
+    };
 
-      };
+    struct cbuffer : message {
+      
+      static constexpr message::type type = message::type::cbuffer;
 
-      struct cbuffer : message {
-        
-        static constexpr message::type type = message::type::cbuffer;
+    };
 
-      };
+    struct shader : message {
+      
+      static constexpr message::type type = message::type::shader;
 
-      struct shader : message {
-        
-        static constexpr message::type type = message::type::shader;
-
-      };
+    };
 
 
-    }
+  }
   }
 }
 

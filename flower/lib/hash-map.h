@@ -68,6 +68,7 @@ namespace lib {
           auto& hvalue2 = _hash_table[ hash2 ];                       \
           auto& hvalue3 = _hash_table[ hash3 ];                       \
 
+    iterator find( key_type const& key ) { return $this[ key ]; }
 
     iterator operator[]( key_type const& key ) {
 
