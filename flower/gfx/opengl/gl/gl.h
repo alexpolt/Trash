@@ -5,15 +5,8 @@
 #include "lib/types.h"
 #include "os/types.h"
 
-#if defined( $CONFIG_MSC ) || defined( $CONFIG_MINGW )
 
-  /*
-  extern "C" void* APIENTRY wglGetProcAddress( cstr );
-  extern "C" void* APIENTRY wglCreateContext( os::hdc );
-  extern "C" void* APIENTRY wglMakeCurrent( os::hdc, os::hglrc );
-  extern "C" void* APIENTRY wglDeleteContext( os::hglrc );
-  extern "C" void* APIENTRY SwapBuffers( os::hdc );
-  */
+#if defined( $CONFIG_MSC ) || defined( $CONFIG_MINGW )
 
   #include "os/windows.h"
 

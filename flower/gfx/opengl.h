@@ -7,12 +7,9 @@ namespace lib {
 
   namespace gfx {
 
-  namespace gl {
 
+    using context = gl::opengl_win32;
 
-    using context = opengl_win32;
-
-  }
   }
 }
 

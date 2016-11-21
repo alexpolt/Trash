@@ -3,8 +3,8 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/log.h"
-#include "error.h"
 #include "gl.h"
+#include "error.h"
 
 #define GL_GLEXT_PROTOTYPES
 #define WGL_WGLEXT_PROTOTYPES
@@ -24,6 +24,7 @@ namespace lib {
 
 
     #include "api-list.h"
+
 
     enum class api {
 

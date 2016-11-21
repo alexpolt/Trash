@@ -8,6 +8,8 @@
   $m( ClearColor )            \
   $m( ClearDepthf )           \
   $m( ClearStencil )          \
+  $m( GetStringi )            \
+  $m( GetIntegerv )           \
   $m( GenBuffers )            \
   $m( BindBuffer )            \
 
