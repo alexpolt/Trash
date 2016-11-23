@@ -3,6 +3,8 @@
 #include "windows.h"
 #include "lib/macros.h"
 #include "lib/types.h"
+#include "lib/to-string.h"
+#include "lib/log.h"
 #include "error-win32.h"
 
 
@@ -16,6 +18,8 @@ namespace lib {
       display_mode_win32() {
 
         EnumDisplaySettings( nullptr, ENUM_CURRENT_SETTINGS, &_dm );
+
+        log::os, $this, log::endl;
       }
       
       void set_fullscreen() {
@@ -25,6 +29,8 @@ namespace lib {
         if( ret != DISP_CHANGE_SUCCESSFUL ) 
 
           $throw $error_win32( " change display settings failed" );
+
+        log::os, $this, " go fullscreen", log::endl;
 
         _changed = true;
       }
@@ -38,8 +44,15 @@ namespace lib {
 
         if( _changed ) {
 
+          log::os, $this, " reset fullscreen", log::endl;
+
           ChangeDisplaySettings( nullptr, 0 );
         }
+      }
+
+      cstr to_string() const {
+
+        return lib::to_string( "display mode ( %dx%d, %d bits, %d hz )", width(), height(), depth(), frequency() );
       }
 
       bool _changed{ false };

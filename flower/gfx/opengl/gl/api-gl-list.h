@@ -1,7 +1,7 @@
 #pragma once
 
 
-#define $gl_api_list( $m )    \
+#define $api_gl_list( $m )    \
                               \
   $m( GetString )             \
   $m( Clear )                 \
@@ -15,10 +15,9 @@
 
 
 
+
 /*
-
   $m( )          \
-
 */
 
 

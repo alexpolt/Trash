@@ -27,7 +27,6 @@
 
 
 using lib::value;
-using lib::make_out;
 using lib::range;
 using lib::move;
 using lib::forward;

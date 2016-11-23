@@ -13,6 +13,7 @@ namespace lib {
     using hglrc = ::HGLRC;
     using hdc = ::HDC;
 
+
   }
 }
 

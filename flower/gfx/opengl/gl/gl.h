@@ -26,6 +26,16 @@
 #endif
 
 
+#define GL_GLEXT_PROTOTYPES
+#include "glcorearb.h"
+
+#define WGL_WGLEXT_PROTOTYPES
+#include "wglext.h"
+
+#include "api-wgl.h"
+#include "api-gl.h"
+
+
 namespace lib {
 
   namespace gfx {

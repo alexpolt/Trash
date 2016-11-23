@@ -23,6 +23,7 @@ namespace lib {
       TP<TN...> events_it window_paint{ event::create( "window_paint" ) };
       TP<TN...> events_it window_close{ event::create( "window_close" ) };
       TP<TN...> events_it window_resize{ event::create( "window_resize" ) };
+      TP<TN...> events_it window_destroy{ event::create( "window_destroy" ) };
       TP<TN...> events_it input_message{ event::create( "input_message" ) };
       TP<TN...> events_it window_activate{ event::create( "window_activate" ) };
       TP<TN...> events_it exit{ event::create( "exit" ) };
@@ -33,7 +34,7 @@ namespace lib {
       TP<TN...> events_it monitor{ event::create( "monitor" ) };
       TP<TN...> events_it screensaver{ event::create( "screensaver" ) };
 
-      bool fire( events_it& it, event::event_data& event ) {
+      inline bool fire( events_it& it, event::event_data& event ) {
 
         bool result = false;
 

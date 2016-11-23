@@ -5,12 +5,11 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/assert.h"
+#include "lib/value.h"
 #include "lib/url.h"
-#include "lib/vector.h"
-#include "lib/strong-ptr.h"
-
 #include "types.h"
 #include "error.h"
+#include "loader-file.h"
 
 
 namespace lib {
@@ -18,20 +17,20 @@ namespace lib {
   namespace loader {
 
 
-    strong_ptr< vector_b > load( url location ) {
+    inline value< loader > create( url location ) {
 
       if( location.scheme() == url::scheme::file ) {
 
-        return loader_file::load( location );
+        return valule< loader >::create< loader_file >( location );
       }
       
       $assert( false, "no such scheme" );
 
-      return strong_ptr< vector_b >{};
+      return value< loader >{};
     }
 
 
-    strong_ptr< vector_b > load( cstr path ) {
+    inline auto create( cstr path ) {
 
       auto location = lib::url::create( path );
 

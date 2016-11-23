@@ -1,19 +1,9 @@
 #pragma once
 
-
 #include "lib/macros.h"
 #include "lib/types.h"
-#include "lib/assert.h"
 #include "lib/vector.h"
 #include "lib/string.h"
-#include "lib/strong-ptr.h"
-#include "lib/url.h"
-#include "lib/alloc-default.h"
-#include "lib/alloc-empty.h"
-#include "os/file.h"
-
-#include "config.h"
-#include "error.h"
 
 
 namespace lib {
@@ -21,43 +11,20 @@ namespace lib {
   namespace loader {
 
 
-    struct loader_file {
+    struct loader {
 
-      static strong_ptr< vector_b > load( url location ) {
-      
-        string path{ 64, alloc_default::create( "loader data path" ) };
-        
-        for( auto dir : config::file_dirs ) {
+      virtual ~loader() { }
 
-          path << dir << location.path();
+      virtual void load( vector_b&, ssize_t ) = 0;
 
-          os::file f = os::file{ path.data() };
+      virtual get_line( string& ) = 0;
 
-          if( f.exists() ) {
+      virtual vector_b load() = 0;
 
-            auto data = f.load();
-
-            auto name = data.get_allocator()->name();
-
-            data.set_allocator( alloc_empty::create( name ) );
-
-            return strong_ptr< vector_b >( new vector_b{ move( data ) }, name );
-          }
-
-          path.clear();
-        }
-
-        $throw $error_loader( location.source() );
-
-        return strong_ptr< vector_b >{};
-      }
-
+      virtual ssize_t size() = 0;
     };
 
-
-
   }
-
 }
 
 

@@ -30,11 +30,12 @@ namespace lib {
     };
 
 
-    enum class log_type { info, error, warn, debug, malloc, memory, lock, task, link, event, input,
+    enum class log_type { info, error, warn, debug, malloc, memory, 
+                          os, lock, task, link, event, input,
                           timer, render, gfx };
 
     constexpr cstr log_type_str[] = { "info: ", "error: ", "warn: ", "debug: ", "malloc: ", "memory: ", 
-                                      "lock: ", "task: ", "link: ", "event: ", "input: ",
+                                      "os: ", "lock: ", "task: ", "link: ", "event: ", "input: ",
                                       "timer: ", "render: ", "gfx: "
                                     };
 
@@ -108,6 +109,7 @@ namespace lib {
       log_t< log_type::debug > debug;
       log_t< log_type::malloc > malloc;
       log_t< log_type::memory > memory;
+      log_t< log_type::os > os;
       log_t< log_type::lock > lock;
       log_t< log_type::task > task;
       log_t< log_type::link > link;

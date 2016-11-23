@@ -2,10 +2,13 @@
 
 #include "windows.h"
 #include "lib/macros.h"
+#include "lib/assert.h"
 #include "lib/types.h"
 #include "lib/log.h"
+#include "lib/to-string.h"
 #include "lib/owner-ptr.h"
 #include "lib/scope-guard.h"
+#include "types.h"
 #include "event/common.h"
 #include "events.h"
 #include "error-win32.h"
@@ -24,11 +27,20 @@ namespace lib {
 
     struct window_win32;
 
+    struct window_data {
+      os::hwnd hwnd;
+      cstr title;
+      int w;
+      int h;
+      bool fs;
+      event::eid_t eid;
+      window_data* data_prev;
+    };
 
     namespace global {
 
       TP<TN...>
-      window_win32* window_top;
+      window_data* window_top_data;
     }
 
 
@@ -37,27 +49,24 @@ namespace lib {
       static constexpr cstr window_clsname = "flower_engine_window";
 
       static constexpr DWORD style_default = 
-        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
 
       static constexpr DWORD style_noresize = 
-        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE;
+        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 
       static constexpr DWORD style_fullscreen = 
-        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP | WS_VISIBLE;
+        WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
 
-      using handle_t = HWND;
 
-      struct window_data {
-        handle_t hwnd;
-        cstr title;
-        int w;
-        int h;
-        bool fs;
-      };
+      enum class cmd : int { show, hide, };
+
+
+      window_win32( window_data* data, bool is_copy ) : _data{ data }, _is_copy{ is_copy } { }
 
       window_win32( owner_ptr< window_data > data ) : _data{ move( data ) } { }
 
       window_win32( window_win32&& other ) : _data{ move( other._data ) }  { }
+
 
       static window_win32 create( cstr title, int width, int height, 
                                   bool resize = false, bool fullscreen = false ) {
@@ -76,26 +85,31 @@ namespace lib {
         r.right = r.right - r.left;
         r.bottom = r.bottom - r.top;
 
-        handle_t hwnd = CreateWindow(
+        os::hwnd hwnd = CreateWindow(
                           window_clsname, title, style,
-                          CW_USEDEFAULT, SW_SHOW, r.right, r.bottom,
+                          CW_USEDEFAULT, CW_USEDEFAULT, r.right, r.bottom,
                           NULL, NULL, GetModuleHandle( nullptr ), nullptr );
 
         if( ! hwnd ) $throw $error_win32( "create window failed" );
 
-        $event( "input_message", "window dispatch" ) {
+        auto data = make_owner< window_data >( hwnd, title, width, height, fullscreen );
+
+        data->eid = $event( "input_message", "window dispatch" ) {
 
           DispatchMessage( (MSG*) event.data );
 
           return true;
         };
-        auto data = make_owner< window_data >( hwnd, title, width, height, fullscreen );
 
         SetWindowLongPtr( hwnd, GWLP_USERDATA, (LONG_PTR)data.get() );
 
-        auto w = window_win32{ move( data ) };
+        data->data_prev = global::window_top_data<>;
 
-        global::window_top<> = &w;
+        global::window_top_data<> = data.get();
+
+        auto w = window_win32{ move( data ) };
+        
+        log::os, w, " created", log::endl;
 
         return w;
       }
@@ -107,19 +121,19 @@ namespace lib {
                       GetModuleHandle( nullptr ), NULL, LoadCursor( NULL, IDC_ARROW ), 
                       HBRUSH( COLOR_BTNFACE + 1 ), nullptr, clsname };
 
-        auto atom = RegisterClass( &cls );
-
-        if( not atom ) $throw $error_win32( "register class failed" );
+        RegisterClass( &cls );
       }
 
 
-      static LRESULT CALLBACK wndproc( handle_t hwnd, UINT msg, WPARAM wparam, LPARAM lparam ) {
+      static LRESULT CALLBACK wndproc( os::hwnd hwnd, UINT msg, WPARAM wparam, LPARAM lparam ) {
 
         auto event = event::event_data{};
 
         event.data = hwnd;
 
-        auto data = (window_data*) GetWindowLongPtr( hwnd, GWLP_USERDATA );
+        auto data_ptr = (window_data*) GetWindowLongPtr( hwnd, GWLP_USERDATA );
+
+        if( data_ptr ) event.data = data_ptr;
 
         switch( msg ) {
 
@@ -130,10 +144,10 @@ namespace lib {
             else if( wparam == 2 ) event.action = action::maximize;
             else event.action = action::resize; 
             log::input, "size, width = ", event.x, ", height = ", event.y, log::endl;
-            if( data ) {
+            if( data_ptr ) {
               log::input, "setting new window size", log::endl;
-              data->w = LOWORD( lparam );
-              data->h = HIWORD( lparam );
+              data_ptr->w = LOWORD( lparam );
+              data_ptr->h = HIWORD( lparam );
             }
             if( events::fire( events::window_resize<>, event ) ) return 0;
          break;
@@ -257,31 +271,52 @@ namespace lib {
               return 0;
             }
           }
-          break;
-          
+          break;          
 
           case WM_DESTROY:
             log::input, "destroy", log::endl;
-            PostQuitMessage( 0 );
+            events::fire( events::window_destroy<>, event );
             return 0;
         }
 
         return DefWindowProc( hwnd, msg, wparam, lparam );
       }
 
-      ~window_win32() {
+      ~window_win32() { 
 
-        if( $this )
-
-          DestroyWindow( _data->hwnd );
+        if( _is_copy ) _data = nullptr;
+          
+        destroy(); 
       }
 
+      void destroy() {
 
-      void close() {
+        $assert( (bool)$this, "for some reason window handle is not valid" );
 
-        if( $this )
+        log::os, $this, " destroying", log::endl;
 
-          DestroyWindow( _data->hwnd );
+        DestroyWindow( _data->hwnd );
+
+        event::remove( "input_message", _data->eid );
+
+        global::window_top_data<> = _data->data_prev;
+      }
+
+      static int cmd_map( cmd c ) {
+        static int map[]{ SW_SHOW,  SW_HIDE };
+        return map[ (int) c ];
+      }
+
+      static cstr get_cmd_desc( cmd c ) {
+        static cstr cmd_desc[]{ "show", "hide" };
+        return cmd_desc[ (int) c ];
+      }
+
+      void show( cmd c = cmd::show ) {
+
+        log::os, $this, " ", get_cmd_desc( c ), log::endl;
+
+        ShowWindow( _data->hwnd, cmd_map( c ) );
       }
 
       void set_data( uint* data ) {
@@ -324,14 +359,20 @@ namespace lib {
       int width() const { return _data->w; }
       int height() const { return _data->h; }
       cstr title() const { return _data->title; }
-      handle_t handle() const { return _data->hwnd; }
+      os::hwnd handle() const { return _data->hwnd; }
 
-      static auto window_top() { return global::window_top<>; }
+      cstr to_string() const { 
+
+        return lib::to_string( "window %s( %dx%d, %p )", _data->title, _data->w, _data->h, (void*) _data->hwnd ); 
+      }
+
+      static auto window_top() { return window_win32{ global::window_top_data<>, true }; }
 
       owner_ptr< window_data > _data;
+      bool _is_copy{ false };
     };
 
-    vmod get_modifiers() {
+    inline vmod get_modifiers() {
 
       vmod mod = vmod::null;
 

@@ -22,7 +22,7 @@ namespace lib {
       TP<ssize_t... NN>
       auto& create_messages_ptrs( index_list< NN... > ) {
 
-        static vector< message* > messages_free[ message::type::size  ]{
+        static vector< message* > messages_free[ message::mtype::size  ]{
           
           { ( (void)NN, alloc_default::create( "render messages ptrs" ) ) }...
         };
@@ -30,9 +30,10 @@ namespace lib {
         return messages_free;
       }
 
-      vector< message* > ( &messages_ptrs )[ message::type::size ] = 
+      TP<TN...>
+      vector< message* > ( &messages_ptrs )[ message::mtype::size ] = 
 
-        create_messages_ptrs( index_list_t< message::type::size >{} );
+        create_messages_ptrs( index_list_t< message::mtype::size >{} );
 
     }
 
@@ -41,7 +42,7 @@ namespace lib {
 
       render_message() { }
 
-      render_message( message* ptr, message::type t ) : _data{ ptr }, _type{ t } { }
+      render_message( message* ptr, message::mtype t ) : _data{ ptr }, _type{ t } { }
 
       render_message( render_message&& other ) : _data{ move( other._data ) }, _type{ other._type } { }
 
@@ -57,45 +58,47 @@ namespace lib {
 
         if( _data )
 
-          global::messages_ptrs[ _type ].push_back( move( _data ) );
+          global::messages_ptrs<>[ _type ].push_back( move( _data ) );
       }
 
       cstr to_string() const { 
 
-        return lib::to_string( "render_msg( %s, %p )", message::get_desc( _type ), (void*) _data ); 
+        return lib::to_string( "message( %s, %p )", message::get_desc( _type ), (void*) _data ); 
       }
 
       auto data() { return _data; }
       auto type() { return _type; }
 
       message* _data{};
-      message::type _type{};
+      message::mtype _type{};
     };
 
 
     TP<TN T>
-    auto create_message() {
+    auto create_message( T msg ) {
 
-      render_message msg;
+      render_message rmsg;
 
-      if( global::messages_ptrs[ T::type ].size() ) {
+      if( global::messages_ptrs<>[ T::type ].size() ) {
 
-        auto ptr = global::messages_ptrs[ T::type ].pop_back();
+        auto ptr = global::messages_ptrs<>[ T::type ].pop_back();
 
-        msg = render_message{ ptr, T::type };
+        *ptr = move( msg );
+
+        rmsg = render_message{ ptr, T::type };
 
       } else {
 
-        global::messages<>.push_back( owner_ptr< message >{ new T{} } );
+        global::messages<>.push_back( owner_ptr< message >{ new T{ move( msg ) } } );
 
         auto ptr = global::messages<>.back().get();
-
-        msg = render_message{ ptr, T::type };
+        
+        rmsg = render_message{ ptr, T::type };
       }
 
-      log::render, "create message ", msg, log::endl;
+      log::render, rmsg, " created", log::endl;
 
-      return msg;
+      return rmsg;
     }
 
 

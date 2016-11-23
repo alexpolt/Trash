@@ -9,7 +9,7 @@ namespace lib {
   namespace os {
 
 
-    void sleep( time t ) {
+    inline void sleep( time t ) {
 
       Sleep( t.mseconds() );
     }

@@ -8,7 +8,6 @@
 #include "lib/alloc-default.h"
 #include "lib/to-string.h"
 #include "lib/log.h"
-#include "types.h"
 #include "render-message.h"
 
 
@@ -24,19 +23,17 @@ namespace lib {
 
     }
 
+    TP<TN T>
+    inline void push( T msg ) {
 
-    inline void push( render_message msg ) {
+      auto rmsg = create_message< T >( move( msg ) );
 
-      log::render, "push message ", msg, log::endl;
-
-      global::render_queue<> << move( msg );
+      global::render_queue<> << move( rmsg );
     }
 
     inline auto pop() {
 
       auto msg = global::render_queue<>.pop();
-
-      log::render, "pop message ", msg, log::endl;
 
       return msg;
     }

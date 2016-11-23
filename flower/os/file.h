@@ -8,22 +8,26 @@
 #include "lib/assert.h"
 #include "lib/error.h"
 #include "lib/buffer.h"
+#include "lib/log.h"
+#include "lib/to-string.h"
 #include "lib/vector.h"
 #include "lib/scope-guard.h"
 #include "lib/handle.h"
 #include "lib/alloc-default.h"
-
 #include "error.h"
+
 
 namespace lib {
 
   namespace os {
 
 
-    struct file {
+    struct file : nocopy {
 
       using handle_t = handle< FILE* >;
 
+
+      file( ) { }
 
       file( cstr path ) : _path{ path } { }
 
@@ -34,7 +38,9 @@ namespace lib {
 
         ssize_t file_size = size();
 
-        vector_b data{ file_size, alloc_default::create( "file data" ) };
+        log::os, $this, " loading ", file_size, " bytes", log::endl;
+
+        vector_b data{ file_size, alloc_default::create( _path ) };
 
         while( data.size() < file_size ) {
 
@@ -82,18 +88,20 @@ namespace lib {
 
       void open() {
 
-        if( _h ) return;
+        if( $this ) return;
 
         FILE* f = fopen( _path, "r+b" );
         
         if( f == nullptr ) $throw $error_file( _path, strerror( errno ) );
+
+        log::os, "opened file ", _path, log::endl;
         
         handle_t::deleter_t d = []( FILE* f ) { fclose( f ); };
 
         _h = handle_t{ f, d };
       }
 
-      string get_line( string str = string{} ) {
+      void get_line( string& str ) {
 
         open();
 
@@ -111,8 +119,6 @@ namespace lib {
 
           str << ptr;
         }
-
-        return str;
       }
 
       ssize_t seek( ssize_t offset, int whence ) {
@@ -138,6 +144,18 @@ namespace lib {
       }
 
       bool eof() { return not (bool) _h or feof( _h ); }
+
+      explicit operator bool() const { return (bool)_h; }
+
+      cstr to_string() const {
+
+        if( $this )
+
+          return lib::to_string( "file( %s, %p )", _path, (void*) _h.get() );
+
+        else
+          return lib::to_string( "file( %s, not opened )", _path );
+      }
 
       handle_t _h{};
       cstr _path{};

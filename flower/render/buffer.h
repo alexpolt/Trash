@@ -3,6 +3,9 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/vector.h"
+#include "lib/alloc-default.h"
+#include "lib/ptr.h"
+#include "types.h"
 
 
 namespace lib {
@@ -10,29 +13,56 @@ namespace lib {
   namespace render {
 
 
+    TP<TN T> 
+    struct buffer;
+
     TP<TN T>
-    struct buffer {
+    using buffer_ptr = strong_ptr< buffer< T > >;
+
+    using ibuffer = buffer< uint >;
+    using vbuffer = buffer< float >;
+    using cbuffer = buffer< uint >;
+
+    using ibuffer_ptr = buffer_ptr< uint >;
+    using vbuffer_ptr = buffer_ptr< float >;
+    using cbuffer_ptr = buffer_ptr< uint >;
+
+
+    TP<TN T>
+    struct buffer : resource {
 
       using value_type = T;
-      using vector = vector< T >;
-      static constexpr ssize_t value_size = $size( value_type );
+      using vector_type = vector< T >;
 
-      enum format_t { null, vertex, normal, color };
+      static constexpr rtype _type = resource::rtype::buffer;
+      static constexpr ssize_t _value_size = $size( value_type );
+
+      static auto create_alloc() { return alloc_default::create( "resource buffer" ); }
+
 
       buffer() { }
 
-      buffer( format_t fmt, vector_f data = vector_f{} ) : _format{ fmt }, _data{ data } { }
+      buffer( rformat fmt, vector_type data = vector_type{ create_alloc() } ) : _format{ fmt }, _data{ data } { }
 
-      auto format() { return _format; }
-      auto& data() { return _data; }
-      auto size() { return value_size; }
 
-      void set_format( format_t fmt ) { _format = fmt; }
-      void set_data( vector_b data ) { _data = move( data ); }
-
+      rtype type() const override { return _type; }
+      rformat format() const override { return _format; }
+      void* data() const override { return _data.data(); }
+      ssize_t size() const override { return _data.size_bytes(); }
+      ssize_t value_size() const { return _value_size; }
       
-      format_t _format;
-      vector _data;
+      auto& vector() const { return _data; }
+      
+      cstr to_string() const override {
+
+        return lib::to_string( "buffer( format = %s, size = %d )", get_format_desc( format() ), size() );
+      }
+
+      void set_format( rformat fmt ) { _format = fmt; }
+      void set_data( vector_type data ) { _data = move( data ); }
+
+      rformat _format{};
+      vector_type _data{ create_alloc() };
     };
 
 

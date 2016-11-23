@@ -38,8 +38,8 @@ namespace lib {
     return memcmp( &arg0, &arg1, $size( arg0 ) ) == 0;
   }
 
-  bool equal( cstr arg0, cstr arg1 ) { return strcmp( arg0, arg1 ) == 0; }
-  bool equal( char* arg0, char* arg1 ) { return strcmp( arg0, arg1 ) == 0; }
+  inline bool equal( cstr arg0, cstr arg1 ) { return strcmp( arg0, arg1 ) == 0; }
+  inline bool equal( char* arg0, char* arg1 ) { return strcmp( arg0, arg1 ) == 0; }
 
 
   TP<TN T0, TN T1> 

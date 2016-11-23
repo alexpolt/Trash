@@ -10,12 +10,12 @@ namespace lib {
   namespace os {
 
 
-    void show_cursor( bool is_cursor ) {
+    inline void show_cursor( bool is_cursor ) {
 
       ShowCursor( is_cursor );
     }
 
-    math::vec2i cursor_xy() {
+    inline math::vec2i cursor_xy() {
 
       POINT pt{};
 
@@ -23,7 +23,7 @@ namespace lib {
 
       if( os::window::window_top() ) {
 
-        auto hwnd = os::window::window_top()->handle();
+        auto hwnd = os::window::window_top().handle();
 
         ScreenToClient( hwnd, &pt );
       }
@@ -31,12 +31,12 @@ namespace lib {
       return math::vec2i{ pt.x, pt.y };
     }
 
-    void cursor_center() {
+    inline void cursor_center() {
 
       RECT rc;
       POINT pt;
 
-      auto hwnd = os::window::window_top()->handle();
+      auto hwnd = os::window::window_top().handle();
 
       GetWindowRect( hwnd, &rc );
       pt.x = ( rc.right - rc.left ) / 2;

@@ -480,7 +480,7 @@ namespace lib {
     auto available() const { return capacity() - size(); }
     auto size_bytes() const { return size() * value_size; }
     bool empty() const { return size() == 0; }
-
+    explicit operator bool() const { return size() > 0; }
 
     pointer _data{};
     size_type _capacity{};

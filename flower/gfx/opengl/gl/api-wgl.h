@@ -1,53 +1,50 @@
 #pragma once
 
 #include "lib/macros.h"
+#include "lib/assert.h"
 #include "lib/types.h"
 #include "lib/log.h"
 #include "gl.h"
 #include "error.h"
-
-#define GL_GLEXT_PROTOTYPES
-#define WGL_WGLEXT_PROTOTYPES
-
-#include "glcorearb.h"
-#include "wglext.h"
 
 
 namespace lib {
 
   namespace gfx {
 
-  namespace gl {
+  namespace wgl {
 
 
-    void gl_api_init();
+    inline void api_init();
 
 
-    #include "api-list.h"
+    #include "api-wgl-list.h"
 
 
     enum class api {
 
-      #define $gl_api_enum( $0 ) $0,
-      $gl_api_list ( $gl_api_enum )
+      #define $api_wgl_enum( $0 ) $0,
+      $api_wgl_list( $api_wgl_enum )
       size
     };
 
+    constexpr ssize_t api_size = (ssize_t) api::size;
+
 
     TP<TN...>
-    void* api_fn_ptrs[ (ssize_t) api::size ];
+    void* api_ptrs[ api_size ];
+
+
+    #define $api_wgl_name( $0 ) $str( $paste( $paste( wgl, $0 ), ARB ) ), 
 
     TP<TN...>
-    cstr api_fn_names[ (ssize_t) api::size ] {
-
-      #define $gl_api_name( $0 ) $str( $paste( gl, $0 ) ),
-      $gl_api_list ( $gl_api_name )
-    };
+    cstr api_names[] { $api_wgl_list( $api_wgl_name ) };
 
 
     TP<TN T> struct map { using type = T; };
     TP<> struct map< int > { using type = uint; };
     TP<TN T> using map_t = typename map< T >::type;
+
 
     TP<TN... TT, TN... UU, TN R0, TN R1>
     void check_args( R0 (APIENTRY *)(TT...), R1(UU...) ) {
@@ -55,19 +52,21 @@ namespace lib {
       static_assert( all_v< is_same_v< map_t< TT >, map_t< UU > >... >, "invalid arguments to a gl function"  );
     }
 
-    #define $gl_api_thunk( $0 ) \
-                                \
-    TP<TN... TT, TN R = decltype( ::$paste( gl, $0 )( declval< TT >()...) ) > \
-    R $0( TT... args ) {                                                      \
-      using fn_orig_ptr = decltype( ::$paste( gl, $0 ) )*;                 \
-      using fn_ptr = R (*)( TT... );                                          \
-      check_args( fn_orig_ptr{}, fn_ptr{} );                                  \
-      return fn_orig_ptr( api_fn_ptrs<>[ (ssize_t) api::$0 ] )( args... );    \
+
+    #define $api_wgl_thunk( $0 ) \
+    TP<TN... TT, TN R = decltype( ::$paste( $paste( wgl, $0 ), ARB )( declval< TT >()...) ) >  \
+    R $0( TT... args ) {                                                                      \
+      using fn_orig_ptr = decltype( ::$paste( $paste( wgl, $0 ), ARB ) )*;                     \
+      using fn_ptr = R (*)( TT... );                                                          \
+      check_args( fn_orig_ptr{}, fn_ptr{} );                                                  \
+      $assert( api_ptrs<>[ (ssize_t) api::$0 ], "opengl function wasn't loaded" );            \
+      return fn_orig_ptr( api_ptrs<>[ (ssize_t) api::$0 ] )( args... );                       \
     }
 
-    $gl_api_list( $gl_api_thunk )
+    $api_wgl_list( $api_wgl_thunk )
 
-    void gl_api_init() {
+
+    void api_init() {
 
       static decltype( $loadOpenglLib() ) handle{};
 
@@ -75,7 +74,7 @@ namespace lib {
 
       ssize_t index = 0;
 
-      for( auto name : api_fn_names<> ) {
+      for( auto name : api_names<> ) {
 
         log::gfx, "load ", name;
 
@@ -97,7 +96,7 @@ namespace lib {
 
         log::gfx, " = ", ptr, log::endl;
 
-        api_fn_ptrs<>[ index++ ] = ptr;
+        api_ptrs<>[ index++ ] = ptr;
       }
 
       log::gfx, "loading finished", log::endl;

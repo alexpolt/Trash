@@ -2,22 +2,22 @@
 
 #include "macros.h"
 #include "types.h"
-#include "out-ref.h"
 
 
 namespace lib {
 
 
-  TP<TN T0>
+  TP<TN T>
   struct handle : nocopy {
 
-    using deleter_t = void(*)( T0 );
+    using value_type = T;
+    using deleter_t = void(*)( value_type );
 
     handle() { }
 
     handle( handle&& other ) : _h{ move( other._h ) }, _d{ move( other._d ) } { }
 
-    handle( T0 h, deleter_t d ) : _h{ move( h ) }, _d{ move( d ) } { }
+    handle( value_type h, deleter_t d ) : _h{ move( h ) }, _d{ move( d ) } { }
 
     auto& operator=( handle&& other ) { 
 
@@ -29,11 +29,14 @@ namespace lib {
 
     ~handle() { if( _d ) _d( move( _h ) ); _d = nullptr; }
 
-    T0& get() { return _h; }
+    auto& get() { return _h; }
+    auto& get() const { return _h; }
 
-    operator T0&() { return _h; }
+    operator value_type&() { return _h; }
 
-    T0 _h{};    
+    explicit operator bool() const { return _h; }
+
+    value_type _h{};
     deleter_t _d{};
   };
 

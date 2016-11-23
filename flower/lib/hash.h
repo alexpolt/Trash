@@ -10,7 +10,14 @@
 
 namespace lib {
 
-  TP<TN T>
+  struct has_to_hash {
+    using yes = char(&)[1];
+    using no = char(&)[2];
+    TP<TN T, decltype( &T::to_hash ) = &T::to_hash> static yes check( int );
+    TP<TN> static no check( ... );
+  };
+
+  TP<TN T = void>
   struct hash32 {
 
     using value_type = uint32_t;
@@ -26,11 +33,18 @@ namespace lib {
       return MurmurHash2( &value, $size( value ), seed );
     }
 
-    TP<TN U, TN = enable_if_t< is_container_v< U > >>
+    TP<TN U, TN = enable_if_t< is_container_v< U > and $size( has_to_hash::check< U >( 0 ) ) == 2 >>
     static auto get_hash( U const& value, int seed = 0 ) {
 
       return MurmurHash2( value.data(), value.size(), seed );
     }
+
+    TP<TN U, TN = enable_if_t< $size( has_to_hash::check< U >( 0 ) ) == 1 >, TN = void>
+    static auto get_hash( U const& value, int seed = 0 ) {
+
+      return value.to_hash( seed );
+    }
+
 
     static auto get_hash( char* value, int seed = 0 ) {
 
@@ -69,7 +83,7 @@ namespace lib {
   };
 
 
-  TP<TN T>
+  TP<TN T = void>
   struct hash64 {
 
     using value_type = uint64_t;
@@ -85,10 +99,16 @@ namespace lib {
       return MurmurHash64A( &value, $size( value ), seed );
     }
 
-    TP<TN U, TN = enable_if_t< is_container_v< U > >>
+    TP<TN U, TN = enable_if_t< is_container_v< U > and $size( has_to_hash::check< U >( 0 ) ) == 2 >>
     static auto get_hash( U const& value, int seed = 0 ) {
 
       return MurmurHash64A( value.data(), value.size(), seed );
+    }
+
+    TP<TN U, TN = enable_if_t< $size( has_to_hash::check< U >( 0 ) ) == 1 >, TN = void>
+    static auto get_hash( U const& value, int seed = 0 ) {
+
+      return value.to_hash( seed );
     }
 
     static auto get_hash( char* value, int seed = 0 ) {

@@ -30,7 +30,7 @@ namespace lib {
       
     }
 
-    void fire_events() {
+    inline void fire_events() {
       
       auto time0 = global::clock<>();
 
@@ -71,7 +71,7 @@ namespace lib {
     }
 
 
-    auto remove( tid_t tid ) {
+    inline auto remove( tid_t tid ) {
 
       auto it = find( global::timer_list<>, [tid]( value< timeout >& timer ){ return tid == timer->get_id(); } );
 
