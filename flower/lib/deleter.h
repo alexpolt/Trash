@@ -8,9 +8,7 @@
 namespace lib {
 
 
-  struct deleter {
-
-    virtual ~deleter() { }
+  struct deleter : vbase {
 
     virtual void operator()( void* ) = 0;
   };

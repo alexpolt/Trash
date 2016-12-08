@@ -19,11 +19,10 @@ namespace lib {
   namespace loader {
 
 
-    struct loader_file : loader {
+    struct loader_file : base {
 
 
       loader_file( url location ) : _location{ location } { }
-
 
       void open() {
 
@@ -35,11 +34,9 @@ namespace lib {
 
           path << dir << _location.location();
 
-          os::file f = os::file{ path.data() };
+          if( os::file::exists( path.data() ) ) { 
 
-          if( f.exists() ) { 
-
-            _file = move( f );
+            _file  = os::file{ path };
 
             return;
           }
@@ -75,6 +72,8 @@ namespace lib {
 
         return _file.size();
       }
+
+      cstr to_string() const { return "file loader"; }
 
       url _location;
       os::file _file;

@@ -8,10 +8,15 @@
   $m( ClearColor )            \
   $m( ClearDepthf )           \
   $m( ClearStencil )          \
+  $m( ProvokingVertex )       \
+  $m( FrontFace )             \
+  $m( CullFace )              \
+  $m( )                 \
   $m( GetStringi )            \
   $m( GetIntegerv )           \
   $m( GenBuffers )            \
   $m( BindBuffer )            \
+  $m( )          \
 
 
 

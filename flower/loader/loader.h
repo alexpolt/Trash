@@ -5,7 +5,7 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/assert.h"
-#include "lib/value.h"
+#include "lib/log.h"
 #include "lib/url.h"
 #include "types.h"
 #include "error.h"
@@ -17,30 +17,22 @@ namespace lib {
   namespace loader {
 
 
-    inline value< loader > create( url location ) {
+    inline loader_ptr create( url location ) {
 
       if( location.scheme() == url::scheme::file ) {
 
-        return valule< loader >::create< loader_file >( location );
+        log::loader, "creating file loader for ", location.path(), log::endl;
+
+        return loader_ptr{ new loader_file{ location } };
       }
       
       $assert( false, "no such scheme" );
 
-      return value< loader >{};
+      return loader_ptr{};
     }
 
-
-    inline auto create( cstr path ) {
-
-      auto location = lib::url::create( path );
-
-      return load( location );
-    }
-
-   
 
   }
-
 }
 
 

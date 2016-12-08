@@ -32,13 +32,15 @@ namespace lib {
 
       ~cache_t() {
         
+        log::malloc, "freeing memory cache", log::endl;
+
         for( auto i : range{ 0, size } ) {
 
           if( _ptr[ i ] ) {
 
             get_stats().alloc.sub( _size[ i ] );
 
-            log::malloc, "free( ", _size[ i ], ", ", (void*) _ptr[ i ];
+            log::malloc, "free from cache( ", _size[ i ], ", ", (void*) _ptr[ i ];
             log::malloc, " ); total = ", get_stats().alloc.load(), log::endl;
 
             ::free( _ptr[ i ] ); 
@@ -63,12 +65,9 @@ namespace lib {
     inline void* alloc( ssize_t size ) {
 
       auto& stats = get_stats();
-
       auto& cache = get_cache();
-      
-      $assert( not cache.destroyed, "alloc failed, memory cache was destroyed" );
 
-      if( cache.enabled and size <= cache.size_max )
+      if( not cache.destroyed and cache.enabled and size <= cache.size_max )
 
         for( auto i : range{ 0, cache.size } ) {
 
@@ -87,7 +86,6 @@ namespace lib {
       stats.alloc.add( size );
 
       log::malloc, "malloc( ", size, " ) = ", (void*)ptr, ", total = ", stats.alloc.load(), log::endl;
-
 
       return ptr; 
     }

@@ -18,9 +18,7 @@ namespace lib {
   using value_o = value< object >;
 
 
-  struct object {
-
-    virtual ~object() {}
+  struct object : nocopy_vbase {
 
 
     virtual oid_t get_object_id() const;

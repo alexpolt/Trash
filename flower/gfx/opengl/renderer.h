@@ -13,8 +13,8 @@ namespace lib {
 
     using namespace render;
 
-    inline void clear( messages::clear& );
-
+    inline void message( messages::clear& );
+    inline void message( messages::vbuffer& );
 
     inline void process_queue() {
 
@@ -26,7 +26,8 @@ namespace lib {
 
         switch( msg.type() ) {
 
-          case message::mtype::clear: clear( *(messages::clear*) msg.data() ); break;
+          case message::type::clear: message( *(messages::clear*) msg.data() ); break;
+          case message::type::vbuffer: message( *(messages::vbuffer*) msg.data() ); break;
 
           default:
 
@@ -37,7 +38,7 @@ namespace lib {
     }
 
 
-    inline void clear( messages::clear& msg ) {
+    inline void message( messages::clear& msg ) {
 
       log::gfx, msg, log::endl;
 
@@ -53,6 +54,14 @@ namespace lib {
 
         gl::Clear( GL_COLOR_BUFFER_BIT );
       }
+    }
+
+
+    inline void message( messages::vbuffer& msg ) {
+
+      log::gfx, msg, log::endl;
+
+
     }
 
 

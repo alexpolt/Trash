@@ -7,7 +7,7 @@
 
 
 #include "lib/common.h"
-#include "os/common.h"
+#include "os/file.h"
 #include "lib/alloc-chunk.h"
 
 void measure1( vector< string >& lines );
@@ -21,7 +21,7 @@ int main() {
 
   cstr filename = "hitch4.txt";
 
-  os::file f0{ filename };
+  lib::os::file f0{ filename };
 
   f0.open();
 
@@ -30,17 +30,21 @@ int main() {
 
   int c = 0;
 
-  string s{ lib::alloc_chunk::create( "hitch", 4096 ) };
+  string s{ 32, lib::alloc_chunk::create( "hitch", 4096 ) };
 
   while( true ) {
 
-    if( c == 148500 ) {
+    if( c == 544650 ) {
 
       //lib::log::lock.on();
       //lib::log::memory.on();
     }
 
-    auto l = f0.get_line( s );
+    s.clear();
+
+    f0.get_line( s );
+
+    auto l = s;
 
     if( not l.size() )  break;
 
@@ -55,8 +59,10 @@ int main() {
 
     ++c;
 
-    //if( c > 20 ) break;
+    //if( c > 10 ) break;
   }
+
+  info, "count = ", c, "\n", endl;
 
   //lib::log::lock.off();
   //lib::log::memory.off();
@@ -65,6 +71,7 @@ int main() {
   measure2( stdlines );
 
   //getchar();
+  
 }
 
 

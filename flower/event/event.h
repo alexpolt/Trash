@@ -43,9 +43,7 @@ namespace lib {
     };
 
 
-    struct event {
-
-      virtual ~event() { }
+    struct event : nocopy_vbase {
 
       static constexpr ssize_t type_size = $size( event_desc ) + $size( void*[2] );
 

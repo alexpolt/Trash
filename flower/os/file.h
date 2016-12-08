@@ -11,6 +11,7 @@
 #include "lib/log.h"
 #include "lib/to-string.h"
 #include "lib/vector.h"
+#include "lib/string.h"
 #include "lib/scope-guard.h"
 #include "lib/handle.h"
 #include "lib/alloc-default.h"
@@ -26,12 +27,12 @@ namespace lib {
 
       using handle_t = handle< FILE* >;
 
+      file() { }
 
-      file( ) { }
+      file( string path ) : _path{ move( path ) } { }
 
-      file( cstr path ) : _path{ path } { }
-
-
+      auto create_error() { return $error_file( path(), strerror( errno ) ); }
+      
       vector_b load() {
 
         open();
@@ -40,7 +41,7 @@ namespace lib {
 
         log::os, $this, " loading ", file_size, " bytes", log::endl;
 
-        vector_b data{ file_size, alloc_default::create( _path ) };
+        vector_b data{ file_size, alloc_default::create( path() ) };
 
         while( data.size() < file_size ) {
 
@@ -48,9 +49,7 @@ namespace lib {
 
           data.set_size( read );
 
-          if( feof( _h ) or ferror( _h ) != 0 ) 
-
-            $throw $error_file( _path, strerror( errno ) );
+          if( feof( _h ) or ferror( _h ) != 0 ) $throw create_error();
         }
 
         return move( data );
@@ -75,9 +74,9 @@ namespace lib {
         return _size;
       }
 
-      bool exists() {
+      static bool exists( cstr path ) {
 
-        FILE* f = fopen( _path, "rb" );
+        FILE* f = fopen( path, "rb" );
 
         $on_return { if( f ) fclose( f ); };
 
@@ -90,11 +89,11 @@ namespace lib {
 
         if( $this ) return;
 
-        FILE* f = fopen( _path, "r+b" );
+        FILE* f = fopen( path(), "r+b" );
         
-        if( f == nullptr ) $throw $error_file( _path, strerror( errno ) );
+        if( f == nullptr ) $throw create_error();
 
-        log::os, "opened file ", _path, log::endl;
+        log::os, "opened file ", path(), log::endl;
         
         handle_t::deleter_t d = []( FILE* f ) { fclose( f ); };
 
@@ -109,9 +108,7 @@ namespace lib {
 
         auto ptr = fgets( buffer, $array_size( buffer ), _h );
 
-        if( ptr == nullptr and ferror( _h ) )
-
-          $throw $error_file( _path, strerror( errno ) );
+        if( ptr == nullptr and ferror( _h ) ) $throw create_error();
 
         if( ptr ) {
 
@@ -125,9 +122,7 @@ namespace lib {
 
         auto r = fseek( _h, offset, whence );
 
-        if( r != 0 )
-
-          $throw $error_file( _path, strerror( errno ) );
+        if( r != 0 ) $throw create_error();
 
         return r;
       }
@@ -136,9 +131,7 @@ namespace lib {
 
         auto offset = ftell( _h );
 
-        if( offset == -1L )
-
-          $throw $error_file( _path, strerror( errno ) );
+        if( offset == -1L ) $throw create_error();
 
         return offset;
       }
@@ -147,18 +140,20 @@ namespace lib {
 
       explicit operator bool() const { return (bool)_h; }
 
+      cstr path() const { return _path.data(); }
+
       cstr to_string() const {
 
         if( $this )
 
-          return lib::to_string( "file( %s, %p )", _path, (void*) _h.get() );
+          return lib::to_string( "file( %s, %p )", path(), (void*) _h.get() );
 
         else
-          return lib::to_string( "file( %s, not opened )", _path );
+          return lib::to_string( "file( %s, not opened )", path() );
       }
 
       handle_t _h{};
-      cstr _path{};
+      string _path{};
       ssize_t _size = -1;
     };
   

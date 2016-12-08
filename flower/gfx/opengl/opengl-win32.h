@@ -46,6 +46,7 @@ namespace lib {
         log::gfx, "Vendor: ", gl::GetString( GL_VENDOR ), log::endl;
         log::gfx, "Renderer: ", gl::GetString( GL_RENDERER ), log::endl;
         log::gfx, "Version: ", gl::GetString( GL_VERSION ), log::endl;
+        log::gfx, "GLSL Version: ", gl::GetString( GL_SHADING_LANGUAGE_VERSION ), log::endl;
       }
 
       ~opengl_win32() {
@@ -161,6 +162,8 @@ namespace lib {
 
       void init() {
 
+        gl::FrontFace( GL_CW );
+        gl::Enable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
         gl::ClearColor( 0.f, 0.f, 0.f, 1.f );
         gl::ClearDepthf( 0.f );
         gl::ClearStencil( 0 );

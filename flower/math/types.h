@@ -24,7 +24,12 @@ namespace lib {
 
       constexpr vec_t() {}
 
-      TP<TN U, ssize_t... MM, TN = enable_if_t< sizeof...( NN ) <= sizeof...( MM ) >>
+      TP<TN U, ssize_t... MM, TN = enable_if_t< sizeof...( NN ) == sizeof...( MM ) >>
+      constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ other[ NN ]... } { }
+
+      TP<TN U, ssize_t... MM, TN = enable_if_t< 
+        not is_same_v< T, U > and sizeof...( NN ) == sizeof...( MM ) or 
+        sizeof...( NN ) < sizeof...( MM ) >>
       explicit constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ value_type( other[ NN ] )... } { }
 
       TP<TN U, ssize_t... MM, TN = enable_if_t< ( sizeof...( NN ) > sizeof...( MM ) ) >, TN = void>
@@ -33,11 +38,8 @@ namespace lib {
       TP<TN U>
       explicit constexpr vec_t( U arg ) : _data{ ( (void)NN, value_type( arg ) )... } { }
 
-      TP<TN... UU>
+      TP<TN... UU, TN = enable_if_t< is_primitive_v< type_first_t< UU... > > >>
       explicit constexpr vec_t( UU... args ) : _data{ value_type( args )... } { }
-
-      TP<TN U, ssize_t... MM>
-      constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ other[ MM ]... } { }
 
       constexpr auto& operator[]( ssize_t idx ) { check_bounds( idx ); return _data[ idx ]; }
       constexpr auto& operator[]( ssize_t idx ) const { check_bounds( idx ); return _data[ idx ]; }

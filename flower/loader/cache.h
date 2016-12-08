@@ -1,11 +1,12 @@
 #pragma once
 
 #include "lib/macros.h"
-#include "lib/types.h""
+#include "lib/types.h"
 #include "lib/vector.h"
 #include "lib/hash-map.h"
 #include "lib/url.h"
 #include "lib/alloc-default.h"
+#include "render/resource.h"
 
 
 namespace lib {
@@ -15,8 +16,8 @@ namespace lib {
   namespace global {
 
 
-    TP<TN T>
-    hash_map< url, T > cache{ alloc_default::create( "loader cache" ) };
+    TP<TN...>
+    hash_map< url, render::resource_ptr > cache{ 16, alloc_default::create( "loader cache" ) };
 
   }
   }

@@ -15,9 +15,8 @@ namespace lib {
     constexpr struct endl_t { constexpr endl_t() { } } endl;
 
 
-    struct logger {
+    struct logger : vbase {
 
-      virtual ~logger() { }
       virtual void log( cstr ) = 0;
       virtual void log( endl_t ) = 0;
     };
@@ -32,11 +31,11 @@ namespace lib {
 
     enum class log_type { info, error, warn, debug, malloc, memory, 
                           os, lock, task, link, event, input,
-                          timer, render, gfx };
+                          timer, render, gfx, loader };
 
     constexpr cstr log_type_str[] = { "info: ", "error: ", "warn: ", "debug: ", "malloc: ", "memory: ", 
                                       "os: ", "lock: ", "task: ", "link: ", "event: ", "input: ",
-                                      "timer: ", "render: ", "gfx: "
+                                      "timer: ", "render: ", "gfx: ", "loader: "
                                     };
 
     TP<log_type T>
@@ -118,6 +117,7 @@ namespace lib {
       log_t< log_type::timer > timer;
       log_t< log_type::render > render;
       log_t< log_type::render > gfx;
+      log_t< log_type::loader > loader;
 
     }
 

@@ -20,11 +20,29 @@ namespace lib {
   struct empty_struct { };
 
   struct nocopy { 
-    nocopy() { } 
+    nocopy() = default;
     nocopy( nocopy const& ) = delete; 
-    nocopy& operator=( nocopy const& ) = delete;
     nocopy( nocopy&& ) = default;
+    nocopy& operator=( nocopy const& ) = delete;
     nocopy& operator=( nocopy&& ) = default;
+  };
+
+  struct vbase {
+    vbase() = default;
+    vbase( vbase const& ) = default;
+    vbase( vbase&& ) = default;
+    vbase& operator=( vbase const& ) = default;
+    vbase& operator=( vbase&& ) = default;
+    virtual ~vbase() = default;
+  };
+
+  struct nocopy_vbase {
+    nocopy_vbase() = default;
+    nocopy_vbase( nocopy_vbase const& ) = delete;
+    nocopy_vbase( nocopy_vbase&& ) = default;
+    nocopy_vbase& operator=( nocopy_vbase const& ) = delete;
+    nocopy_vbase& operator=( nocopy_vbase&& ) = default;
+    virtual ~nocopy_vbase() = default;
   };
 
 

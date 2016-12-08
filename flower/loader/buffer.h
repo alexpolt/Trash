@@ -1,13 +1,15 @@
 #pragma once
 
+#include <cstdio>
+
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/assert.h"
+#include "lib/log.h"
 #include "lib/vector.h"
 #include "lib/string.h"
 #include "lib/alloc-default.h"
 #include "lib/url.h"
-#include "render/types.h"
 #include "render/buffer.h"
 #include "loader.h"
 #include "cache.h"
@@ -20,24 +22,27 @@ namespace lib {
   namespace buffer {
 
 
-    inline vbuffer_ptr load( url location, bool cache = false ) {
+    inline render::vbuffer_ptr load( url location, bool cache = false ) {
+
+      log::loader, "load buffer ", location.path(), log::endl;
 
       if( cache ) {
 
-        auto it = cache<>[ location ];
+        auto it = global::cache<>[ location ];
 
-        if( it ) 
+        if( it ) {
+
+          log::loader, "get from cache ", *it, log::endl;
           
-          return static_cast< vbuffer_ptr > ( *it );
+          return static_cast< render::vbuffer_ptr > ( *it );
+        }
       }
 
-      auto loader = loader::create( url );
+      auto loader = loader::create( location );
 
-      string str{ 32, alloc_default::create( "buffer loader string" ) };
+      string str{ 32, alloc_default::create( "buffer loader get_line" ) };
 
-      vbuffer::vector_type v{ 256, alloc_default::create( url.path() ) };
-
-      ssize_t size = 0;
+      render::vbuffer::vector_type data{ 256, alloc_default::create( location.path() ) };
 
       float f0, f1, f2;
 
@@ -47,16 +52,27 @@ namespace lib {
 
         if( not str ) break;
 
-        sscanf( str.data(), "%f%f%f", &f0, &f1, &f2 );
+        auto result = sscanf( str.data(), "%f%f%f", &f0, &f1, &f2 );
 
-        v << f0 << f1 << f2;
+        if( not result or result == EOF ) break;
+
+        str.clear();
+
+        data << f0 << f1 << f2;
       }
 
-      auto ptr = new render::vbuffer{ resource::format::float3, move( v ) };
+      log::loader, "loaded ", data.size_bytes(), " bytes", log::endl;
 
-      auto buffer = strong_ptr< render::vbuffer >{ ptr, url.path() };
+      auto ptr = new render::vbuffer{ render::res::format::float3, move( data ) };
 
-      if( cache ) cache<>.insert( location, buffer.lock() );
+      auto buffer = strong_ptr< render::vbuffer >{ ptr, location.path() };
+
+      if( cache ) {
+
+        log::loader, "store in cache ", *buffer, log::endl;
+
+        global::cache<>.insert( location, buffer.lock() );
+      }
 
       return move( buffer );
     }

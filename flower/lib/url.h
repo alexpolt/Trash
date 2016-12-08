@@ -3,6 +3,8 @@
 #include "macros.h"
 #include "types.h"
 #include "error.h"
+#include "algo.h"
+#include "hash.h"
 
 
 namespace lib {
@@ -12,7 +14,7 @@ namespace lib {
 
     enum class scheme : int { null, file, web, db };
 
-    static int scheme_size( scheme s ) const { 
+    static int scheme_size( scheme s ) { 
       static int offset[] { 0,  $array_size( "file://" ) - 1, 
                                 $array_size( "web://" ) - 1, 
                                 $array_size( "db://" ) - 1 };
@@ -23,24 +25,23 @@ namespace lib {
 
     url( scheme s, cstr p ) : _scheme{ s }, _path{ p } { }
 
-    static url create( cstr path ) {
+    url( cstr path ) {
 
-      if( strstr( path, "file://" ) == path ) return url{ scheme::file, path };
+      _path = path;
 
-      if( strstr( path, "web://" ) == path ) return url{ scheme::web, path };
-
-      if( strstr( path, "db://" ) == path ) return url{ scheme::db, path };
-
-      $throw $error_input( path );
-
-      return url{};
+      if( strstr( path, "file://" ) == path ) _scheme = scheme::file;
+      else if( strstr( path, "web://" ) == path ) _scheme = scheme::web;
+      else if( strstr( path, "db://" ) == path ) _scheme = scheme::db;
+      else $throw $error_input( path );
     }
-
 
     auto scheme() const { return _scheme; }
     auto location() const { return _path + scheme_size( scheme() ); }
     auto path() const { return _path; }
-    uint to_hash( int seed ) const { return hash<>::get_hash
+    uint to_hash( int seed ) const { return hash32<>::get_hash( path() ); }
+
+    bool operator==( url const& right ) const { return equal( path(), right.path() ); }
+    bool operator<( url const& right ) const { return less( path(), right.path() ); }
 
     enum scheme _scheme{};
     cstr _path{};

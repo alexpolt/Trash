@@ -3,7 +3,7 @@
 #include "lib/macros.h"
 #include "lib/types.h"
 #include "lib/to-string.h"
-#include "types.h"
+#include "message.h"
 #include "color.h"
 #include "buffer.h"
 #include "camera.h"
@@ -18,9 +18,9 @@ namespace lib {
   namespace messages {
 
 
-    struct clear : message {
+    struct clear : message::base {
       
-      static constexpr mtype type = mtype::clear;
+      static constexpr msg::type type = msg::type::clear;
 
       cstr to_string() const { 
 
@@ -33,27 +33,19 @@ namespace lib {
       float depth{ -1 };
     };
 
-    struct mesh : message {
-      
-      static constexpr mtype type = mtype::mesh;
 
+    struct vbuffer : message::base {
+      
+      static constexpr msg::type type = msg::type::vbuffer;
+
+      cstr to_string() const { return vbuffer->to_string(); }
+
+      vbuffer_ptr vbuffer;
     };
 
-    struct cbuffer : message {
-      
-      static constexpr mtype type = mtype::cbuffer;
-
-    };
-
-    struct shader : message {
-      
-      static constexpr mtype type = mtype::shader;
-
-    };
 
 
   }
-  
   }
 }
 

@@ -8,9 +8,7 @@
 namespace lib {
 
 
-  struct allocator {
-
-    virtual ~allocator() { }
+  struct allocator : vbase {
 
     virtual void* alloc( ssize_t ) = 0;
 

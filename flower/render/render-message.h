@@ -6,7 +6,7 @@
 #include "lib/vector.h"
 #include "lib/alloc-default.h"
 #include "lib/to-string.h"
-#include "types.h"
+#include "message.h"
 
 
 namespace lib {
@@ -17,12 +17,12 @@ namespace lib {
     namespace global {
 
       TP<TN...>
-      vector< owner_ptr< message > > messages{ alloc_default::create( "render messages" ) };
+      vector< owner_ptr< msg::base > > messages{ alloc_default::create( "render messages" ) };
 
       TP<ssize_t... NN>
       auto& create_messages_ptrs( index_list< NN... > ) {
 
-        static vector< message* > messages_free[ message::mtype::size  ]{
+        static vector< msg::base* > messages_free[ msg::type::size  ]{
           
           { ( (void)NN, alloc_default::create( "render messages ptrs" ) ) }...
         };
@@ -31,9 +31,9 @@ namespace lib {
       }
 
       TP<TN...>
-      vector< message* > ( &messages_ptrs )[ message::mtype::size ] = 
+      vector< msg::base* > ( &messages_ptrs )[ msg::type::size ] = 
 
-        create_messages_ptrs( index_list_t< message::mtype::size >{} );
+        create_messages_ptrs( index_list_t< msg::type::size >{} );
 
     }
 
@@ -42,7 +42,7 @@ namespace lib {
 
       render_message() { }
 
-      render_message( message* ptr, message::mtype t ) : _data{ ptr }, _type{ t } { }
+      render_message( msg::base* ptr, msg::type t ) : _data{ ptr }, _type{ t } { }
 
       render_message( render_message&& other ) : _data{ move( other._data ) }, _type{ other._type } { }
 
@@ -63,14 +63,14 @@ namespace lib {
 
       cstr to_string() const { 
 
-        return lib::to_string( "message( %s, %p )", message::get_desc( _type ), (void*) _data ); 
+        return lib::to_string( "message( %s, %p )", msg::get_desc( _type ), (void*) _data ); 
       }
 
       auto data() { return _data; }
       auto type() { return _type; }
 
-      message* _data{};
-      message::mtype _type{};
+      msg::base* _data{};
+      msg::type _type{};
     };
 
 
@@ -89,7 +89,7 @@ namespace lib {
 
       } else {
 
-        global::messages<>.push_back( owner_ptr< message >{ new T{ move( msg ) } } );
+        global::messages<>.push_back( owner_ptr< msg::base >{ new T{ move( msg ) } } );
 
         auto ptr = global::messages<>.back().get();
         

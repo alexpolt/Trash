@@ -72,8 +72,10 @@ namespace lib {
       range{ 0, size } $do { push_back( value ); };
     }
 
+    vector( vector& other ) : vector{ const_cast< vector const& >( other ) } { }
+
     vector( vector const& other ) {
-      
+
       _alloc = other._alloc->get_copy();
 
       clear();
@@ -95,10 +97,10 @@ namespace lib {
       char dummy[] { ( $this << forward< UU >( args ), '\0' )... }; (void) dummy; 
     }
 
-    vector( cstr other, allocator alloc = create_alloc() ) : vector{ alloc } { $this << other; }
+    vector( cstr other, allocator alloc = create_alloc() ) : vector{ move( alloc ) } { $this << other; }
 
     TP<TN U, ssize_t M>
-    vector( U ( &args)[ M ], allocator alloc = create_alloc() ) : vector{ alloc } { $this << args; }
+    vector( U ( &args)[ M ], allocator alloc = create_alloc() ) : vector{ move( alloc ) } { $this << args; }
 
 
     vector& operator=( vector&& other ) {

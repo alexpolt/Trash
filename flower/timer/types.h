@@ -27,9 +27,7 @@ namespace lib {
     };
 
 
-    struct timeout {
-
-      virtual ~timeout() { }
+    struct timeout : nocopy_vbase {
 
       static constexpr ssize_t type_size = $size( timeout_desc ) + $size( void*[2] );
 

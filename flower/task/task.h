@@ -27,9 +27,7 @@ namespace lib {
     };
 
 
-    struct task {
-
-      virtual ~task() { }
+    struct task : nocopy_vbase {
 
       static constexpr ssize_t type_size = $size( task_desc ) + $size( void*[2] );
 
