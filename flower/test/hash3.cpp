@@ -19,7 +19,8 @@ int main() {
   //lib::log::lock.on();
   //lib::log::memory.on();
 
-  cstr filename = "hitch4.txt";
+  //cstr filename = "hitch4.txt";
+  cstr filename = "passwords.txt";
 
   lib::os::file f0{ filename };
 

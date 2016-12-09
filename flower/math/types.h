@@ -28,11 +28,11 @@ namespace lib {
       constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ other[ NN ]... } { }
 
       TP<TN U, ssize_t... MM, TN = enable_if_t< 
-        not is_same_v< T, U > and sizeof...( NN ) == sizeof...( MM ) or 
-        sizeof...( NN ) < sizeof...( MM ) >>
+        ( not is_same_v< T, U > and sizeof...( NN ) == sizeof...( MM ) ) or
+        sizeof...( NN ) < sizeof...( MM ) >, TN = void>
       explicit constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ value_type( other[ NN ] )... } { }
 
-      TP<TN U, ssize_t... MM, TN = enable_if_t< ( sizeof...( NN ) > sizeof...( MM ) ) >, TN = void>
+      TP<TN U, ssize_t... MM, TN = enable_if_t< ( sizeof...( NN ) > sizeof...( MM ) ) >, TN = void, TN = void>
       explicit constexpr vec_t( vec_t< U, MM... > const& other ) : _data{ value_type( other[ MM ] )... } { }
 
       TP<TN U>

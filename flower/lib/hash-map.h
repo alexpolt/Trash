@@ -33,7 +33,7 @@ namespace lib {
     using const_iterator = vector_iterator< vector< value_type > const >;
     using allocator = value< allocator >;
 
-    static constexpr int _try_max = 8;
+    static constexpr int _try_max = 4;
     static constexpr int _reserve_init = 3;
     static constexpr int _hash_functions = 3;
     static constexpr ssize_t _invalid_index = -1;
@@ -54,34 +54,47 @@ namespace lib {
       reserve( size );
     }
 
-    void init_hash( hash_type hash0, uint i, hash_type& hash1, hash_type& hash2, hash_type& hash3 ) {
+    void init_hash( key_type const& key, hash_type& hash1, hash_type& hash2, hash_type& hash3 ) {
 
       auto size_table = _hash_table.size();
 
-      hash1 = ( hash0 + i ) % size_table;
-      hash2 = ( ~hash0 + 1 + i ) % size_table;
-      hash3 = ( hash0 * hash0 + 2 + i ) % size_table;
+      auto hash0 = hasher::get_hash( key );
+      
+      $assert( hash0, "hash of the key is zero?" );
+
+      hash1 = hash0;
+      hash2 = ~hash0;
+      hash3 = hash1 * hash2;
+
+      auto index1 = hash1 % size_table;
+      auto index2 = hash2 % size_table;
+      auto index3 = hash3 % size_table;
+
+      if( index1 == index2 ) { ++hash2; index2 = hash2 % size_table; }
+      if( index1 == index3 ) { ++hash3; index3 = hash3 % size_table; }
+      if( index2 == index3 ) { ++hash3; index3 = hash3 % size_table; }
+      if( index1 == index3 ) { ++hash3; index3 = hash3 % size_table; }
+
+      $assert( index1 != index2 and index2 != index3 and index3 != index1, "init_hash failed" );
     }
 
     iterator find( key_type const& key ) { return $this[ key ]; }
 
     iterator operator[]( key_type const& key ) {
 
-      auto hash0 = hasher::get_hash( key );
-
       if( size() > 0 ) {
 
+        hash_type hash1{}, hash2{}, hash3{};
+
+        init_hash( key, hash1, hash2, hash3 );
+
+        auto size_table = _hash_table.size();
+
         for( auto i : range{ 0, _try_max } ) {
-
-          hash_type hash1{}, hash2{}, hash3{};
-
-          init_hash( hash0, i, hash1, hash2, hash3 );
-
-          if( hash1 == hash2 or hash1 == hash3 or hash2 == hash3 ) continue;
-          
-          auto& hvalue1 = _hash_table[ hash1 ];
-          auto& hvalue2 = _hash_table[ hash2 ];
-          auto& hvalue3 = _hash_table[ hash3 ];
+         
+          auto& hvalue1 = _hash_table[ ( hash1 + i ) % size_table ];
+          auto& hvalue2 = _hash_table[ ( hash2 + i ) % size_table ];
+          auto& hvalue3 = _hash_table[ ( hash3 + i ) % size_table ];
 
           if( hvalue1.get_refcnt() == 0 or
                 hvalue2.get_refcnt() == 0 or
@@ -128,21 +141,17 @@ namespace lib {
 
       if( _hash_table.size() == 0 ) reserve( _reserve_init );
 
-      hash_type hash0 = hasher::get_hash( key );
+      hash_type hash1{}, hash2{}, hash3{};
 
-      $assert( hash0, "hash of the key should not be zero" );
-      
+      init_hash( key, hash1, hash2, hash3 );
+
+      auto size_table = _hash_table.size();
+     
       for( auto i : range{ 0, _try_max } ) {
 
-        hash_type hash1{}, hash2{}, hash3{};
-
-        init_hash( hash0, i, hash1, hash2, hash3 );
-
-        if( hash1 == hash2 or hash1 == hash3 or hash2 == hash3 ) continue;
-
-        auto& hvalue1 = _hash_table[ hash1 ];
-        auto& hvalue2 = _hash_table[ hash2 ];
-        auto& hvalue3 = _hash_table[ hash3 ];
+        auto& hvalue1 = _hash_table[ ( hash1 + i ) % size_table ];
+        auto& hvalue2 = _hash_table[ ( hash2 + i ) % size_table ];
+        auto& hvalue3 = _hash_table[ ( hash3 + i ) % size_table ];
 
         if( hvalue1.get_refcnt() and
               hvalue2.get_refcnt() and
@@ -242,19 +251,17 @@ namespace lib {
 
       if( size() == 0 ) return _values.end();
 
-      auto hash0 = hasher::get_hash( key );
+      hash_type hash1{}, hash2{}, hash3{};
+
+      init_hash( key, hash1, hash2, hash3 );
+
+      auto size_table = _hash_table.size();
 
       for( auto i : range{ 0, _try_max } ) {
-
-        hash_type hash1{}, hash2{}, hash3{};
-
-        init_hash( hash0, i, hash1, hash2, hash3 );
-
-        if( hash1 == hash2 or hash1 == hash3 or hash2 == hash3 ) continue;
-        
-        auto& hvalue1 = _hash_table[ hash1 ];
-        auto& hvalue2 = _hash_table[ hash2 ];
-        auto& hvalue3 = _hash_table[ hash3 ];
+       
+        auto& hvalue1 = _hash_table[ ( hash1 + i ) % size_table ];
+        auto& hvalue2 = _hash_table[ ( hash2 + i ) % size_table ];
+        auto& hvalue3 = _hash_table[ ( hash3 + i ) % size_table ];
 
         if( hvalue1.get_refcnt() == 0 or
               hvalue2.get_refcnt() == 0 or
