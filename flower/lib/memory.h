@@ -25,7 +25,7 @@ namespace lib {
 
     struct cache_t { 
 
-      static constexpr bool enabled = true;
+      static constexpr bool enabled = false;
       static constexpr ssize_t cache_size = 16;
       static constexpr ssize_t size = cache_size;
       static constexpr ssize_t size_max = 512;

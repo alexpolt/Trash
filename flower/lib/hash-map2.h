@@ -160,6 +160,8 @@ namespace lib {
 
           ssize_t index = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
+          if( rehash_index != _invalid_index and index >= rehash_index ) continue;
+
           if( index >= _keys.size() ) continue;
 
           if( _key_deleted[ index ] ) continue;
@@ -220,27 +222,24 @@ namespace lib {
 
     void rehash( ssize_t rehash_index = _invalid_index ) {
 
+      $assert( rehash_index == _invalid_index, "no recursive rehashing, try increasing table size or try_max of the hash_map" );
+
       ++_rehashes;
 
       if( size() == 0 ) return;
 
-      $assert( rehash_index == _invalid_index, "no recursive rehashing, try increasing table size or try_max of the hash_map" );
+      bool result = true;
 
-      vector< key_type > keys_orig{ _keys.size() };
+      for( auto i : range{ 0, _keys.size() } ) {
 
-      swap( keys_orig, _keys );
+        if( _key_deleted[ i ] ) continue;
 
-      for( auto i : range{ 0, keys_orig.size() } ) {
+        auto index = get_new_index( _keys[ i ], i );
 
-        if( not _key_deleted[ i ] ) {
-
-          auto index = get_new_index( keys_orig[ i ], i );
-
-          $assert( index == i and index != _invalid_index, "rehash failed for some reason" );
-        }
-
-        _keys << move( keys_orig[ i ] );
+        result = result and index != _invalid_index;
       }
+
+      $assert( result, "rehash failed for some reason" );
     }
 
     void reserve( ssize_t size = 0 ) {
