@@ -66,7 +66,7 @@ namespace lib {
 
       hash1 = hash0 & mask;
       hash2 = ( ~hash0 >> 1 ) & mask;
-      hash3 = hash0 * hash2 & mask;
+      hash3 = ( ~hash0 >> 1 ^ hash0 ) & mask;
 
       if( hash1 == hash2 ) { ++hash2; hash2 = hash2 & mask; }
       if( hash1 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
@@ -178,9 +178,11 @@ namespace lib {
         auto& hvalue2 = _hash_table[ ( hash2 + i ) & hash_mask ];
         auto& hvalue3 = _hash_table[ ( hash3 + i ) & hash_mask ];
 
-        if( hvalue1.get_refcnt() and
-              hvalue2.get_refcnt() and
-                hvalue3.get_refcnt() ) {
+        auto refcnt1 = hvalue1.get_refcnt();
+        auto refcnt2 = hvalue2.get_refcnt();
+        auto refcnt3 = hvalue3.get_refcnt();
+
+        if( refcnt1 and refcnt2 and refcnt3 ) {
 
           ssize_t index = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
@@ -198,33 +200,29 @@ namespace lib {
 
         hash_node* hash_ptr = nullptr;
 
-        if( hvalue1.get_refcnt() == 0 ) { 
+        if( refcnt1 == 0 ) { 
 
           hash_ptr = &hvalue1; 
-
           hvalue1.set_hash( hash0 ); 
         }
 
-        if( hvalue2.get_refcnt() == 0 ) { 
+        if( refcnt2 == 0 ) { 
 
           if( not hash_ptr ) hash_ptr = &hvalue2; 
-
           else hvalue2.set_hash( ~hash0 );
         }
 
-
-        if( hvalue3.get_refcnt() == 0 ) {
+        if( refcnt3 == 0 ) {
 
           if( not hash_ptr ) hash_ptr = &hvalue3;
-
-          else hvalue3.set_hash( hash0 * ~hash0 );
+          else hvalue3.set_hash( ~hash0 >> 1 ^ hash0 );
         }
 
         if( not hash_ptr ) continue;
  
-        hvalue1.set_refcnt( hvalue1.get_refcnt() + 1 );
-        hvalue2.set_refcnt( hvalue2.get_refcnt() + 1 );
-        hvalue3.set_refcnt( hvalue3.get_refcnt() + 1 );
+        hvalue1.set_refcnt( refcnt1 + 1 );
+        hvalue2.set_refcnt( refcnt2 + 1 );
+        hvalue3.set_refcnt( refcnt3 + 1 );
 
         hash_ptr->set_hash( hash_type{} );
 
@@ -307,9 +305,11 @@ namespace lib {
         auto& hvalue2 = _hash_table[ ( hash2 + i ) & hash_mask ];
         auto& hvalue3 = _hash_table[ ( hash3 + i ) & hash_mask ];
 
-        if( hvalue1.get_refcnt() == 0 or
-              hvalue2.get_refcnt() == 0 or
-                hvalue3.get_refcnt() == 0 ) continue;
+        auto refcnt1 = hvalue1.get_refcnt();
+        auto refcnt2 = hvalue2.get_refcnt();
+        auto refcnt3 = hvalue3.get_refcnt();
+
+        if( refcnt1 == 0 or refcnt2 == 0 or refcnt3 == 0 ) continue;
 
         ssize_t index = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
@@ -319,13 +319,13 @@ namespace lib {
 
         if( not equal( key, _keys[ index ] ) ) continue;
 
-        hvalue1.set_refcnt( hvalue1.get_refcnt() - 1 );
-        hvalue2.set_refcnt( hvalue2.get_refcnt() - 1 );
-        hvalue3.set_refcnt( hvalue3.get_refcnt() - 1 );
+        hvalue1.set_refcnt( refcnt1 - 1 );
+        hvalue2.set_refcnt( refcnt2 - 1 );
+        hvalue3.set_refcnt( refcnt3 - 1 );
 
-        if( hvalue1.get_refcnt() == 0 ) hvalue1.set_hash( 0 );
-        if( hvalue2.get_refcnt() == 0 ) hvalue2.set_hash( 0 );
-        if( hvalue3.get_refcnt() == 0 ) hvalue3.set_hash( 0 );
+        if( refcnt1 - 1 == 0 ) hvalue1.set_hash( 0 );
+        if( refcnt2 - 1 == 0 ) hvalue2.set_hash( 0 );
+        if( refcnt3 - 1 == 0 ) hvalue3.set_hash( 0 );
 
         _keys[ index ] = key_type{};
         _key_deleted[ index ] = true;
@@ -384,7 +384,7 @@ namespace lib {
       
       void set_hash( hash_type hash ) { _hash = ( _hash & ~_mask ) | ( hash & _mask ); }
 
-      auto get_refcnt() const { return _hash >> _mask_shift; }
+      ssize_t get_refcnt() const { return _hash >> _mask_shift; }
 
       void set_refcnt( int count ) { 
 
