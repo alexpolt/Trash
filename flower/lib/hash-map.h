@@ -262,7 +262,7 @@ namespace lib {
 
           $throw $error_hash( "maximum hash table size" );
       }
-printf("reserve %d\n",size);
+
       $assert( ( size & ( size - 1 ) ) == 0, "size is not a power of two" );
 
       _hash_table.reserve( size, true );
