@@ -36,7 +36,6 @@ namespace lib {
     static constexpr int _try_max = 8;
     static constexpr int _reserve_init = 4;
     static constexpr int _hash_functions = 3;
-    static constexpr ssize_t _invalid_index = -1;
     static constexpr ssize_t _size_max = is_64bit ? 1ll << 56 : 1 << 28;
     static constexpr ssize_t _hash_table_size_max = _size_max << 2;
 
@@ -67,7 +66,7 @@ namespace lib {
 
       hash1 = hash0 & mask;
       hash2 = ( ~hash0 >> 1 ) & mask;
-      hash3 = ( hash1 * hash2 ) & mask;
+      hash3 = hash0 * hash2 & mask;
 
       if( hash1 == hash2 ) { ++hash2; hash2 = hash2 & mask; }
       if( hash1 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
@@ -129,18 +128,37 @@ namespace lib {
 
         $throw $error_hash( "maximum hash table size" );
 
-      auto index = get_new_index( key );
+      ssize_t index_new;
 
-      if( index == _invalid_index ) return _values.end();
+      if( not _index_free.empty() ) {
 
-      _keys[ index ] = move( key );
-      _key_deleted[ index ] = false;
-      _values[ index ] = move( value );
+        index_new = _index_free.pop_back();
 
-      return _values.begin() + index;
+        auto result = set_new_index( key, index_new );
+
+        if( not result ) return _values.end();
+
+        _keys[ index_new ] = move( key );
+        _key_deleted[ index_new ] = false;
+        _values[ index_new ] = move( value );
+
+       } else { 
+
+        index_new = _keys.size();
+
+        auto result = set_new_index( key, index_new );
+
+        if( not result ) return _values.end();
+
+        _keys << move( key );
+        _key_deleted << false;
+        _values << move( value );
+      }
+
+      return _values.begin() + index_new;
     }
 
-    ssize_t get_new_index( key_type const& key, ssize_t rehash_index = _invalid_index ) {
+    bool set_new_index( key_type const& key, ssize_t index_new, bool rehashing = false ) {
 
       if( _hash_table.size() == 0 ) reserve( _reserve_init );
 
@@ -166,7 +184,7 @@ namespace lib {
 
           ssize_t index = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
-          if( rehash_index != _invalid_index and index >= rehash_index ) continue;
+          if( rehashing and index >= index_new ) continue;
 
           if( index >= _keys.size() ) continue;
 
@@ -174,84 +192,77 @@ namespace lib {
 
           if( equal( key, _keys[ index ] ) ) {
 
-            return _invalid_index;
+            return false;
           }
         }
 
         hash_node* hash_ptr = nullptr;
 
-        if( hvalue1.get_refcnt() == 0 ) hash_ptr = &hvalue1;
-        else if( hvalue2.get_refcnt() == 0 ) hash_ptr = &hvalue2;
-        else if( hvalue3.get_refcnt() == 0 ) hash_ptr = &hvalue3;
-        else continue;
+        if( hvalue1.get_refcnt() == 0 ) { 
 
-        if( hvalue1.get_refcnt() == 0 and hash_ptr != &hvalue1 ) hvalue1.set_hash( hash0 );
-        if( hvalue2.get_refcnt() == 0 and hash_ptr != &hvalue2 ) hvalue2.set_hash( ~hash0 );
-        if( hvalue3.get_refcnt() == 0 and hash_ptr != &hvalue3 ) hvalue3.set_hash( ~hash0*hash0 );
+          hash_ptr = &hvalue1; 
+
+          hvalue1.set_hash( hash0 ); 
+        }
+
+        if( hvalue2.get_refcnt() == 0 ) { 
+
+          if( not hash_ptr ) hash_ptr = &hvalue2; 
+
+          else hvalue2.set_hash( ~hash0 );
+        }
+
+
+        if( hvalue3.get_refcnt() == 0 ) {
+
+          if( not hash_ptr ) hash_ptr = &hvalue3;
+
+          else hvalue3.set_hash( hash0 * ~hash0 );
+        }
+
+        if( not hash_ptr ) continue;
  
         hvalue1.set_refcnt( hvalue1.get_refcnt() + 1 );
         hvalue2.set_refcnt( hvalue2.get_refcnt() + 1 );
         hvalue3.set_refcnt( hvalue3.get_refcnt() + 1 );
 
-        ssize_t index = _invalid_index;
-
-        if( rehash_index != _invalid_index ) {
-
-          index = rehash_index;        
-
-        } else if( not _index_free.empty() ) {
-
-          index = _index_free.pop_back();
-
-        } else { 
-
-          index = _keys.size();
-
-          _keys.emplace_back();
-          _key_deleted.emplace_back();
-          _values.emplace_back();
-        }
-
         hash_ptr->set_hash( hash_type{} );
 
-        hash_type index_hashed = index xor hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
+        hash_type index_hashed = index_new xor hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
         hash_ptr->set_hash( index_hashed );
         
-        return index;
+        return true;
       }
       
       reserve();
 
-      rehash( rehash_index );
+      rehash( rehashing );
 
-      auto index = get_new_index( key );
+      auto result = set_new_index( key, index_new );
 
-      $assert( index != _invalid_index, "hash insert unexpectedly failed" );
+      $assert( result, "hash insert unexpectedly failed" );
 
-      return index;
+      return true;
     }
 
-    void rehash( ssize_t rehash_index = _invalid_index ) {
+    void rehash( bool rehashing ) {
 
-      $assert( rehash_index == _invalid_index, "no recursive rehashing, try increasing table size or try_max of the hash_map" );
+      $assert( not rehashing, "no recursive rehashing, try increasing table size or try_max of the hash_map" );
 
       ++_rehashes;
 
-      if( size() == 0 ) return;
-
-      bool result = true;
+      $assert( size(), "hash_map size can't zero in rehashing" );
 
       for( auto i : range{ 0, _keys.size() } ) {
 
         if( _key_deleted[ i ] ) continue;
 
-        auto index = get_new_index( _keys[ i ], i );
+        auto result = set_new_index( _keys[ i ], i, true );
 
-        result = result and index != _invalid_index;
+        $assert( result, "rehash failed for some reason" );
       }
 
-      $assert( result, "rehash failed for some reason" );
     }
 
     void reserve( ssize_t size = 0 ) {

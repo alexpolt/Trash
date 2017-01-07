@@ -60,7 +60,7 @@ int main() {
 
     ++c;
 
-    //if( c > 500000 ) break;
+    if( c > 1'000'000 ) break;
   }
 
   info, "count = ", c, "\n", endl;
