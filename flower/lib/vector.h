@@ -159,6 +159,13 @@ namespace lib {
       _capacity = 0; 
     }
 
+    void clear( value_type value ) {
+
+      clear();
+
+      range{ 0, capacity() } $do { push_back( value ); };
+    }
+
     void clear() {
 
       if( size() and not is_primitive_v< value_type > ) {

@@ -55,30 +55,26 @@ namespace lib {
       reserve( size );
     }
 
-    void init_hash( key_type const& key, hash_type& hash1, hash_type& hash2, hash_type& hash3 ) {
+    void init_hash( key_type const& key, hash_type& hash0, ssize_t& hash1, ssize_t& hash2, ssize_t& hash3 ) {
 
       auto size_table = _hash_table.size();
 
-      auto hash0 = hasher::get_hash( key );
+      ssize_t mask = size_table - 1;
+
+      hash0 = hasher::get_hash( key );
       
       $assert( hash0, "hash of the key is zero?" );
 
-      hash1 = hash0;
-      hash2 = ~hash0 >> 1;
-      hash3 = hash1 * hash2;
+      hash1 = hash0 & mask;
+      hash2 = ( ~hash0 >> 1 ) & mask;
+      hash3 = ( hash1 * hash2 ) & mask;
 
-      hash_type mask = size_table - 1;
+      if( hash1 == hash2 ) { ++hash2; hash2 = hash2 & mask; }
+      if( hash1 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
+      if( hash2 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
+      if( hash1 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
 
-      auto index1 = hash1 & mask;
-      auto index2 = hash2 & mask;
-      auto index3 = hash3 & mask;
-
-      if( index1 == index2 ) { ++hash2; index2 = hash2 & mask; }
-      if( index1 == index3 ) { ++hash3; index3 = hash3 & mask; }
-      if( index2 == index3 ) { ++hash3; index3 = hash3 & mask; }
-      if( index1 == index3 ) { ++hash3; index3 = hash3 & mask; }
-
-      $assert( index1 != index2 and index2 != index3 and index3 != index1, "init_hash failed" );
+      $assert( hash1 != hash2 and hash2 != hash3 and hash3 != hash1, "init_hash failed" );
     }
 
     iterator find( key_type const& key ) { return $this[ key ]; }
@@ -87,13 +83,15 @@ namespace lib {
 
       if( size() > 0 ) {
 
-        hash_type hash1{}, hash2{}, hash3{};
+        hash_type hash0;
 
-        init_hash( key, hash1, hash2, hash3 );
+        ssize_t hash1, hash2, hash3;
+
+        init_hash( key, hash0, hash1, hash2, hash3 );
 
         auto size_table = _hash_table.size();
 
-        hash_type hash_mask = size_table - 1;
+        auto hash_mask = size_table - 1;
 
         for( auto i : range{ 0, _try_max } ) {
          
@@ -146,13 +144,15 @@ namespace lib {
 
       if( _hash_table.size() == 0 ) reserve( _reserve_init );
 
-      hash_type hash1{}, hash2{}, hash3{};
+      hash_type hash0;
 
-      init_hash( key, hash1, hash2, hash3 );
+      ssize_t hash1, hash2, hash3;
+
+      init_hash( key, hash0, hash1, hash2, hash3 );
 
       auto size_table = _hash_table.size();
      
-      hash_type hash_mask = size_table - 1;
+      auto hash_mask = size_table - 1;
 
       for( auto i : range{ 0, _try_max } ) {
 
@@ -185,6 +185,10 @@ namespace lib {
         else if( hvalue3.get_refcnt() == 0 ) hash_ptr = &hvalue3;
         else continue;
 
+        if( hvalue1.get_refcnt() == 0 and hash_ptr != &hvalue1 ) hvalue1.set_hash( hash0 );
+        if( hvalue2.get_refcnt() == 0 and hash_ptr != &hvalue2 ) hvalue2.set_hash( ~hash0 );
+        if( hvalue3.get_refcnt() == 0 and hash_ptr != &hvalue3 ) hvalue3.set_hash( ~hash0*hash0 );
+ 
         hvalue1.set_refcnt( hvalue1.get_refcnt() + 1 );
         hvalue2.set_refcnt( hvalue2.get_refcnt() + 1 );
         hvalue3.set_refcnt( hvalue3.get_refcnt() + 1 );
@@ -207,7 +211,9 @@ namespace lib {
           _key_deleted.emplace_back();
           _values.emplace_back();
         }
- 
+
+        hash_ptr->set_hash( hash_type{} );
+
         hash_type index_hashed = index xor hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
         hash_ptr->set_hash( index_hashed );
@@ -265,22 +271,24 @@ namespace lib {
 
       $assert( ( size & ( size - 1 ) ) == 0, "size is not a power of two" );
 
-      _hash_table.reserve( size, true );
       _hash_table.clear();
-      _hash_table.resize( _hash_table.capacity() );
+      _hash_table.reserve( size, true );
+      _hash_table.resize( size );
    }
 
     iterator erase( key_type const& key ) {
 
       if( size() == 0 ) return _values.end();
 
-      hash_type hash1{}, hash2{}, hash3{};
+      hash_type hash0;
 
-      init_hash( key, hash1, hash2, hash3 );
+      ssize_t hash1{}, hash2{}, hash3{};
+
+      init_hash( key, hash0, hash1, hash2, hash3 );
 
       auto size_table = _hash_table.size();
 
-      hash_type hash_mask = size_table - 1;
+      auto hash_mask = size_table - 1;
 
       for( auto i : range{ 0, _try_max } ) {
        
@@ -374,7 +382,7 @@ namespace lib {
         _hash = ( _hash & _mask ) | ( count << _mask_shift ); 
       }
 
-      hash_type _hash;
+      hash_type _hash{};
     };
 
     vector< hash_node > _hash_table;

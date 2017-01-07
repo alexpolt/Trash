@@ -84,7 +84,7 @@ namespace lib {
         ssize_t n = (ssize_t) ptr;
 
         if( n == 0 or n == 1 or 
-            n == 2 or n == 2 or n == -1 ) {
+            n == 2 or n == 3 or n == -1 ) {
           
           if( not handle ) handle = $loadOpenglLib();
 

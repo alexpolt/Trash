@@ -31,7 +31,7 @@ int main() {
 
   int c = 0;
 
-  string s{ 32, lib::alloc_chunk::create( "hitch", 4096 ) };
+  string s{ 32, lib::alloc_chunk::create( "hitch", 131072 ) };
 
   while( true ) {
 
@@ -60,7 +60,7 @@ int main() {
 
     ++c;
 
-    if( c > 500000 ) break;
+    //if( c > 500000 ) break;
   }
 
   info, "count = ", c, "\n", endl;
