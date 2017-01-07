@@ -188,19 +188,22 @@ namespace lib {
       _index = 0;
     }
 
-    void reserve( ssize_t size_new = 0 ) {
+    void reserve( ssize_t size_new = 0, bool exact = false ) {
 
-      size_new = max( 1, size_new );
+      if( not exact ) {
 
-      if( size_new <= available() ) return;
+        size_new = max( 1, size_new );
 
-      if( capacity() > 0 ) {
+        if( size_new <= available() ) return;
 
-        ssize_t size_calc = capacity() < ( 1 << 22 ) ? capacity() * 4 : capacity() * 7 / 4;
+        if( capacity() > 0 ) {
 
-        $assert( size_calc > 0, "vector reserve overflow ( capacity )" );
+          ssize_t size_calc = capacity() < ( 1 << 22 ) ? capacity() * 4 : capacity() * 7 / 4;
 
-        size_new = max( size_new, size_calc );
+          $assert( size_calc > 0, "vector reserve overflow ( capacity )" );
+
+          size_new = max( size_new, size_calc );
+        }
       }
       
       auto size_new_bytes = value_size * size_new;

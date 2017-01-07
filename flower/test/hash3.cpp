@@ -60,7 +60,7 @@ int main() {
 
     ++c;
 
-    //if( c > 10 ) break;
+    if( c > 10 ) break;
   }
 
   info, "count = ", c, "\n", endl;
