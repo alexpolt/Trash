@@ -33,9 +33,12 @@ namespace lib {
     using const_iterator = vector_iterator< vector< value_type > const >;
     using allocator = value< allocator >;
 
+    struct hash_node;
+
     static constexpr int _try_max = 8;
     static constexpr int _reserve_init = 4;
     static constexpr int _hash_functions = 3;
+    static constexpr ssize_t _invalid_index = -1;
     static constexpr ssize_t _size_max = is_64bit ? 1ll << 56 : 1 << 28;
     static constexpr ssize_t _hash_table_size_max = _size_max << 2;
 
@@ -45,8 +48,7 @@ namespace lib {
       _hash_table{ alloc->get_copy() }, 
       _keys{ alloc->get_copy() }, 
       _values{ alloc->get_copy() }, 
-      _index_free{ alloc->get_copy() },
-      _key_deleted{ alloc->get_copy() },
+      _hashes{ alloc->get_copy() }, 
       _alloc{ move( alloc ) } { };
 
     hash_map( ssize_t size, allocator alloc = create_alloc() ) : hash_map{ move( alloc ) } {
@@ -83,45 +85,66 @@ namespace lib {
       $assert( hash1 != hash2 and hash2 != hash3 and hash3 != hash1, "init_hash failed" );
     }
 
+    bool find_bucket( key_type const& key, ssize_t* index, hash_node** bucket1 = nullptr, 
+    
+                        hash_node** bucket2 = nullptr, hash_node** bucket3 = nullptr ) {
+
+      hash_type hash0{};
+
+      ssize_t hash1, hash2, hash3;
+
+      if( *index ) 
+
+           init_hash( key, _hashes[ *index ], hash1, hash2, hash3, true );
+
+      else init_hash( key, hash0, hash1, hash2, hash3 );
+
+      auto size_table = _hash_table.size();
+
+      auto hash_mask = size_table - 1;
+
+      for( auto i : range{ 0, _try_max } ) {
+       
+        auto& hvalue1 = _hash_table[ ( hash1 + i ) & hash_mask ];
+        auto& hvalue2 = _hash_table[ ( hash2 + i ) & hash_mask ];
+        auto& hvalue3 = _hash_table[ ( hash3 + i ) & hash_mask ];
+
+        if( hvalue1.get_refcnt() == 0 or
+              hvalue2.get_refcnt() == 0 or
+                hvalue3.get_refcnt() == 0 ) continue;
+
+        ssize_t index2 = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
+
+        if( index2 >= _keys.size() ) continue;
+
+        if( not equal( key, _keys[ index2 ] ) ) continue;
+
+        *index = index2;
+
+        if( bucket1 ) {
+
+          *bucket1 = &hvalue1;
+          *bucket2 = &hvalue2;
+          *bucket3 = &hvalue3;
+        }
+
+        return true;
+      }
+
+      return false;
+    }
+
     iterator find( key_type const& key ) { return $this[ key ]; }
 
     iterator operator[]( key_type const& key ) {
 
-      if( size() > 0 ) {
+      if( not size() ) return _values.end();
 
-        hash_type hash0{};
+      ssize_t index{};
 
-        ssize_t hash1, hash2, hash3;
+      if( not find_bucket( key, &index ) ) return _values.end();
 
-        init_hash( key, hash0, hash1, hash2, hash3 );
-
-        auto size_table = _hash_table.size();
-
-        auto hash_mask = size_table - 1;
-
-        for( auto i : range{ 0, _try_max } ) {
-         
-          auto& hvalue1 = _hash_table[ ( hash1 + i ) & hash_mask ];
-          auto& hvalue2 = _hash_table[ ( hash2 + i ) & hash_mask ];
-          auto& hvalue3 = _hash_table[ ( hash3 + i ) & hash_mask ];
-
-          if( hvalue1.get_refcnt() == 0 or
-                hvalue2.get_refcnt() == 0 or
-                  hvalue3.get_refcnt() == 0 ) continue;
-
-          ssize_t index = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
-
-          if( index >= _keys.size() ) continue;
-
-          if( _key_deleted[ index ] ) continue;
-
-          if( not equal( key, _keys[ index ] ) ) continue;
-
-          return _values.begin() + index;
-        }
-      }
-
-      return _values.end();
+      return _values.begin() + index;
     }
 
     const_iterator operator[]( key_type const& key ) const {
@@ -135,34 +158,15 @@ namespace lib {
 
         $throw $error_hash( "maximum hash table size" );
 
-      ssize_t index_new;
+      auto index_new = _keys.size();
 
-      if( not _index_free.empty() ) {
+      auto key_hash = set_new_index( key, index_new );
 
-        index_new = _index_free.pop_back();
+      if( not key_hash ) return _values.end();
 
-        auto key_hash = set_new_index( key, index_new );
-
-        if( not key_hash ) return _values.end();
-
-        _keys[ index_new ] = move( key );
-        _key_deleted[ index_new ] = false;
-        _values[ index_new ] = move( value );
-        _hashes[ index_new ] = key_hash;
-
-       } else { 
-
-        index_new = _keys.size();
-
-        auto key_hash = set_new_index( key, index_new );
-
-        if( not key_hash ) return _values.end();
-
-        _keys << move( key );
-        _key_deleted << false;
-        _values << move( value );
-        _hashes << key_hash;
-      }
+      _keys << move( key );
+      _values << move( value );
+      _hashes << key_hash;
 
       return _values.begin() + index_new;
     }
@@ -199,8 +203,6 @@ namespace lib {
 
           if( index >= _keys.size() ) continue;
 
-          if( _key_deleted[ index ] ) continue;
-
           if( equal( key, _keys[ index ] ) ) {
 
             return false;
@@ -209,20 +211,18 @@ namespace lib {
 
         hash_node* hash_ptr = nullptr;
 
-        if( refcnt1 == 0 ) { 
-
-          hash_ptr = &hvalue1; 
-        }
+        if( refcnt1 == 0 ) 
+               hash_ptr = &hvalue1; 
 
         if( refcnt2 == 0 ) { 
-
-          if( not hash_ptr ) hash_ptr = &hvalue2; 
+          if( not hash_ptr ) 
+               hash_ptr = &hvalue2; 
           else hvalue2.set_hash( hash0 );
         }
 
         if( refcnt3 == 0 ) {
-
-          if( not hash_ptr ) hash_ptr = &hvalue3;
+          if( not hash_ptr ) 
+               hash_ptr = &hvalue3;
           else hvalue3.set_hash( ~hash0 >> 1 );
         }
 
@@ -262,8 +262,6 @@ namespace lib {
 
       for( auto i : range{ 0, _keys.size() } ) {
 
-        if( _key_deleted[ i ] ) continue;
-
         auto key_hash = set_new_index( _keys[ i ], i, true );
 
         $assert( key_hash, "rehash failed for some reason" );
@@ -274,7 +272,6 @@ namespace lib {
     void reserve( ssize_t size = 0 ) {
 
       _keys.reserve( size );
-      _key_deleted.reserve( size );
       _values.reserve( size );
       _hashes.reserve( size );
 
@@ -298,55 +295,50 @@ namespace lib {
 
       if( size() == 0 ) return _values.end();
 
-      hash_type hash0{};
+      ssize_t index{};
 
-      ssize_t hash1{}, hash2{}, hash3{};
+      hash_node *hvalue1, *hvalue2, *hvalue3;
 
-      init_hash( key, hash0, hash1, hash2, hash3 );
+      auto result = find_bucket( key, &index, &hvalue1, &hvalue2, &hvalue3 );
 
-      auto size_table = _hash_table.size();
+      if( not result ) return _values.end();
 
-      auto hash_mask = size_table - 1;
+      hvalue1->set_refcnt( hvalue1->get_refcnt() - 1 );
+      hvalue2->set_refcnt( hvalue2->get_refcnt() - 1 );
+      hvalue3->set_refcnt( hvalue3->get_refcnt() - 1 );
 
-      for( auto i : range{ 0, _try_max } ) {
-       
-        auto& hvalue1 = _hash_table[ ( hash1 + i ) & hash_mask ];
-        auto& hvalue2 = _hash_table[ ( hash2 + i ) & hash_mask ];
-        auto& hvalue3 = _hash_table[ ( hash3 + i ) & hash_mask ];
+      if( index + 1 == size() ) {
 
-        auto refcnt1 = hvalue1.get_refcnt();
-        auto refcnt2 = hvalue2.get_refcnt();
-        auto refcnt3 = hvalue3.get_refcnt();
+        _keys.pop_back();
+        _values.pop_back();
+        _hashes.pop_back();
 
-        if( refcnt1 == 0 or refcnt2 == 0 or refcnt3 == 0 ) continue;
+        return _values.end();
 
-        ssize_t index = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
+      } else {
+  
+        ssize_t index_back = size() - 1;
 
-        if( index >= _keys.size() ) continue;
+        auto result = find_bucket( _keys.back(), &index_back, &hvalue1, &hvalue2, &hvalue3 );
 
-        if( _key_deleted[ index ] ) continue;
+        $assert( result, "erase: lookup of the last element misteriously failed" );
 
-        if( not equal( key, _keys[ index ] ) ) continue;
+        hvalue1->set_refcnt( hvalue1->get_refcnt() - 1 );
+        hvalue2->set_refcnt( hvalue2->get_refcnt() - 1 );
+        hvalue3->set_refcnt( hvalue3->get_refcnt() - 1 );
 
-        hvalue1.set_refcnt( refcnt1 - 1 );
-        hvalue2.set_refcnt( refcnt2 - 1 );
-        hvalue3.set_refcnt( refcnt3 - 1 );
+        _hashes[ index ] = _hashes.back();
 
-        if( refcnt1 - 1 == 0 ) hvalue1.set_hash( 0 );
-        if( refcnt2 - 1 == 0 ) hvalue2.set_hash( 0 );
-        if( refcnt3 - 1 == 0 ) hvalue3.set_hash( 0 );
+        auto key_hash = set_new_index( _keys.back(), index, true );
 
-        _keys[ index ] = key_type{};
-        _key_deleted[ index ] = true;
-        _values[ index ] = value_type{};
-        _hashes[ index ] = hash_type{};
-        
-        _index_free << index;
+        $assert( key_hash, "erase reinsert of the last element has failed" );
 
-        return _values.begin() + index + 1;
+        _keys[ index ] = _keys.pop_back();
+        _values[ index ] = _values.pop_back();
+        _hashes[ index ] = _hashes.pop_back();
+
+        return _values.begin() + index;
       }
-      
-      return _values.end();
     }
 
     iterator erase( iterator it ) {
@@ -372,7 +364,7 @@ namespace lib {
     auto& key( iterator it ) { return _keys[ it.get_index() ]; }
     auto& key( iterator it ) const { return _keys[ it.get_index() ]; }
 
-    auto size() const { return _values.size() - _index_free.size(); }
+    auto size() const { return _values.size(); }
     auto size_max() const { return _size_max; }
     auto empty() const { return size() == 0; }
     auto rehashes() const { return _rehashes; }
@@ -408,10 +400,8 @@ namespace lib {
 
     vector< hash_node > _hash_table;
     vector< key_type > _keys;
-    vector< hash_type > _hashes;
     vector< value_type > _values;
-    vector< size_type > _index_free;
-    vector< bool > _key_deleted;
+    vector< hash_type > _hashes;
     allocator _alloc;
     ssize_t _rehashes{};
   };
