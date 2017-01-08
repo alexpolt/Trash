@@ -54,18 +54,25 @@ namespace lib {
       reserve( size );
     }
 
-    void init_hash( key_type const& key, hash_type& hash0, ssize_t& hash1, ssize_t& hash2, ssize_t& hash3 ) {
+    void init_hash( key_type const& key, hash_type& hash0, 
+
+                      ssize_t& hash1, ssize_t& hash2, ssize_t& hash3, bool rehashing = false ) {
 
       auto size_table = _hash_table.size();
 
       ssize_t mask = size_table - 1;
 
-      hash0 = hasher::get_hash( key );
-      
+      if( not rehashing ) {
+
+        hash0 = hasher::get_hash( key );
+      }
+
+      if( hash0 == 0 ) hash0 = 1;
+     
       $assert( hash0, "hash of the key is zero?" );
 
       hash1 = hash0 & mask;
-      hash2 = ( ~hash0 >> 1 ) & mask;
+      hash2 = ~hash0 >> 1 & mask;
       hash3 = ( ~hash0 >> 1 ^ hash0 ) & mask;
 
       if( hash1 == hash2 ) { ++hash2; hash2 = hash2 & mask; }
@@ -82,7 +89,7 @@ namespace lib {
 
       if( size() > 0 ) {
 
-        hash_type hash0;
+        hash_type hash0{};
 
         ssize_t hash1, hash2, hash3;
 
@@ -134,39 +141,41 @@ namespace lib {
 
         index_new = _index_free.pop_back();
 
-        auto result = set_new_index( key, index_new );
+        auto key_hash = set_new_index( key, index_new );
 
-        if( not result ) return _values.end();
+        if( not key_hash ) return _values.end();
 
         _keys[ index_new ] = move( key );
         _key_deleted[ index_new ] = false;
         _values[ index_new ] = move( value );
+        _hashes[ index_new ] = key_hash;
 
        } else { 
 
         index_new = _keys.size();
 
-        auto result = set_new_index( key, index_new );
+        auto key_hash = set_new_index( key, index_new );
 
-        if( not result ) return _values.end();
+        if( not key_hash ) return _values.end();
 
         _keys << move( key );
         _key_deleted << false;
         _values << move( value );
+        _hashes << key_hash;
       }
 
       return _values.begin() + index_new;
     }
 
-    bool set_new_index( key_type const& key, ssize_t index_new, bool rehashing = false ) {
+    hash_type set_new_index( key_type const& key, ssize_t index_new, bool rehashing = false ) {
 
       if( _hash_table.size() == 0 ) reserve( _reserve_init );
 
-      hash_type hash0;
+      hash_type hash0 = rehashing ? _hashes[ index_new ] : hash_type{};
 
       ssize_t hash1, hash2, hash3;
 
-      init_hash( key, hash0, hash1, hash2, hash3 );
+      init_hash( key, hash0, hash1, hash2, hash3, rehashing );
 
       auto size_table = _hash_table.size();
      
@@ -203,19 +212,18 @@ namespace lib {
         if( refcnt1 == 0 ) { 
 
           hash_ptr = &hvalue1; 
-          hvalue1.set_hash( hash0 ); 
         }
 
         if( refcnt2 == 0 ) { 
 
           if( not hash_ptr ) hash_ptr = &hvalue2; 
-          else hvalue2.set_hash( ~hash0 );
+          else hvalue2.set_hash( hash0 );
         }
 
         if( refcnt3 == 0 ) {
 
           if( not hash_ptr ) hash_ptr = &hvalue3;
-          else hvalue3.set_hash( ~hash0 >> 1 ^ hash0 );
+          else hvalue3.set_hash( ~hash0 >> 1 );
         }
 
         if( not hash_ptr ) continue;
@@ -230,18 +238,18 @@ namespace lib {
 
         hash_ptr->set_hash( index_hashed );
         
-        return true;
+        return hash0;
       }
       
       reserve();
 
       rehash( rehashing );
 
-      auto result = set_new_index( key, index_new );
+      auto key_hash = set_new_index( key, index_new );
 
-      $assert( result, "hash insert unexpectedly failed" );
+      $assert( key_hash, "hash insert unexpectedly failed" );
 
-      return true;
+      return key_hash;
     }
 
     void rehash( bool rehashing ) {
@@ -256,9 +264,9 @@ namespace lib {
 
         if( _key_deleted[ i ] ) continue;
 
-        auto result = set_new_index( _keys[ i ], i, true );
+        auto key_hash = set_new_index( _keys[ i ], i, true );
 
-        $assert( result, "rehash failed for some reason" );
+        $assert( key_hash, "rehash failed for some reason" );
       }
 
     }
@@ -268,6 +276,7 @@ namespace lib {
       _keys.reserve( size );
       _key_deleted.reserve( size );
       _values.reserve( size );
+      _hashes.reserve( size );
 
       if( size == 0 ) {
 
@@ -289,7 +298,7 @@ namespace lib {
 
       if( size() == 0 ) return _values.end();
 
-      hash_type hash0;
+      hash_type hash0{};
 
       ssize_t hash1{}, hash2{}, hash3{};
 
@@ -330,6 +339,7 @@ namespace lib {
         _keys[ index ] = key_type{};
         _key_deleted[ index ] = true;
         _values[ index ] = value_type{};
+        _hashes[ index ] = hash_type{};
         
         _index_free << index;
 
@@ -398,6 +408,7 @@ namespace lib {
 
     vector< hash_node > _hash_table;
     vector< key_type > _keys;
+    vector< hash_type > _hashes;
     vector< value_type > _values;
     vector< size_type > _index_free;
     vector< bool > _key_deleted;

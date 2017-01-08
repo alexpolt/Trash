@@ -60,7 +60,7 @@ int main() {
 
     ++c;
 
-    if( c > 1'000'000 ) break;
+    //if( c > 1'000'000 ) break;
   }
 
   info, "count = ", c, "\n", endl;
@@ -68,8 +68,8 @@ int main() {
   //lib::log::lock.off();
   //lib::log::memory.off();
 
-  measure2( stdlines );
   measure1( lines );
+  measure2( stdlines );
 
   //getchar();
   
