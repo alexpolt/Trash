@@ -35,9 +35,9 @@ namespace lib {
 
     struct hash_node;
 
-    static constexpr int _try_max = 8;
     static constexpr int _reserve_init = 4;
     static constexpr int _hash_functions = 3;
+    static constexpr int _load_factor = 39; // 10 * hash table size / number of elements
     static constexpr ssize_t _invalid_index = -1;
     static constexpr ssize_t _size_max = is_64bit ? 1ll << 56 : 1 << 28;
     static constexpr ssize_t _hash_table_size_max = _size_max << 2;
@@ -84,40 +84,38 @@ namespace lib {
 
       $assert( hash1 != hash2 and hash2 != hash3 and hash3 != hash1, "init_hash failed" );
     }
-
+    
     bool find_bucket( key_type const& key, ssize_t* index, hash_node** bucket1 = nullptr, 
     
                         hash_node** bucket2 = nullptr, hash_node** bucket3 = nullptr ) {
 
-      hash_type hash0{};
+      hash_type hash0 = *index ? _hashes[ *index ] : hash_type{};
 
       ssize_t hash1, hash2, hash3;
 
-      if( *index ) 
-
-           init_hash( key, _hashes[ *index ], hash1, hash2, hash3, true );
-
-      else init_hash( key, hash0, hash1, hash2, hash3 );
+      init_hash( key, hash0, hash1, hash2, hash3, *index );
 
       auto size_table = _hash_table.size();
 
       auto hash_mask = size_table - 1;
 
-      for( auto i : range{ 0, _try_max } ) {
+      for( auto i : range{ 0, _hash_table.size() } ) {
        
-        auto& hvalue1 = _hash_table[ ( hash1 + i ) & hash_mask ];
-        auto& hvalue2 = _hash_table[ ( hash2 + i ) & hash_mask ];
-        auto& hvalue3 = _hash_table[ ( hash3 + i ) & hash_mask ];
+        auto offset = i;
+
+        auto& hvalue1 = _hash_table[ ( hash1 + offset ) & hash_mask ];
+        auto& hvalue2 = _hash_table[ ( hash2 + offset ) & hash_mask ];
+        auto& hvalue3 = _hash_table[ ( hash3 + offset ) & hash_mask ];
 
         if( hvalue1.get_refcnt() == 0 or
               hvalue2.get_refcnt() == 0 or
-                hvalue3.get_refcnt() == 0 ) continue;
+                hvalue3.get_refcnt() == 0 ) break;
 
         ssize_t index2 = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
         if( index2 >= _keys.size() ) continue;
 
-        if( not equal( key, _keys[ index2 ] ) ) continue;
+        if( hash0 != _hashes[ index2 ] or not equal( key, _keys[ index2 ] ) ) continue;
 
         *index = index2;
 
@@ -158,6 +156,10 @@ namespace lib {
 
         $throw $error_hash( "maximum hash table size" );
 
+      if( _hash_table.size() == 0 ) reserve( _reserve_init );
+
+      if( size() and 10 * _hash_table.size() / size() < _load_factor ) rehash( false );
+
       auto index_new = _keys.size();
 
       auto key_hash = set_new_index( key, index_new );
@@ -173,8 +175,6 @@ namespace lib {
 
     hash_type set_new_index( key_type const& key, ssize_t index_new, bool rehashing = false ) {
 
-      if( _hash_table.size() == 0 ) reserve( _reserve_init );
-
       hash_type hash0 = rehashing ? _hashes[ index_new ] : hash_type{};
 
       ssize_t hash1, hash2, hash3;
@@ -185,11 +185,15 @@ namespace lib {
      
       auto hash_mask = size_table - 1;
 
-      for( auto i : range{ 0, _try_max } ) {
+      for( auto i : range{ 0, _hash_table.size() } ) {
 
-        auto& hvalue1 = _hash_table[ ( hash1 + i ) & hash_mask ];
-        auto& hvalue2 = _hash_table[ ( hash2 + i ) & hash_mask ];
-        auto& hvalue3 = _hash_table[ ( hash3 + i ) & hash_mask ];
+        auto offset = i;
+
+        if( i > _search_max ) _search_max = i;
+
+        auto& hvalue1 = _hash_table[ ( hash1 + offset ) & hash_mask ];
+        auto& hvalue2 = _hash_table[ ( hash2 + offset ) & hash_mask ];
+        auto& hvalue3 = _hash_table[ ( hash3 + offset ) & hash_mask ];
 
         auto refcnt1 = hvalue1.get_refcnt();
         auto refcnt2 = hvalue2.get_refcnt();
@@ -203,7 +207,7 @@ namespace lib {
 
           if( index >= _keys.size() ) continue;
 
-          if( equal( key, _keys[ index ] ) ) {
+          if( hash0 == _hashes[ index ] and equal( key, _keys[ index ] ) ) {
 
             return false;
           }
@@ -241,8 +245,6 @@ namespace lib {
         return hash0;
       }
       
-      reserve();
-
       rehash( rehashing );
 
       auto key_hash = set_new_index( key, index_new );
@@ -259,6 +261,8 @@ namespace lib {
       ++_rehashes;
 
       $assert( size(), "hash_map size can't zero in rehashing" );
+
+      reserve();
 
       for( auto i : range{ 0, _keys.size() } ) {
 
@@ -368,6 +372,7 @@ namespace lib {
     auto size_max() const { return _size_max; }
     auto empty() const { return size() == 0; }
     auto rehashes() const { return _rehashes; }
+    auto search_max() const { return _search_max; }
 
     void set_allocator( allocator alloc ) { _alloc = move( alloc ); }
 
@@ -404,6 +409,7 @@ namespace lib {
     vector< hash_type > _hashes;
     allocator _alloc;
     ssize_t _rehashes{};
+    ssize_t _search_max{};
   };
 
 

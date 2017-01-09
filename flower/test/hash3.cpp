@@ -20,7 +20,8 @@ int main() {
   //lib::log::memory.on();
 
   //cstr filename = "hitch4.txt";
-  cstr filename = "passwords.txt";
+  //cstr filename = "passwords.txt";
+  cstr filename = "passwords2.txt";
 
   lib::os::file f0{ filename };
 
@@ -31,7 +32,9 @@ int main() {
 
   int c = 0;
 
-  string s{ 32, lib::alloc_chunk::create( "hitch", 131072 ) };
+  string s{ 32, lib::alloc_chunk::create( "hitch", 1 << 20 ) };
+
+  info, "sizeof( string ) = ", $size( s ), ", sizeof( std::string ) = ", $size( std::string ), endl;
 
   while( true ) {
 
@@ -56,7 +59,7 @@ int main() {
 
     //info, c, ": ", l.data(), endl;
 
-    lines << move( l );
+    //lines << move( l );
 
     ++c;
 
@@ -64,12 +67,14 @@ int main() {
   }
 
   info, "count = ", c, "\n", endl;
+  
+  //info, "lock count = ", lib::global::lock_map<>._lock_map.size(), "\n", endl;
 
   //lib::log::lock.off();
   //lib::log::memory.off();
 
-  measure1( lines );
   measure2( stdlines );
+  //measure1( lines );
 
   //getchar();
   
@@ -97,24 +102,12 @@ void measure1( vector< string >& lines ) {
 
   }
 
-  auto& v = map0.values();
-  auto& k = map0.keys();
-
-  int n = 0;
-
-  for( auto i : range{ 0, v.size() } ) {
-
-    if( v[ i ] > 5000 ) info, ++n, ": ", k[ i ].data(), " - ", v[ i ], endl;
-  }
-
-  info, endl;
-
   auto end = std::chrono::high_resolution_clock::now();
 
   auto dt = std::chrono::duration_cast< std::chrono::milliseconds >( end - begin ).count();
 
-  info, "hash table size = ", map0._hash_table.size(), ", keys = ", k.size(), endl;
-  info, "rehash = ", map0.rehashes(), endl, endl;
+  info, "hash table size = ", map0._hash_table.size(), ", keys = ", map0.keys().size(), endl;
+  info, "rehash = ", map0.rehashes(), ", search = ", map0.search_max(), endl, endl;
 
   printf( "dt = %ld\n\n", (long)dt );
 
@@ -139,15 +132,6 @@ void measure2( std::vector< std::string >& lines ) {
     }
 
   }
-
-  int n = 0;
-
-  for( auto& v : map0 ) {
-
-    if( v.second >5000 ) info, ++n, ": ", v.first.data(), " - ", v.second, endl;
-  }
-
-  info, endl;
 
   auto end = std::chrono::high_resolution_clock::now();
 
