@@ -37,7 +37,9 @@ namespace lib {
 
     static constexpr int _size_init = 16;
     static constexpr int _hash_functions = 3;
-    static constexpr int _load_factor = 39; // 10 * hash table size / number of elements
+    static constexpr bool _is_pot = false;
+    static constexpr int _load_factor = 24; // ( 10 * hash table size ) / number of elements
+    static constexpr int _multiplier = 26; // ( hash table size * _multipler ) / 10
     static constexpr ssize_t _invalid_index = -1;
     static constexpr ssize_t _size_max = is_64bit ? 1ll << 56 : 1 << 28;
     static constexpr ssize_t _hash_table_size_max = _size_max << 2;
@@ -57,7 +59,12 @@ namespace lib {
       $assert( size < _size_max, "size must be less than the maximum allowed size" );
 
       reserve( size );
-      resize( 4 * size );
+      resize( size );
+    }
+
+    ssize_t mask_bits( hash_type hash, usize_t mask ) {
+
+      return _is_pot ? hash & mask : hash % mask;
     }
 
     void init_hash( key_type const& key, hash_type& hash0, 
@@ -66,7 +73,7 @@ namespace lib {
 
       auto size_table = _hash_table.size();
 
-      ssize_t mask = size_table - 1;
+      usize_t mask = _is_pot ? size_table - 1 : size_table;
 
       if( not rehashing ) {
 
@@ -77,14 +84,14 @@ namespace lib {
      
       $assert( hash0, "hash of the key is zero?" );
 
-      hash1 = hash0 & mask;
-      hash2 = ~hash0 >> 1 & mask;
-      hash3 = ( ~hash0 >> 1 ^ hash0 ) & mask;
+      hash1 = mask_bits( hash0 , mask );
+      hash2 = mask_bits( ( hash0 * hash0 ) ^ hash0, mask );
+      hash3 = mask_bits( ( hash0 >> 1 ^ hash0 ) * hash0, mask );
 
-      if( hash1 == hash2 ) { ++hash2; hash2 = hash2 & mask; }
-      if( hash1 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
-      if( hash2 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
-      if( hash1 == hash3 ) { ++hash3; hash3 = hash3 & mask; }
+      if( hash1 == hash2 ) { ++hash2; hash2 = mask_bits( hash2, mask ); }
+      if( hash1 == hash3 ) { ++hash3; hash3 = mask_bits( hash3, mask ); }
+      if( hash2 == hash3 ) { ++hash3; hash3 = mask_bits( hash3, mask ); }
+      if( hash1 == hash3 ) { ++hash3; hash3 = mask_bits( hash3, mask ); }
 
       $assert( hash1 != hash2 and hash2 != hash3 and hash3 != hash1, "init_hash failed" );
     }
@@ -101,15 +108,15 @@ namespace lib {
 
       auto size_table = _hash_table.size();
 
-      auto hash_mask = size_table - 1;
+      usize_t mask = _is_pot ? size_table - 1 : size_table;
 
       for( auto i : range{ 0, _hash_table.size() } ) {
        
         auto offset = i;
 
-        auto& hvalue1 = _hash_table[ ( hash1 + offset ) & hash_mask ];
-        auto& hvalue2 = _hash_table[ ( hash2 + offset ) & hash_mask ];
-        auto& hvalue3 = _hash_table[ ( hash3 + offset ) & hash_mask ];
+        auto& hvalue1 = _hash_table[ mask_bits( hash1 + offset, mask ) ];
+        auto& hvalue2 = _hash_table[ mask_bits( hash2 + offset, mask ) ];
+        auto& hvalue3 = _hash_table[ mask_bits( hash3 + offset, mask ) ];
 
         if( hvalue1.get_refcnt() == 0 or
               hvalue2.get_refcnt() == 0 or
@@ -164,7 +171,7 @@ namespace lib {
 
         reserve( _size_init );
 
-        resize( 4 * _size_init );
+        resize( _size_init );
       }
 
       if( size() and ( 10 * _hash_table.size() ) / size() < _load_factor ) rehash( false );
@@ -192,7 +199,7 @@ namespace lib {
 
       auto size_table = _hash_table.size();
      
-      auto hash_mask = size_table - 1;
+      usize_t mask = _is_pot ? size_table - 1 : size_table;
 
       for( auto i : range{ 0, _hash_table.size() } ) {
 
@@ -200,9 +207,9 @@ namespace lib {
 
         auto offset = i;
 
-        auto& hvalue1 = _hash_table[ ( hash1 + offset ) & hash_mask ];
-        auto& hvalue2 = _hash_table[ ( hash2 + offset ) & hash_mask ];
-        auto& hvalue3 = _hash_table[ ( hash3 + offset ) & hash_mask ];
+        auto& hvalue1 = _hash_table[ mask_bits( hash1 + offset, mask ) ];
+        auto& hvalue2 = _hash_table[ mask_bits( hash2 + offset, mask ) ];
+        auto& hvalue3 = _hash_table[ mask_bits( hash3 + offset, mask ) ];
 
         auto refcnt1 = hvalue1.get_refcnt();
         auto refcnt2 = hvalue2.get_refcnt();
@@ -291,15 +298,14 @@ namespace lib {
 
     void resize( ssize_t size = 0 ) {
 
-      if( size == 0 ) {
+      if( size == 0 ) size = _hash_table.size();
 
-        size = _hash_table.size() * 2;
+      size = ( _multiplier * size ) / 10;
 
-        if( size >= _hash_table_size_max ) 
+      if( size >= _hash_table_size_max ) 
 
           $throw $error_hash( "maximum hash table size" );
-      }
-
+ 
       _hash_table.clear();
       _hash_table.reserve( size, true );
       _hash_table.resize( size );

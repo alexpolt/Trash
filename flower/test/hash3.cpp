@@ -19,9 +19,11 @@ int main() {
   //lib::log::lock.on();
   //lib::log::memory.on();
 
-  //cstr filename = "hitch4.txt";
+  hash_map< string, int > map0{};
+
   cstr filename = "passwords.txt";
   //filename = "passwords2.txt";
+  filename = "hitch5.txt";
 
   lib::os::file f0{ filename };
 
@@ -34,7 +36,7 @@ int main() {
 
   string s{ 32, lib::alloc_chunk::create( "hitch", 1 << 20 ) };
 
-  info, "sizeof( string ) = ", $size( s ), ", sizeof( std::string ) = ", $size( std::string ), endl;
+  info, "_load_factor = ", map0._load_factor, ", multiplier = ", map0._multiplier, endl;
 
   while( true ) {
 
