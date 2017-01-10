@@ -35,7 +35,7 @@ namespace lib {
 
     struct hash_node;
 
-    static constexpr int _reserve_init = 4;
+    static constexpr int _size_init = 16;
     static constexpr int _hash_functions = 3;
     static constexpr int _load_factor = 39; // 10 * hash table size / number of elements
     static constexpr ssize_t _invalid_index = -1;
@@ -53,7 +53,11 @@ namespace lib {
 
     hash_map( ssize_t size, allocator alloc = create_alloc() ) : hash_map{ move( alloc ) } {
       
+      $assert( ( size & ( size - 1 ) ) == 0, "reserve size must be a power of two" );
+      $assert( size < _size_max, "size must be less than the maximum allowed size" );
+
       reserve( size );
+      resize( 4 * size );
     }
 
     void init_hash( key_type const& key, hash_type& hash0, 
@@ -113,7 +117,7 @@ namespace lib {
 
         ssize_t index2 = hvalue1.get_hash() xor hvalue2.get_hash() xor hvalue3.get_hash();
 
-        if( index2 >= _keys.size() ) continue;
+        if( index2 >= size() ) continue;
 
         if( hash0 != _hashes[ index2 ] or not equal( key, _keys[ index2 ] ) ) continue;
 
@@ -156,9 +160,14 @@ namespace lib {
 
         $throw $error_hash( "maximum hash table size" );
 
-      if( _hash_table.size() == 0 ) reserve( _reserve_init );
+      if( size() == 0 ) { 
 
-      if( size() and 10 * _hash_table.size() / size() < _load_factor ) rehash( false );
+        reserve( _size_init );
+
+        resize( 4 * _size_init );
+      }
+
+      if( size() and ( 10 * _hash_table.size() ) / size() < _load_factor ) rehash( false );
 
       auto index_new = _keys.size();
 
@@ -187,9 +196,9 @@ namespace lib {
 
       for( auto i : range{ 0, _hash_table.size() } ) {
 
-        auto offset = i;
-
         if( i > _search_max ) _search_max = i;
+
+        auto offset = i;
 
         auto& hvalue1 = _hash_table[ ( hash1 + offset ) & hash_mask ];
         auto& hvalue2 = _hash_table[ ( hash2 + offset ) & hash_mask ];
@@ -205,12 +214,14 @@ namespace lib {
 
           if( rehashing and index >= index_new ) continue;
 
-          if( index >= _keys.size() ) continue;
+          if( index >= size() ) continue;
 
           if( hash0 == _hashes[ index ] and equal( key, _keys[ index ] ) ) {
 
             return false;
           }
+
+          continue;
         }
 
         hash_node* hash_ptr = nullptr;
@@ -229,8 +240,6 @@ namespace lib {
                hash_ptr = &hvalue3;
           else hvalue3.set_hash( ~hash0 >> 1 );
         }
-
-        if( not hash_ptr ) continue;
  
         hvalue1.set_refcnt( refcnt1 + 1 );
         hvalue2.set_refcnt( refcnt2 + 1 );
@@ -262,7 +271,7 @@ namespace lib {
 
       $assert( size(), "hash_map size can't zero in rehashing" );
 
-      reserve();
+      resize();
 
       for( auto i : range{ 0, _keys.size() } ) {
 
@@ -273,11 +282,14 @@ namespace lib {
 
     }
 
-    void reserve( ssize_t size = 0 ) {
+    void reserve( ssize_t size ) {
 
       _keys.reserve( size );
       _values.reserve( size );
       _hashes.reserve( size );
+    }
+
+    void resize( ssize_t size = 0 ) {
 
       if( size == 0 ) {
 
@@ -287,8 +299,6 @@ namespace lib {
 
           $throw $error_hash( "maximum hash table size" );
       }
-
-      $assert( ( size & ( size - 1 ) ) == 0, "size is not a power of two" );
 
       _hash_table.clear();
       _hash_table.reserve( size, true );

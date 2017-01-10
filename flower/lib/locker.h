@@ -42,8 +42,6 @@ namespace lib {
 
     void lock( void* ptr, deleter_t deleter, bool is_weak, cstr name ) {
 
-      if( _lock_map.size() == 0 ) _lock_map.reserve( 16 );
-
       log::lock, "new ";
 
       auto it = _lock_map[ ptr ];

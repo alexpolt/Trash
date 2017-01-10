@@ -20,8 +20,8 @@ int main() {
   //lib::log::memory.on();
 
   //cstr filename = "hitch4.txt";
-  //cstr filename = "passwords.txt";
-  cstr filename = "passwords2.txt";
+  cstr filename = "passwords.txt";
+  //filename = "passwords2.txt";
 
   lib::os::file f0{ filename };
 
@@ -56,10 +56,10 @@ int main() {
     l.back() = '\0';
  
     stdlines.push_back( std::string( l.data() ) );
+    lines << move( l );
 
     //info, c, ": ", l.data(), endl;
 
-    //lines << move( l );
 
     ++c;
 
@@ -73,8 +73,8 @@ int main() {
   //lib::log::lock.off();
   //lib::log::memory.off();
 
+  measure1( lines );
   measure2( stdlines );
-  //measure1( lines );
 
   //getchar();
   
