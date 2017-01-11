@@ -23,7 +23,7 @@ int main() {
 
   cstr filename = "passwords.txt";
   //filename = "passwords2.txt";
-  filename = "hitch5.txt";
+  //filename = "hitch5.txt";
 
   lib::os::file f0{ filename };
 
@@ -34,7 +34,7 @@ int main() {
 
   int c = 0;
 
-  string s{ 32, lib::alloc_chunk::create( "hitch", 1 << 20 ) };
+  string s{ 32, lib::alloc_chunk::create( "hitch", 1 << 22 ) };
 
   info, "_load_factor = ", map0._load_factor, ", multiplier = ", map0._multiplier, endl;
 
@@ -118,6 +118,7 @@ void measure1( vector< string >& lines ) {
 
 void measure2( std::vector< std::string >& lines ) {
 
+  using map = std::unordered_map< std::string, int >;
   std::unordered_map< std::string, int > map0{};
 
   auto begin = std::chrono::high_resolution_clock::now();
@@ -148,7 +149,7 @@ void measure2( std::vector< std::string >& lines ) {
     if( map0.bucket_size( i ) == 0 ) empty++;
   }
 
-  info, "empty buckets ", empty, ", max = ", max, endl,endl;
+  info, "empty buckets ", empty, ", max = ", max, ", value_type size = ", $size( map::value_type ),  endl,endl;
 
   printf( "dt = %ld\n\n", (long)dt );
 

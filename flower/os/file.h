@@ -29,11 +29,11 @@ namespace lib {
 
       file() { }
 
-      file( string path ) : _path{ move( path ) } { }
+      file( string path, cstr mode = "rb" ) : _path{ move( path ) }, _mode{ mode } { }
 
       auto create_error() { return $error_file( path(), strerror( errno ) ); }
       
-      vector_b load() {
+      void load( vector_b& data ) {
 
         open();
 
@@ -41,21 +41,21 @@ namespace lib {
 
         log::os, $this, " loading ", file_size, " bytes", log::endl;
 
-        vector_b data{ file_size, alloc_default::create( path() ) };
+        data.reserve( file_size );
+
+        ssize_t size_read{};
 
         while( data.size() < file_size ) {
 
-          auto read = fread( data.data(), 1, file_size, _h );
+          size_read += fread( data.data() + data.size(), 1, file_size, _h );
 
-          data.set_size( read );
+          data.set_size( data.size() + size_read );
 
           if( feof( _h ) or ferror( _h ) != 0 ) $throw create_error();
         }
+      }
 
-        return move( data );
-     }
-
-     ssize_t size() {
+      ssize_t size() {
 
         if( _size != -1 ) return _size;
 
@@ -89,7 +89,7 @@ namespace lib {
 
         if( $this ) return;
 
-        FILE* f = fopen( path(), "r+b" );
+        FILE* f = fopen( path(), _mode );
         
         if( f == nullptr ) $throw create_error();
 
@@ -115,6 +115,29 @@ namespace lib {
           str.reserve( strlen( ptr ) + 1 );
 
           str << ptr;
+        }
+      }
+
+      TP<TN T>
+      void read( vector< T >& data, ssize_t count ) {
+
+        log::os, $this, " reading ", count, " elements of size ", $size( T ), log::endl;
+
+        open();
+
+        ssize_t size_read{};
+
+        data.reserve( count );
+
+        while( size_read < count ) {
+
+          size_read += fread( data.data() + data.size(), $size( T ), count, _h );
+
+          data.set_size( data.size() + size_read );
+
+          if( feof( _h ) ) break;
+
+          if( ferror( _h ) != 0 ) $throw create_error();
         }
       }
 
@@ -154,6 +177,7 @@ namespace lib {
 
       handle_t _h{};
       string _path{};
+      cstr _mode{};
       ssize_t _size = -1;
     };
   
