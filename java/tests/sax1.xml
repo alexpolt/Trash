@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns:my="my namespace">
+	<book name="Alex">
+		<pages>13</pages>
+		<my:pages>13</my:pages>
+	</book>
+</catalog>
