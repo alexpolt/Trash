@@ -32,7 +32,7 @@ public class cube1
 
 		try
 		{
-			texture = ImageIO.read( new File("p:\\nebula.jpg") );
+			texture = ImageIO.read( new File("nebula.jpg") );
 			texW = texture.getWidth() - 1;
 			texH = texture.getHeight() - 1;
 		} catch ( Exception exc ) { p(exc); }
@@ -45,6 +45,7 @@ public class cube1
 		frame1.setVisible(true);
 		frame1.setBackground( null );
 		frame1.createBufferStrategy(2);
+		/*
 		frame1.addMouseListener( new MouseAdapter() {
 				int i = 0;
 				public void mousePressed( MouseEvent e ) {
@@ -64,7 +65,7 @@ public class cube1
 					}).start();
 				}
 		});
-
+		*/
 		g = (Graphics2D) frame1.getBufferStrategy().getDrawGraphics();
 		g.setStroke( new BasicStroke( 3 ) );
 		

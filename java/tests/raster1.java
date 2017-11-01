@@ -1,4 +1,4 @@
-п»ї
+
 import java.io.*;
 import java.awt.*;
 import java.util.*;
@@ -28,7 +28,7 @@ public class raster1
 				BufferedImage img1; 
 				img1 = ImageIO.read( new File("nebula.jpg") );
 
-				JFrame frame1 = createFrame("РЎС‚Р°СЂРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ", 50, 50, img1.getWidth(), img1.getHeight(), img1 );
+				JFrame frame1 = createFrame("Старое изображение", 50, 50, img1.getWidth(), img1.getHeight(), img1 );
 				//Graphics2D g = (Graphics2D) frame1.getGraphics();
 				//g.drawImage( img1, null, 0, 0 );
 				//g.dispose();
@@ -142,7 +142,7 @@ public class raster1
 		p("newW: "+newWidth+", newH: "+newHeight);
 
 		BufferedImage imgNew = new BufferedImage( newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR );
-		JFrame frame1 = new JFrame( "РќРѕРІРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ" );			
+		JFrame frame1 = new JFrame( "Новое изображение" );			
 		frame1.setSize( imgNew.getWidth(), imgNew.getHeight() );
 		frame1.setLocation( 100, 400 );
 		//frame1.setBackground( Color.black );
